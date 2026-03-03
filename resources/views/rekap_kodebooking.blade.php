@@ -1,0 +1,96 @@
+@extends('layouts.admin')
+
+@section('content')
+
+<h1>Sistem Pemantauan Data Bridging BPJS</h1>
+<style>
+    h1 {
+        text-align: left;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 550;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        color: #007bff;
+    }
+</style>
+
+<!-- Filter by Date Form -->
+<form method="GET" action="{{ route('rekap_kodebooking') }}">
+    <label for="start_date">Start Date:</label>
+    <input type="date" name="start_date" value="{{ request('start_date', date('Y-m-d')) }}">
+
+    <label for="end_date">End Date:</label>
+    <input type="date" name="end_date" value="{{ request('end_date', date('Y-m-d')) }}">
+
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="{{ route('rekap_kodebooking') }}" class="btn btn-secondary">Reset</a>
+</form>
+
+@if(isset($messageFilter))
+    <!-- Tampilkan Data Detail -->
+    <a href="{{ route('rekap_kodebooking', ['start_date' => $startDate, 'end_date' => $endDate]) }}" class="btn btn-secondary">Kembali</a>
+
+    <div class="table-responsive mt-4">
+        <table class="table table-hover table-striped table-bordered">
+            <thead class="thead-dark bg-primary text-white sticky-top">
+                <tr>
+                    <th style="width: 5px; text-align: center;">No</th>
+                    <th style="width: 15px; text-align: center;">No RM</th>
+                    <th style="width: 50px; text-align: center;">Check Date</th>
+                    <th style="width: 30px; text-align: center;">Code</th>
+                    <th style="width: 30px; text-align: center;">Message</th>
+                    <th style="width: 250px; text-align: center;">Request</th>
+                    <th style="width: 50px; text-align: center;">Response</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($detailData as $index => $item)
+                    <tr>
+                        <td style="text-align: center;">{{ $index + 1 }}</td>
+                        <td style="font-family: 'Poppins', sans-serif; font-size: 14px;">{{ $item->norm }}</td>
+                        <td style="font-family: 'Poppins', sans-serif; font-size: 14px;">{{ $item->tanggalperiksa }}</td>
+                        <td style="font-family: 'Poppins', sans-serif; font-size: 14px;">{{ $item->code }}</td>
+                        <td style="font-family: 'Poppins', sans-serif; font-size: 14px;">
+                            {{ json_decode($item->response)->metadata->message ?? '' }}</td>
+                        <td style="font-family: 'Poppins', sans-serif; font-size: 14px; text-align: left;">
+                            <pre>{{ json_encode(json_decode($item->request), JSON_PRETTY_PRINT) }}</pre>
+                        </td>
+                        <td style="font-family: 'Poppins', sans-serif; font-size: 14px; text-align: left;">
+                            <pre>{{ json_encode(json_decode($item->response), JSON_PRETTY_PRINT) }}</pre>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+    
+@else
+    <!-- Tampilkan Rekap Data -->
+    <div class="table-responsive mt-4">
+        <table class="table table-hover table-striped table-bordered">
+            <thead class="thead-dark bg-primary text-white sticky-top">
+                <tr>
+                    <th>No</th>
+                    <th>Message</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($data as $index => $item)
+                    <tr>
+                        <td>{{ $index + 1 }}</td>
+                        <td>
+                            <a href="{{ route('rekap_kodebooking', ['start_date' => $startDate, 'end_date' => $endDate, 'message' => $item->message_all]) }}"
+                                class="text-primary">
+                                {{ $item->message_all }}
+                            </a>
+                        </td>
+                        <td>{{ $item->total }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+@endif
+
+@endsection

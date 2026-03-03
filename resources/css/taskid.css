@@ -1,0 +1,72 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    font-size: 10px;
+}
+
+h3 {
+    font-size: 30px !important;
+    margin-bottom: 5px !important;
+    font-weight: bold !important;
+    text-align: left !important;
+}
+
+h4 {
+    font-size: 25px !important;
+    margin-bottom: 5px !important;
+    font-weight: normal !important;
+    text-align: left !important;
+}
+
+.table {
+    font-family: 'Poppins', sans-serif;
+    font-size: 8px;
+}
+
+.table th,
+.table td {
+    font-size: 8px;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+.table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+input[type="date"] {
+    font-size: 8px;
+    padding: 2px;
+    width: 20px;
+    height: 25px;
+}
+
+button {
+    font-size: 10px !important;
+    padding: 2px 5px !important;
+    height: auto;
+}
+
+.mb-3 {
+    margin-bottom: 5px;
+}
+
+.dataTables_wrapper {
+    margin-bottom: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+.table-responsive {
+    max-height: 450px;
+    overflow-y: auto;
+}

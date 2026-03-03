@@ -1,0 +1,20 @@
+h1 {
+    font-size: 2rem; /* Ukuran font untuk h1 */
+    font-weight: bold; /* Menebalkan teks */
+    color: #007bff; /* Warna teks */
+    text-align: left; /* Menyelaraskan teks ke kiri */
+    margin: 0; /* Menghapus margin default pada h1 */
+}
+
+/* Kelas tambahan untuk tampilan */
+.display-6 {
+    font-size: 1.75rem; /* Ukuran font untuk kelas display-6 */
+}
+
+.font-weight-bold {
+    font-weight: bold; /* Menebalkan teks */
+}
+
+.text-primary {
+    color: #007bff; /* Warna teks utama */
+}

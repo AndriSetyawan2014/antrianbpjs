@@ -1,0 +1,194 @@
+/* Body */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f4f6f9;
+    margin: 0;
+    padding: 0;
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 250px;
+    background-color: #3c8dbc;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding-top: 20px;
+}
+
+.sidebar .logo a {
+    display: block;
+    color: white;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    text-decoration: none;
+    margin-bottom: 30px;
+}
+
+.sidebar-wrapper {
+    padding: 0 15px;
+}
+
+.nav-item {
+    margin-bottom: 10px;
+}
+
+.nav-item a {
+    color: white;
+    font-size: 16px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border-radius: 4px;
+}
+
+.nav-item a:hover, .nav-item.active a {
+    background-color: #283593;
+}
+
+.material-icons {
+    margin-right: 10px;
+}
+
+/* Main Panel */
+.main-panel {
+    margin-left: 250px;
+    transition: margin-left 0.3s ease;
+    padding-top: 60px;
+}
+
+.navbar {
+    background-color: transparent;
+    padding: 10px 20px;
+    box-shadow: none;
+}
+
+.navbar .navbar-brand {
+    color: #3c8dbc;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.card {
+    border-radius: 8px;
+    margin-bottom: 30px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    color: white;
+    padding: 20px;
+    font-size: 18px;
+}
+
+.card-header.card-header-primary {
+    background-color: #3c8dbc;
+}
+
+.card-header.card-header-info {
+    background-color: #00bcd4;
+}
+
+.card-header.card-header-warning {
+    background-color: #ff9800;
+}
+
+.card-header.card-header-success {
+    background-color: #4caf50;
+}
+
+.card-header.card-header-danger {
+    background-color: #f44336;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.card-footer {
+    background-color: #f5f5f5;
+    text-align: center;
+    padding: 10px;
+}
+
+.card-footer a {
+    color: #3c8dbc;
+    text-decoration: none;
+}
+
+.card-stats {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+
+.card-stats .card-header-icon {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.card-stats .card-category {
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+.card-stats .card-title {
+    font-size: 30px;
+    font-weight: bold;
+}
+
+/* Filter Tanggal */
+.form-group label {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.form-control {
+    font-size: 16px;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+/* Grafik */
+.card-body canvas {
+    width: 100% !important;
+    height: 400px !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-panel {
+        margin-left: 0;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+
+    .sidebar-wrapper {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .nav-item a {
+        padding: 12px 15px;
+    }
+
+    .card {
+        margin-bottom: 20px;
+    }
+
+    .card-body canvas {
+        height: 300px !important;
+    }
+}

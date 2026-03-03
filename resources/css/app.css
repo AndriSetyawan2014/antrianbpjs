@@ -1,0 +1,188 @@
+/* ADMIN */
+
+html,
+body {
+    overflow: hidden;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .content-wrapper {
+        margin-left: 0;
+        padding: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-sidebar {
+        transform: translateX(-100%);
+        position: fixed;
+    }
+
+    .main-sidebar.show {
+        transform: translateX(0);
+    }
+
+    .toggle-sidebar-btn {
+        font-size: 24px;
+        cursor: pointer;
+        color: #1f2833;
+        margin-right: 10px;
+    }
+}
+
+/* SIDENAV */
+
+
+html,
+body {
+    overflow: hidden;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .content-wrapper {
+        margin-left: 0;
+        padding: 20px;
+    }
+
+    .main-sidebar {
+        transform: translateX(-100%);
+        position: fixed;
+    }
+
+    .main-sidebar.show {
+        transform: translateX(0);
+    }
+
+    .toggle-sidebar-btn {
+        font-size: 24px;
+        cursor: pointer;
+        color: #1f2833;
+        margin-right: 10px;
+    }
+}
+
+/* Style sidebar */
+.main-sidebar {
+    background-color: #1f2833;
+    color: #c5c6c7;
+    width: 200px;
+    position: fixed;
+    height: 100%;
+    padding-top: 20px;
+    transition: transform 0.3s ease-in-out;
+    z-index: 1000;
+}
+
+.sidebar a {
+    color: #c5c6c7;
+    text-decoration: none;
+    font-size: 14px;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+    border-radius: 5px;
+}
+
+.sidebar a:hover {
+    background-color: #66fcf1;
+    color: #1f2833;
+    text-decoration: none;
+}
+
+.sidebar .nav-icon {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+.sidebar-heading {
+    font-size: 14px;
+    text-transform: uppercase;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    padding-left: 15px;
+    color: #66fcf1;
+    font-weight: 600;
+}
+
+/* DATA KODEBOOKING, TASK ID, REKAP DATA KODE BOOKING, REKAP DATA TASK ID*/
+
+body {
+    font-family: 'Poppins', sans-serif; /* Mengatur font untuk seluruh body */
+    font-size: 10px; /* Mengatur ukuran font untuk body */
+}
+
+h3 {
+    font-size: 30px !important; /* Ukuran font untuk h3 */
+    margin-bottom: 5px !important; /* Mengurangi jarak bawah h3 */
+    font-weight: bold !important; /* Pastikan h3 tetap bold */
+    text-align: left !important; /* Rata kiri */
+}
+
+h4 {
+    font-size: 25px !important; /* Ukuran font untuk h4 */
+    margin-bottom: 5px !important; /* Mengurangi jarak bawah h4 */
+    font-weight: normal !important; /* Pastikan h4 tidak bold */
+    text-align: left !important; /* Rata kiri */
+}
+
+.table {
+    font-family: 'Poppins', sans-serif; /* Mengatur font untuk tabel */
+    font-size: 10px; /* Ukuran font untuk tabel */
+}
+
+.table th,
+.table td {
+    font-size: 10px; /* Ukuran font untuk sel tabel */
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+.table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+        
+input[type="date"] {
+    font-size: 10px; /* Ukuran font untuk input tanggal */
+    padding: 2px; /* Padding untuk input tanggal */
+    width: 20px; /* Mengatur lebar sesuai kebutuhan */
+    height: 25px;/* Mengatur tinggi kotak input */
+}
+
+
+button {
+    font-size: 10px !important; /* Ukuran font untuk tombol filter dan reset*/
+    padding: 2px 5px !important; /* Padding untuk tombol */
+    height: auto; /* Mengatur tinggi otomatis untuk tombol */
+}
+
+.mb-3 {
+    margin-bottom: 5px; /* Mengurangi jarak antara input tanggal dan tabel */
+}
+
+.dataTables_wrapper {
+margin-bottom: 10px;
+}
+
+.dataTables_wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 5; /* Pastikan di atas tabel */
+}
+
+.table-responsive {
+    max-height: 400px;
+    overflow-y: auto;
+}
