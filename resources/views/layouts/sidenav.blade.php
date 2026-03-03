@@ -268,27 +268,4 @@
             </nav>
         </div>
     </div>
-
-    <script>
-        document.getElementById('jogja-link').addEventListener('click', () => {
-            const dropdown = document.getElementById('dropdownMenuJogja');
-            dropdown.classList.toggle('show');
-            const arrow = document.querySelector('#jogja-link .arrow');
-            arrow.classList.toggle('rotate');
-        });
-
-        document.getElementById('data_kodebooking-link').addEventListener('click', () => {
-            const dropdown = document.getElementById('dropdownMenuKodeBookingJogja');
-            dropdown.classList.toggle('show');
-            const arrow = document.querySelector('#data_kodebooking-link .arrow');
-            arrow.classList.toggle('rotate');
-        });
-
-        document.getElementById('TaskID-link').addEventListener('click', () => {
-            const dropdown = document.getElementById('dropdownMenuTaskIDJogja');
-            dropdown.classList.toggle('show');
-            const arrow = document.querySelector('#TaskID-link .arrow');
-            arrow.classList.toggle('rotate');
-        });
-    </script>
 </body>

@@ -572,4 +572,35 @@ public function qlkp_datakodebooking(Request $request)
         ]);
     }
 
+    public function getPatientDataKulonProgo(Request $request)
+    {
+        $date = $request->query('date');
+
+        if (!$date) {
+            return response()->json(['error' => 'Tanggal tidak ditemukan']);
+        }
+
+        $data_kodebooking = DB::table('qlkp_data_kodebooking')
+            ->select(DB::raw('message, count(*) as total'))
+            ->whereDate('tanggalperiksa', $date)
+            ->groupBy('message')
+            ->get();
+
+        $task_id_data = DB::table('qlkp_data_taskids')
+            ->select(DB::raw('message, count(*) as total'))
+            ->whereDate('tanggal', $date)
+            ->groupBy('message')
+            ->get();
+
+        $labels = ['Kodebooking', 'TaskID'];
+        $kodebooking_values = $data_kodebooking->pluck('total')->toArray();
+        $taskid_values = $task_id_data->pluck('total')->toArray();
+        $values = array_merge($kodebooking_values, $taskid_values);
+
+        return response()->json([
+            'labels' => $labels,
+            'values' => $values,
+        ]);
+    }
+
 }

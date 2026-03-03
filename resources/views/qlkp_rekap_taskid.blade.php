@@ -114,12 +114,18 @@
 
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
 
     <script>
-        var filterDateUrl = '{{ route("qlkp_rekap_taskid") }}';
+        $(document).ready(function () {
+            $('#qlkp_data_taskids').DataTable({
+                "paging": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+            });
+        });
     </script>
-    <script src="{{ asset('js/rekaptaskid.js') }}"></script>
 </body>
 @endsection

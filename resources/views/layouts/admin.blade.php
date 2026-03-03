@@ -27,6 +27,9 @@
             margin-left: 80px;
         }
     </style>
+
+    <!-- jQuery (di head agar tersedia sebelum konten dirender) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
 <body class="hold-transition sidebar-mini">

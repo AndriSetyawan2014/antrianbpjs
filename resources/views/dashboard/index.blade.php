@@ -362,7 +362,7 @@
 
             function fetchDataForDate(selectedDate) {
                 // Fetch data dari server berdasarkan tanggal
-                fetch(`/get-patient-data?date=${selectedDate}`)
+                fetch(`{{ url('/get-patient-data') }}?date=${selectedDate}`)
                     .then(response => response.json())
                     .then(data => {
 
@@ -419,31 +419,6 @@
             document.getElementById('filterDateYogyakarta').value = today;
             fetchDataForDate(today);
 
-            // Update chart with initial data
-            updateChart(['Kode Booking', 'Task ID'], [{{ $totalKodebooking }}, {{ $totalTaskId }}]);
-            // Grafik Jumlah Pasien per Tanggal
-            var ctxPatientCountPerDate = document.getElementById('patientChartOverall').getContext('2d');
-            new Chart(ctxPatientCountPerDate, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Jumlah Pasien per Tanggal',
-                        data: [],
-                        borderColor: '#42a5f5',
-                        fill: false
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
         </script>
     </div>
 </div>
@@ -585,7 +560,7 @@
 
             // Fetch data berdasarkan tanggal yang dipilih
             function fetchDataForDateKulonProgo(selectedDate) {
-                fetch(`/get-patient-data-kulonprogo?date=${selectedDate}`)
+                fetch(`{{ url('/get-patient-data-kulonprogo') }}?date=${selectedDate}`)
                     .then(response => response.json())
                     .then(data => {
                         updateChartKulonProgo(data.labels, data.values);
@@ -622,11 +597,10 @@
                                 min: 0, // Mulai dari 0 untuk memastikan nilai kecil terlihat
                                 max: suggestedMax, // Tetapkan maksimum sumbu Y
                                 ticks: {
-                                    stepSize: 10, // Interval antar nilai (10 per langkah)
                                     callback: function (value) {
-                                        return value.toFixed(0); // Pastikan hanya angka bulat
+                                        return value.toFixed(0);
                                     },
-                                    padding: 10 // Tambahkan jarak antar angka di sumbu Y
+                                    padding: 10
                                 }
                             }
                         },

@@ -25,7 +25,7 @@ use App\Models\data_taskid;
 
 // dashboard
 Route::get('/', [AntrianController::class, 'index'])->name('dashboard.index');
-Route::get('/dashboard', [AntrianController::class, 'index'])->name('dashboard.index');
+Route::get('/dashboard', [AntrianController::class, 'index'])->name('dashboard');
 
 // Chart data
 Route::get('/api/chart-data', function () {
@@ -53,6 +53,8 @@ Route::get('/rekap_kodebooking', [AntrianController::class, 'rekapKodebooking'])
 Route::get('/TaskID', [AntrianController::class, 'TaskID'])->name('TaskID');
 Route::get('/rekap_taskid', [AntrianController::class, 'rekapTaskId'])->name('rekap_taskid');
 Route::get('/get-patient-data', [AntrianController::class, 'getPatientData']);
+Route::get('/get-patient-data-kulonprogo', [AntrianController::class, 'getPatientDataKulonProgo']);
+
 
 // Route untuk filter dan reset
 Route::get('/taskid/filter', [AntrianController::class, 'TaskID'])->name('taskid.filter');
