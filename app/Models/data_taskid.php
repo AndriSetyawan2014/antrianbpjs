@@ -34,7 +34,12 @@ class data_taskid extends Model
         parent::__construct($attributes);
 
         // Menentukan tabel berdasarkan nilai $urlQL
-        $this->table = $urlQL === 'QLJ' ? 'data_taskids' : 'qlkp_data_taskids';
+        $this->table = match ($urlQL) {
+            'QLJ'   => 'data_taskids',
+            'QLKP'  => 'qlkp_data_taskids',
+            'QLTMG' => 'qltmg_data_taskids',
+            default => 'data_taskids',
+        };
     }
 
     public function getWaktuTaskID4($kodebooking)
@@ -53,7 +58,12 @@ class data_taskid extends Model
 
     public function getTaskid4withNullTaskid5($urlQL = 'QLJ')
     {
-        $kodebookingTable = $urlQL === 'QLJ' ? 'data_kodebooking' : 'qlkp_data_kodebooking';
+        $kodebookingTable = match ($urlQL) {
+            'QLJ'   => 'data_kodebooking',
+            'QLKP'  => 'qlkp_data_kodebooking',
+            'QLTMG' => 'qltmg_data_kodebooking',
+            default => 'data_kodebooking',
+        };
         Log::info('Nama tabel kodebookingTable: ' . $kodebookingTable);
         Log::info('Nama tabel this->table: ' . $this->table);
         return DB::table("$kodebookingTable as dk")

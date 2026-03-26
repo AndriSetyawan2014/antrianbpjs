@@ -17,10 +17,29 @@ class TambahAntrianOnlineController extends Controller
     public function kodebooking_get()
     {
         set_time_limit(99999);
-        $this->data_pending_kodebooking_get('QLJ');
-        $this->data_pending_kodebooking_get('QLKP');
-        $this->data_pending_kodebooking_get('QLTMG');
-        // $this->addAntrians_otomatis('QLJ');
+        $allowedQL = BpjsHelper::getUrlQLOptions();
+        foreach ($allowedQL as $ql) {
+            $this->data_pending_kodebooking_get($ql);
+        }
+    }
+
+    public function kodebooking_get_by_ql(Request $request)
+    {
+        set_time_limit(99999);
+
+        $allowedQL = BpjsHelper::getUrlQLOptions();
+        $urlQL = strtoupper($request->query('urlQL', $request->input('urlQL', '')));
+
+        if (!in_array($urlQL, $allowedQL)) {
+            return response()->json([
+                'metadata' => [
+                    'code'    => 422,
+                    'message' => 'Parameter urlQL tidak valid. Nilai yang diizinkan: ' . implode(', ', $allowedQL),
+                ],
+            ], 422);
+        }
+
+        return $this->data_pending_kodebooking_get($urlQL);
     }
 
     public function data_pending_kodebooking_get($urlQL = 'QLJ')
@@ -315,9 +334,9 @@ class TambahAntrianOnlineController extends Controller
             ], 422);
         };
 
-        $endpoint = '/tambah_antrianonline';
+        $endpoint = '/antrean/add';
         try {
-            $response = BpjsHelper::postRequest($urlQL, $endpoint, $data_addAntrians);
+            $response = BpjsHelper::postRequestDirect($urlQL, $endpoint, $data_addAntrians);
             $response_decode = json_decode($response, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
@@ -370,7 +389,7 @@ class TambahAntrianOnlineController extends Controller
                                 Log::info($urlQL . ' Nomor Surat Kontrol yang diperoleh: ' . $noSuratKontrol);
 
                                 //Kirim Ulang
-                                $response = BpjsHelper::postRequest($urlQL, $endpoint, $data_addAntrians);
+                                $response = BpjsHelper::postRequestDirect($urlQL, $endpoint, $data_addAntrians);
                                 $response_decode = json_decode($response, true);
 
                                 $data_kodebooking['request'] = json_encode($data_addAntrians);
@@ -395,7 +414,7 @@ class TambahAntrianOnlineController extends Controller
                 $data_addAntrians['jeniskunjungan'] = 3;
                 Log::info('[addAntrians_single_arr - ' . $urlQL . '] - perbaikan data kunjugan = 1 dan Rujukan untuk tanggal * tidak valid, jeniskunjungan ==> '. $data_addAntrians['jeniskunjungan']);
                 //Kirim Ulang
-                $response = BpjsHelper::postRequest($urlQL, $endpoint, $data_addAntrians);
+                $response = BpjsHelper::postRequestDirect($urlQL, $endpoint, $data_addAntrians);
                 $response_decode = json_decode($response, true);
 
                 $data_kodebooking['request'] = json_encode($data_addAntrians);
@@ -411,7 +430,7 @@ class TambahAntrianOnlineController extends Controller
                 $data_addAntrians['jeniskunjungan'] = 1;
                 Log::info('[addAntrians_single_arr - ' . $urlQL . '] - perbaikan data kunjungan = 3 dan Rujukan tidak valid , jeniskunjungan ==> '. $data_addAntrians['jeniskunjungan']);
                 //Kirim Ulang
-                $response = BpjsHelper::postRequest($urlQL, $endpoint, $data_addAntrians);
+                $response = BpjsHelper::postRequestDirect($urlQL, $endpoint, $data_addAntrians);
                 $response_decode = json_decode($response, true);
 
                 $data_kodebooking['request'] = json_encode($data_addAntrians);
@@ -526,11 +545,11 @@ class TambahAntrianOnlineController extends Controller
             ], 422);
         }
 
-        $endpoint = '/tambah_antrianonline';
+        $endpoint = '/antrean/add';
 
         try {
-            $response = BpjsHelper::postRequest('QLJ', $endpoint, $data_addAntrians);
-            $response_decode = json_decode($response);
+            $response = BpjsHelper::postRequestDirect('QLJ', $endpoint, $data_addAntrians);
+            $response_decode = json_decode($response, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
                 return response()->json([
@@ -643,10 +662,10 @@ class TambahAntrianOnlineController extends Controller
             }
         }
 
-        $endpoint = '/tambah_antrianonline';
+        $endpoint = '/antrean/add';
         try {
-            $response = BpjsHelper::postRequest($urlQL, $endpoint, $request->all());
-            $response_decode = json_decode($response);
+            $response = BpjsHelper::postRequestDirect($urlQL, $endpoint, $request->all());
+            $response_decode = json_decode($response, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
                 return response()->json([
@@ -686,11 +705,11 @@ class TambahAntrianOnlineController extends Controller
 
             $data_addAntrians['request'] = json_encode($data_addAntrians);
             $data_addAntrians['response'] = json_encode($response_decode);
-            $data_addAntrians['code'] = $response_decode->metadata->code ?? null;
-            $data_addAntrians['message'] = $response_decode->metadata->message ?? null;
+            $data_addAntrians['code'] = $response_decode['metadata']['code'] ?? null;
+            $data_addAntrians['message'] = $response_decode['metadata']['message'] ?? null;
 
             if (
-                in_array($response_decode->metadata->code, [200, 208]) ||
+                in_array($response_decode['metadata']['code'], [200, 208]) ||
                 preg_match('/ sudah terbit SEP/', $data_addAntrians['message'])
             ) {
                 $data_kodebooking['reupload'] = 0;

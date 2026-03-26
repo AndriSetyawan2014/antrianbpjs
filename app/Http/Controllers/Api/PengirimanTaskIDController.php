@@ -15,10 +15,30 @@ class PengirimanTaskIDController extends Controller
     public function taskid_get()
     {
         set_time_limit(99999);
-        $this->data_pending_taskID_get('QLJ');
-        $this->data_pending_taskID_get('QLKP');
-        $this->data_pending_taskID_get('QLTMG');
-        // $this->taskID_otomatis('QLJ');
+        $allowedQL = BpjsHelper::getUrlQLOptions();
+        foreach ($allowedQL as $ql) {
+            $this->data_pending_taskID_get($ql);
+        }
+    }
+
+    public function taskid_get_by_ql(Request $request)
+    {
+        set_time_limit(99999);
+
+        $allowedQL = BpjsHelper::getUrlQLOptions();
+        $urlQL = strtoupper($request->query('urlQL', $request->input('urlQL', '')));
+
+        if (!in_array($urlQL, $allowedQL)) {
+            return response()->json([
+                'metadata' => [
+                    'code'    => 422,
+                    'message' => 'Parameter urlQL tidak valid. Nilai yang diizinkan: ' . implode(', ', $allowedQL),
+                ],
+            ], 422);
+        }
+
+        return $this->taskID_otomatis($urlQL);
+        // return $this->data_pending_taskID_get($urlQL);
     }
 
     public function data_pending_taskID_get($urlQL = 'QLJ')
@@ -131,14 +151,14 @@ class PengirimanTaskIDController extends Controller
                                         ->where('taskID.message', 'not like', '%TaskId terakhir 5%');
                                 });
                         })
-                        // ->where('taskID.kodebooking', 'like', '202502011972')
-                        // ->where('dk.message', 'not like', '%sudah terbit SEP%')
-                        // ->where('taskID.tanggal', '=','2025-11-26')
-                        //->whereIn('taskID.kodebooking', $allowedKodeBooking)
-                        ->whereBetween('taskID.tanggal', [
-                            now()->setTimezone('Asia/Jakarta')->subDays(7)->toDateString(),
-                            now()->setTimezone('Asia/Jakarta')->toDateString()
-                        ])
+                        // ->where('taskID.kodebooking', 'like', '202603251616')
+                        // // ->where('dk.message', 'not like', '%sudah terbit SEP%')
+                        ->where('taskID.tanggal', '=','2026-03-25')
+                        // //->whereIn('taskID.kodebooking', $allowedKodeBooking)
+                        // ->whereBetween('taskID.tanggal', [
+                        //     now()->setTimezone('Asia/Jakarta')->subDays(30)->toDateString(),
+                        //     now()->setTimezone('Asia/Jakarta')->toDateString()
+                        // ])
                         ->orderBy("taskID.kodebooking")
                         ->orderBy("taskID.taskid")
                         ->get(["taskID.*"])
@@ -346,10 +366,11 @@ class PengirimanTaskIDController extends Controller
         };
         if ($data['reupload'] === 1) {
             Log::info('Reupload = 1');
-            $endpoint = '/pengiriman_taskID';
+            $endpoint = '/antrean/updatewaktu'; // endpoint BPJS Antrol langsung
             try {
-                $response = BpjsHelper::postRequest($urlQL, $endpoint, $taskIDData);
+                $response = BpjsHelper::postRequestDirect($urlQL, $endpoint, $taskIDData);
                 $response_decode = json_decode($response, true);
+
 
                 if (json_last_error() !== JSON_ERROR_NONE) {
                     Log::error('JSON decoding error:', ['response' => $response]);
@@ -364,17 +385,21 @@ class PengirimanTaskIDController extends Controller
                 // Menyimpan code, request, dan response
                 $taskIDData['request'] = json_encode($taskIDData);
                 $taskIDData['response'] = json_encode($response_decode);
-                $taskIDData['code'] = $response_decode['metadata']['code'] ?? null;
-                $taskIDData['message'] = $response_decode['metadata']['message'] ?? null;
+                // BPJS Antrol langsung pakai 'metaData', via SIRSTQL pakai 'metadata'
+                $meta = $response_decode['metaData'] ?? $response_decode['metadata'] ?? [];
+                $taskIDData['code']    = $meta['code'] ?? null;
+                $taskIDData['message'] = $meta['message'] ?? null;
+                Log::info('Response BPJS: code=' . ($taskIDData['code'] ?? 'null') . ', message=' . ($taskIDData['message'] ?? 'null'));
 
                 if (
-                    in_array($response_decode['metadata']['code'], [200, 208]) ||
-                    $response_decode['metadata']['message'] === 'TaskId terakhir 99'
+                    in_array($meta['code'], [200, 208]) ||
+                    ($meta['message'] ?? '') === 'TaskId terakhir 99'
                 ) {
                     $taskIDData['reupload'] = 0;
                 } else {
                     $taskIDData['reupload'] = 1;
                 }
+
                 $data_taskID = new data_taskid([], $urlQL);
                 $taskID = $data_taskID->updateOrCreate(
                     [
@@ -391,15 +416,19 @@ class PengirimanTaskIDController extends Controller
                 }
 
 
-                $message_response = $response_decode['metadata']['message'];
+                $message_response = $meta['message'] ?? '';
+
 
                 $pattern = '/TaskId=(\d+) belum ada/';
                 if (preg_match($pattern, $message_response, $matches)) {
                     $taskId_value = $matches[1];
                     $listtask_response = $this->listtask($urlQL, $kodebooking);
-                    $response_code = $listtask_response['metadata']['response']['metaData']['code'];
+                    $response_code = $listtask_response['metaData']['code'] ?? $listtask_response['metadata']['response']['metaData']['code'] ?? null;
                     if ($response_code == 200) {
-                        $task = array_filter($listtask_response['metadata']['response']['response'], function ($item) use ($taskId_value) {
+                        // BPJS Antrol langsung: key 'list', via SIRSTQL: ['metadata']['response']['response']
+                        $taskList = $listtask_response['list'] ?? $listtask_response['metadata']['response']['response'] ?? [];
+                        $task = array_filter($taskList, function ($item) use ($taskId_value) {
+
                             return $item['taskid'] === ($taskId_value - 1);
                         });
                         if (!empty($task)) {
@@ -559,90 +588,53 @@ class PengirimanTaskIDController extends Controller
 
     public function listtask_post(Request $request)
     {
-        Log::info('[listtask_post] method reached');
+        $urlQL = strtoupper($request->input('urlQL', 'QLJ'));
         $validator = Validator::make($request->all(), [
             'kodebooking' => 'required|string',
         ]);
 
-        // Cek validasi gagal
         if ($validator->fails()) {
-            Log::error('[listtask_post] Validation errors:', $validator->errors()->toArray());
             return response()->json([
-                'metadata' => [
-                    'message' => 'Parameter tidak valid',
-                    'code' => 422,
-                ],
-                'errors' => $validator->errors(),
+                'metadata' => ['message' => 'Parameter tidak valid', 'code' => 422],
+                'errors'   => $validator->errors(),
             ], 422);
         }
 
-        $endpoint = '/listtask';
+        $endpoint = '/antrean/listtask';
         try {
-            $response = BpjsHelper::postRequest($endpoint, $request->all());
+            $response = BpjsHelper::postRequestDirect($urlQL, $endpoint, $request->only('kodebooking'));
             $response_decode = json_decode($response, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
                 return response()->json([
-                    'metadata' => [
-                        'code' => 500,
-                        'message' => '[listtask_post]  Terjadi kesalahan pada decoding respons.',
-                    ],
+                    'metadata' => ['code' => 500, 'message' => 'Terjadi kesalahan pada decoding respons.'],
                 ], 500);
-            };
-
-            if (is_array($response_decode) && !empty($response_decode)) {
-                Log::info('[listtask_post] Antrian added successfully :', $response_decode);
-            } else {
-                Log::error('[listtask_post] Error: Antrian was not saved correctly.');
             }
+
             return response()->json($response_decode, 200, [], JSON_PRETTY_PRINT);
         } catch (\Exception $e) {
-            Log::error('[listtask_post] Failed to add :', ['error' => $e->getMessage()]);
             return response()->json([
-                'metadata' => [
-                    'code' => 500,
-                    'message' => 'Terjadi kesalahan pada server.',
-                ],
-                'error' => $e->getMessage(),
+                'metadata' => ['code' => 500, 'message' => 'Terjadi kesalahan pada server.'],
+                'error'    => $e->getMessage(),
             ], 500);
         }
     }
 
     public function listtask($urlQL = 'QLJ', $kodebooking)
     {
-        Log::info('[listtask - ' . $urlQL . '] method reached');
-        // $data = array_merge($request->all(),
-        $data['kodebooking'] = $kodebooking;
-
-        $endpoint = '/listtask';
+        $endpoint = '/antrean/listtask';
         try {
-            $response = BpjsHelper::postRequest($urlQL, $endpoint, $data);
+            $response = BpjsHelper::postRequestDirect($urlQL, $endpoint, ['kodebooking' => $kodebooking]);
             $response_decode = json_decode($response, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
-                return response()->json([
-                    'metadata' => [
-                        'code' => 500,
-                        'message' => '[listtask - ' . $urlQL . ']  Terjadi kesalahan pada decoding respons.',
-                    ],
-                ], 500);
-            };
-
-            if (is_array($response_decode) && !empty($response_decode)) {
-                Log::info('[listtask - ' . $urlQL . '] listtask added successfully :', $response_decode);
-            } else {
-                Log::error('[listtask - ' . $urlQL . '] Error: listtask was not saved correctly.');
+                return ['metaData' => ['code' => 500, 'message' => 'Decoding error']];
             }
+
             return $response_decode;
         } catch (\Exception $e) {
-            Log::error('[listtask - ' . $urlQL . '] Failed to add :', ['error' => $e->getMessage()]);
-            return response()->json([
-                'metadata' => [
-                    'code' => 500,
-                    'message' => $urlQL . ' - Terjadi kesalahan pada server.',
-                ],
-                'error' => $e->getMessage(),
-            ], 500);
+            Log::error('[listtask - ' . $urlQL . '] Failed:', ['error' => $e->getMessage()]);
+            return ['metaData' => ['code' => 500, 'message' => $e->getMessage()]];
         }
     }
 
@@ -765,11 +757,11 @@ class PengirimanTaskIDController extends Controller
             ], 422);
         }
 
-        $endpoint = '/pengiriman_taskID';
+        $endpoint = '/antrean/updatewaktu';
 
         try {
-            $response = BpjsHelper::postRequest($endpoint, $data_taskID);
-            $response_decode = json_decode($response);
+            $response = BpjsHelper::postRequestDirect($urlQL, $endpoint, $data_taskID);
+            $response_decode = json_decode($response, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
                 return response()->json([
@@ -780,7 +772,8 @@ class PengirimanTaskIDController extends Controller
                 ], 500);
             }
 
-            $data_taskID['code'] = $response_decode->metadata->code;
+            $meta = $response_decode['metaData'] ?? $response_decode['metadata'] ?? [];
+            $data_taskID['code'] = $meta['code'] ?? null;
             $data_taskID['response'] = json_encode($response_decode);
 
             $data_taskID = new data_taskid([], $urlQL);
@@ -826,10 +819,10 @@ class PengirimanTaskIDController extends Controller
             ], 422);
         }
 
-        $endpoint = '/pengiriman_taskID';
+        $endpoint = '/antrean/updatewaktu';
         try {
-            $response = BpjsHelper::postRequest($endpoint, $request->all());
-            $response_decode = json_decode($response);
+            $response = BpjsHelper::postRequestDirect($urlQL, $endpoint, $request->all());
+            $response_decode = json_decode($response, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
                 Log::error('[pengiriman_taskID_post] JSON decoding error:', ['response' => $response]);
@@ -839,19 +832,25 @@ class PengirimanTaskIDController extends Controller
                         'message' => 'Terjadi kesalahan pada decoding respons.',
                     ],
                 ], 500);
-            };
-
-            $taskIDData = $request->only([
-                'kodebooking',
-                'taskid',
-                'waktu'
-            ]);
+            }
+            
+            $meta = $response_decode['metaData'] ?? $response_decode['metadata'] ?? [];
 
             // Menyimpan code, request, dan response
-            $taskIDData['code'] = $response_decode->metadata->code ?? null;
-            $taskIDData['request'] = json_encode($taskIDData);
+            $taskIDData = $request->all();
+            $taskIDData['request'] = json_encode($request->all());
             $taskIDData['response'] = json_encode($response_decode);
+            $taskIDData['code'] = $meta['code'] ?? null;
+            $taskIDData['message'] = $meta['message'] ?? null;
 
+            if (
+                in_array($meta['code'], [200, 208]) ||
+                ($meta['message'] ?? '') === 'TaskId terakhir 99'
+            ) {
+                $taskIDData['reupload'] = 0;
+            } else {
+                $taskIDData['reupload'] = 1;
+            }
             $data_taskID = new data_taskid([], $urlQL);
             $taskID = $data_taskID->updateOrCreate(
                 [

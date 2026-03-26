@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\PengirimanTaskIDController;
 use App\Http\Controllers\Api\WABlastControllerapi;
 use App\Http\Controllers\Api\TambahAntrianOnlineController;
 use App\Http\Controllers\WABlastControllerapi as ControllersWABlastControllerapi;
+use App\Http\Controllers\Api\VclaimController;
 
 /*
 |--------------------------------------------------------------------------
@@ -78,6 +79,10 @@ Route::get('/data-pending-taskID', [PengirimanTaskIDController::class, 'data_pen
 // route untuk menjalankan kodebooking dan task id
 Route::get('/kodebooking-all-ql', [TambahAntrianOnlineController::class, 'kodebooking_get']);
 Route::get('/taskid-all-ql', [PengirimanTaskIDController::class, 'taskid_get']);
+// Akses endpoint data pending task ID berdasarkan urlQL tertentu (misal: ?urlQL=QLTMG)
+Route::match(['get', 'post'], '/taskid-by-ql', [PengirimanTaskIDController::class, 'taskid_get_by_ql']);
+// Akses endpoint data pending kode booking berdasarkan urlQL tertentu (misal: ?urlQL=QLTMG)
+Route::match(['get', 'post'], '/kodebooking-by-ql', [TambahAntrianOnlineController::class, 'kodebooking_get_by_ql']);
 
 // Route::get('/wablast/send', [WABlastController::class, 'index'])->name('wablast.send');
 // Route::post('/wablast/send', [WABlastController::class, 'index'])->name('wablast.send');
@@ -85,3 +90,6 @@ Route::get('/taskid-all-ql', [PengirimanTaskIDController::class, 'taskid_get']);
 // Route::get('/wablast', [WABlastControllerapi::class, 'index'])->name('wablast.index');
 // Route::post('/wablast/send', [WABlastControllerapi::class, 'send'])->name('wablast.send');
 Route::get('/kirimpesan', [WABlastControllerapi::class, 'send_all'])->name('wablast.send-all');
+
+// VClaim - Monitoring Kunjungan
+Route::post('/vclaim/kunjungan', [VclaimController::class, 'dataKunjungan']);

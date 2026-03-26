@@ -54,6 +54,7 @@ Route::get('/TaskID', [AntrianController::class, 'TaskID'])->name('TaskID');
 Route::get('/rekap_taskid', [AntrianController::class, 'rekapTaskId'])->name('rekap_taskid');
 Route::get('/get-patient-data', [AntrianController::class, 'getPatientData']);
 Route::get('/get-patient-data-kulonprogo', [AntrianController::class, 'getPatientDataKulonProgo']);
+Route::get('/get-patient-data-temanggung', [AntrianController::class, 'getPatientDataTemanggung']);
 
 
 // Route untuk filter dan reset

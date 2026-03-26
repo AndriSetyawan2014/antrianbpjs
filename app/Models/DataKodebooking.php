@@ -50,7 +50,12 @@ class DataKodebooking extends Model
         parent::__construct($attributes);
 
         // Menentukan tabel berdasarkan nilai $urlQL
-        $this->table = $urlQL === 'QLJ' ? 'data_kodebooking' : 'qlkp_data_kodebooking';
+        $this->table = match ($urlQL) {
+            'QLJ'   => 'data_kodebooking',
+            'QLKP'  => 'qlkp_data_kodebooking',
+            'QLTMG' => 'qltmg_data_kodebooking',
+            default => 'data_kodebooking',
+        };
     }
 
     // public static function boot()
