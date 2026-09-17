@@ -81,6 +81,11 @@
                         title="Duplikat Task ID ini">
                         <i class="fas fa-copy"></i>
                     </button>
+                    <button class="btn btn-sm btn-success btn-sync-kb ms-1" 
+                        data-kodebooking="{{ $item->kodebooking }}"
+                        title="Sinkronisasi Ulang Semua Task ID untuk Kode Booking Ini">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
                 </td>
             </tr>
             @endforeach
@@ -128,6 +133,7 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 $(document).ready(function () {
     var table = $('#qlkp_table').DataTable({
@@ -181,6 +187,35 @@ $(document).ready(function () {
             error: function(err) {
                 alert('Gagal menyimpan: ' + (err.responseJSON ? err.responseJSON.metadata.message : 'Error server'));
                 btn.html(originalText).prop('disabled', false);
+            }
+        });
+    });
+
+    // Logic for sync by kodebooking
+    $('.btn-sync-kb').on('click', function() {
+        var kb = $(this).data('kodebooking');
+        var urlQL = 'QLKP';
+
+        Swal.fire({
+            title: 'Sinkronisasi Ulang?',
+            text: "Kirim ulang seluruh Task ID milik kode booking " + kb + "?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Kirim!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if(result.isConfirmed) {
+                Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                $.ajax({
+                    url: '{{ url("api/run-taskid-by-kodebooking") }}?urlQL=' + urlQL + '&kodebooking=' + kb,
+                    type: 'GET',
+                    success: function(res) {
+                        Swal.fire('Selesai!', res.metadata.message || 'Berhasil disinkronisasi', 'success').then(() => location.reload());
+                    },
+                    error: function(err) {
+                        Swal.fire('Error', 'Gagal menyinkronkan data.', 'error');
+                    }
+                });
             }
         });
     });
