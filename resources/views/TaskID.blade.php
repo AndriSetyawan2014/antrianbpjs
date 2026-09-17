@@ -22,13 +22,8 @@
             <i class="fas fa-undo"></i> Reset
         </a>
     </form>
-    <label for="taskid_filter" class="ms-3">Task ID:</label>
-    <input type="text" id="taskid_filter" placeholder="Cari Task ID..."
-           style="height:36px; font-size:13px; padding:5px 10px; border:1.5px solid var(--color-border); border-radius:var(--radius-sm); width:130px;">
-    <button id="filter_taskid" class="btn-filter btn-primary">
-        <i class="fas fa-search"></i> Cari
-    </button>
-    <button id="download_excel" class="btn-filter btn-success ms-auto">
+
+    <button id="download_excel" class="btn-filter btn-success ms-3">
         <i class="fas fa-file-excel"></i> Download Excel
     </button>
 </div>
@@ -127,9 +122,7 @@ $(document).ready(function () {
         return tableDate >= startDate && tableDate <= endDate;
     });
 
-    $('#filter_taskid').on('click', function () {
-        table.column(3).search($('#taskid_filter').val().trim()).draw();
-    });
+
 
     $('#download_excel').on('click', function () {
         var wb = XLSX.utils.table_to_book(document.getElementById('data_taskid'), { sheet: "Data TaskID BPJS" });

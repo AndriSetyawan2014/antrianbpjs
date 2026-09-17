@@ -16,11 +16,8 @@
         <button type="submit" id="filter" class="btn-filter btn-primary"><i class="fas fa-search"></i> Filter</button>
         <a href="{{ route('qltmg_taskid.reset') }}" id="reset" class="btn-filter btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center;"><i class="fas fa-undo"></i> Reset</a>
     </form>
-    <label class="ms-3">Task ID:</label>
-    <input type="text" id="taskid_filter" placeholder="Cari Task ID..."
-           style="height:36px;font-size:13px;padding:5px 10px;border:1.5px solid var(--color-border);border-radius:var(--radius-sm);width:130px;">
-    <button id="filter_taskid" class="btn-filter btn-primary"><i class="fas fa-search"></i> Cari</button>
-    <a href="{{ route('export_qltmg_taskid') }}" class="btn-filter btn-success ms-auto">
+
+    <a href="{{ route('export_qltmg_taskid') }}" class="btn-filter btn-success ms-3">
         <i class="fas fa-file-excel"></i> Download Excel
     </a>
 </div>
@@ -79,8 +76,7 @@ $(document).ready(function () {
 
     // Custom filter tanggal untuk JS Datatable tidak diperlukan lagi (menggunakan server-side filter)
     // $('#filter').on('click', () => table.draw());
-    // $('#reset').on('click', () => { $('#start_date,#end_date,#taskid_filter').val(''); table.column(3).search('').draw(); });
-    $('#filter_taskid').on('click', () => table.column(3).search($('#taskid_filter').val().trim()).draw());
+    // $('#reset').on('click', () => { $('#start_date,#end_date').val(''); table.column(3).search('').draw(); });
 });
 </script>
 @endpush

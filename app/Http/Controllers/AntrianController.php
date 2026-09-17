@@ -216,6 +216,7 @@ public function rekapKodeBooking(Request $request)
         $TaskID->whereDate('tanggal', '=', date('Y-m-d'));
     }
 
+    $TaskID->orderBy('kodebooking', 'asc')->orderBy('taskid', 'asc');
     $TaskID = $TaskID->get();
 
     return view('TaskID', compact('TaskID', 'startDate', 'endDate'));
@@ -357,6 +358,9 @@ public function qlkp_datakodebooking(Request $request)
         $qlkp_TaskID->where('tanggal', '<=', $endDate);
     }
     }
+    // Urutkan berdasarkan kodebooking lalu taskid
+    $qlkp_TaskID->orderBy('kodebooking', 'asc')->orderBy('taskid', 'asc');
+
     // Ambil data sesuai filter
     $qlkp_TaskID = $qlkp_TaskID->get();
     // Kirimkan data ke view qlkp_TaskID
@@ -502,6 +506,7 @@ public function qlkp_datakodebooking(Request $request)
             }
         }
 
+        $qltmg_TaskID->orderBy('kodebooking', 'asc')->orderBy('taskid', 'asc');
         $qltmg_TaskID = $qltmg_TaskID->get();
         return view('qltmg_TaskID', compact('qltmg_TaskID', 'startDate', 'endDate', 'filterDate'));
     }
