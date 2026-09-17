@@ -120,15 +120,15 @@
         }
 
         function renderJsonToHtml(obj) {
-            if (obj === null) return '<span style="color:#adb5bd; font-style:italic; font-family:monospace;">null</span>';
+            if (obj === null) return '<span style="color:#9ca3af; font-style:italic; font-family:monospace;">null</span>';
             if (typeof obj !== 'object') {
                 if (typeof obj === 'boolean') {
-                    return `<span style="color:#d63384; font-weight:600; font-family:monospace;">${obj}</span>`;
+                    return `<span style="color:#db2777; font-weight:700; font-family:monospace;">${obj}</span>`;
                 }
                 if (typeof obj === 'number') {
-                    return `<span style="color:#0ea5e9; font-weight:600; font-family:monospace;">${obj}</span>`;
+                    return `<span style="color:#2563eb; font-weight:700; font-family:monospace;">${obj}</span>`;
                 }
-                return `<span style="color:#22c55e; font-family:monospace; word-break:break-word;">"${escapeHtml(String(obj))}"</span>`;
+                return `<span style="color:#16a34a; font-family:monospace; font-weight:500; word-break:break-word;">"${escapeHtml(String(obj))}"</span>`;
             }
             if (Array.isArray(obj)) {
                 if (obj.length === 0) return '<span style="color:#adb5bd; font-style:italic; font-family:monospace;">[]</span>';
@@ -145,11 +145,11 @@
                 return html;
             }
             
-            let html = '<table class="table table-bordered mb-0 shadow-sm" style="font-size:0.9rem; background:var(--color-surface); border-color:var(--color-border); border-radius: 6px; overflow: hidden;"><tbody>';
+            let html = '<table class="table table-bordered mb-0 shadow-sm" style="font-size:0.9rem; background:#ffffff; border-color:#e5e7eb; border-radius: 6px; overflow: hidden;"><tbody>';
             for (let key in obj) {
                 html += `<tr>
-                            <td style="width:30%; background:var(--color-bg); font-weight:600; color:var(--color-text-secondary); vertical-align:middle; padding: 12px 16px; font-family:monospace; border-color:var(--color-border);">${escapeHtml(key)}</td>
-                            <td style="word-break:break-word; vertical-align:middle; padding: 12px 16px; color:var(--color-text-primary); border-color:var(--color-border);">${renderJsonToHtml(obj[key])}</td>
+                            <td style="width:30%; background:#f8f9fa; font-weight:700; color:#4b5563; vertical-align:middle; padding: 12px 16px; font-family:monospace; border-color:#e5e7eb;">${escapeHtml(key)}</td>
+                            <td style="word-break:break-word; vertical-align:middle; padding: 12px 16px; color:#1f2937; border-color:#e5e7eb; background:#ffffff;">${renderJsonToHtml(obj[key])}</td>
                          </tr>`;
             }
             html += '</tbody></table>';
