@@ -23,7 +23,8 @@
         </a>
     </form>
 
-    <button id="download_excel" class="btn-filter btn-success ms-3">
+
+    <button id="download_excel" class="btn-filter btn-success ms-2">
         <i class="fas fa-file-excel"></i> Download Excel
     </button>
 </div>
@@ -126,8 +127,10 @@ $(document).ready(function () {
 
     $('#download_excel').on('click', function () {
         var wb = XLSX.utils.table_to_book(document.getElementById('data_taskid'), { sheet: "Data TaskID BPJS" });
-        XLSX.writeFile(wb, "Data_TaskID_BPJS.xlsx");
+        XLSX.writeFile(wb, 'TaskID_BPJS.xlsx');
     });
+
+
 });
 </script>
 @endpush

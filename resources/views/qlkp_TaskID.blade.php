@@ -17,7 +17,8 @@
         <a href="{{ route('qlkp_taskid.reset') }}" id="reset" class="btn-filter btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center;"><i class="fas fa-undo"></i> Reset</a>
     </form>
 
-    <a href="{{ route('export_qlkp_taskid') }}" class="btn-filter btn-success ms-3">
+
+    <a href="{{ route('export_qlkp_taskid') }}" class="btn-filter btn-success ms-2">
         <i class="fas fa-file-excel"></i> Download Excel
     </a>
 </div>
@@ -103,6 +104,8 @@ $(document).ready(function () {
     // Custom filter tanggal untuk JS Datatable tidak diperlukan lagi (menggunakan server-side filter)
     // $('#filter').on('click', () => table.draw());
     // $('#reset').on('click', () => { $('#start_date').val(''); $('#end_date').val(''); table.column(3).search('').draw(); });
+
+
 });
 </script>
 @endpush
