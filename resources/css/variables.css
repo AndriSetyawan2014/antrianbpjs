@@ -1,0 +1,73 @@
+/* ===================================================
+   DESIGN TOKENS — Sistem Pemantauan Bridging BPJS
+   antrianbpjs / resources/css/variables.css
+   =================================================== */
+:root {
+  /* ── Brand Colors ── */
+  --color-primary: #0c356a; /* Navy BPJS — sidebar, header */
+  --color-primary-light: #1a5276; /* Hover state sidebar */
+  --color-primary-dark: #082244; /* Active / pressed state */
+
+  /* ── Accent ── */
+  --color-accent: #ffc436; /* Gold — active nav, highlights */
+  --color-accent-hover: #e6af00; /* Darker gold on hover */
+  --color-accent-text: #082244; /* Teks di atas warna accent */
+
+  /* ── Semantic Status Colors ── */
+  --color-success: #1e8449;
+  --color-success-light: #d5f5e3;
+  --color-warning: #b7770d;
+  --color-warning-light: #fdebd0;
+  --color-danger: #c0392b;
+  --color-danger-light: #fadbd8;
+  --color-info: #1a6fa0;
+  --color-info-light: #d6eaf8;
+
+  /* ── Surface & Background ── */
+  --color-bg: #f0f4f8; /* Page background */
+  --color-surface: #ffffff; /* Card, table, panel */
+  --color-surface-alt: #ebf5fb; /* Alternate zebra stripe */
+  --color-border: #d1dce5; /* Border elements */
+
+  /* ── Text ── */
+  --color-text-primary: #1a202c;
+  --color-text-secondary: #4a5568;
+  --color-text-muted: #718096;
+  --color-text-on-dark: #ffffff;
+
+  /* ── Card Dashboard Gradients ── */
+  --card-booking-from: #0c356a;
+  --card-booking-to: #1a5276;
+  --card-rekap-from: #1e8449;
+  --card-rekap-to: #27ae60;
+  --card-taskid-from: #6c3483;
+  --card-taskid-to: #9b59b6;
+  --card-rekapid-from: #b7770d;
+  --card-rekapid-to: #f39c12;
+
+  /* ── Chart Palette ── */
+  --chart-color-1: #0c356a;
+  --chart-color-2: #ffc436;
+  --chart-color-3: #1e8449;
+  --chart-color-4: #9b59b6;
+  --chart-color-5: #c0392b;
+  --chart-color-6: #f39c12;
+  --chart-color-7: #1a6fa0;
+  --chart-color-8: #1abc9c;
+
+  /* ── Spacing & Shape ── */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-pill: 50px;
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.18);
+
+  /* ── Layout ── */
+  --sidebar-width: 260px;
+  --topbar-height: 56px;
+  --font-base: "Poppins", "Segoe UI", sans-serif;
+}

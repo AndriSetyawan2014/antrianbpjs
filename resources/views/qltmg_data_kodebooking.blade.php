@@ -2,151 +2,63 @@
 
 @section('content')
 
-<head>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;400;600&display=swap" rel="stylesheet">
-</head>
+@section('page_title')
+    <i class="fas fa-calendar-check me-2"></i>Data Kode Booking — Temanggung
+@endsection
 
-<body>
-    <h1> Sistem Pemantauan Data Bridging BPJS </h1>
-    <style>
-        h1 {
-            text-align: left;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 550;
-            margin-top: 10px;
-            margin-bottom: 10px;
-            color: #007bff;
-        }
-    </style>
+<div class="filter-card">
+    <i class="fas fa-filter" style="color:var(--color-primary);"></i>
+    <form id="filterForm" action="{{ route('qltmg_data_kodebooking') }}" method="GET" style="display:contents;">
+        <label>Dari:</label>
+        <input type="date" id="start_date" name="start_date" value="{{ $startDate }}">
+        <label>Sampai:</label>
+        <input type="date" id="end_date" name="end_date" value="{{ $endDate }}">
+        <button type="submit" class="btn-filter btn-primary"><i class="fas fa-search"></i> Filter</button>
+        <a href="{{ route('qltmg_data_kodebooking') }}" class="btn-filter btn-secondary"><i class="fas fa-undo"></i> Reset</a>
+    </form>
+    <a href="{{ route('export_qltmg_kodebooking') }}" class="btn-filter btn-success ms-auto">
+        <i class="fas fa-file-excel"></i> Download Excel
+    </a>
+</div>
 
-    <div class="mb-3">
-        <form id="filterForm" action="{{ route('qltmg_data_kodebooking') }}" method="GET">
-            <label for="start_date">Start Date:</label>
-            <input type="date" id="start_date" name="start_date" class="form-control d-inline-block"
-                style="width: auto; display: inline-block;" value="{{ $startDate }}">
-
-            <input type="date" id="end_date" name="end_date" class="form-control d-inline-block"
-                style="width: auto; display: inline-block;" value="{{ $endDate }}">
-
-            <button type="submit" id="filter" class="btn btn-primary">Filter</button>
-            <a href="{{ route('qltmg_data_kodebooking') }}" id="reset" class="btn btn-secondary">Reset</a>
-        </form>
-    </div>
-
-    <div class="mb-3">
-        <button class="btn btn-success">
-            <a href="{{ route('export_qltmg_kodebooking') }}" style="color: white; text-decoration: none;">Download
-                Excel</a>
-        </button>
-    </div>
-
-    <div class="table-responsive mt-4" style="max-height: 490px; overflow-y: auto;">
-        <table id="qltmg_data_kodebooking" class="table table-hover table-striped table-bordered text-center">
-            <thead class="thead-dark bg-primary text-white sticky-top">
-                <tr>
-                    <th style="width: 5px; text-align: center;">No</th>
-                    <th style="width: 15px; text-align: center;">No RM</th>
-                    <th style="width: 50px; text-align: center;">Check Date</th>
-                    <th style="width: 30px; text-align: center;">Code</th>
-                    <th style="width: 30px; text-align: center;">Message</th>
-                    <th style="width: 250px; text-align: center;">Request</th>
-                    <th style="width: 50px; text-align: center;">Response</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($qltmg_data_kodebooking as $item)
-                    <tr>
-                        <td style="font-family: 'Poppins', sans-serif; font-size: 14px;">
-                            {{ $loop->iteration }}
-                        </td>
-                        <td style="font-family: 'Poppins', sans-serif; font-size: 14px;">{{ $item->norm }}</td>
-                        <td style="font-family: 'Poppins', sans-serif; font-size: 14px;">{{ $item->tanggalperiksa }}</td>
-                        <td style="font-family: 'Poppins', sans-serif; font-size: 14px;">{{ $item->code }}</td>
-                        <td style="font-family: 'Poppins', sans-serif; font-size: 14px;">
-                            @php
-                                $response = json_decode($item->response);
-                            @endphp
-                            {{ $response->metadata->message ?? 'No message available' }}
-                        </td>
-                        <td style="font-family: 'Poppins', sans-serif; font-size: 14px; text-align: left;">
-                            {!! nl2br(e($item->request)) !!}
-                        </td>
-                        <td style="font-family: 'Poppins', sans-serif; font-size: 14px; text-align: left;">
-                            {!! nl2br(e($item->response)) !!}
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-
-    <!-- CSS DataTables -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css">
-
-<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
-
-    <script>
-        $(document).ready(function() {
-    var table = $('#qltmg_data_kodebooking').DataTable({
-        processing: true,
-        serverSide: false,
-        responsive: true,
-        columns: [
-            { data: null, render: function (data, type, row, meta) {
-                return meta.row + meta.settings._iDisplayStart + 1;
-            }},
-            { data: 'norm' },
-            { data: 'tanggalperiksa' },
-            { data: 'code', render: function (data) { return data ? data : 'NULL'; }},
-            { data: 'message', render: function (data) { return data ? data : 'NULL'; }},
-            { data: 'request', render: function (data) { return formatJson(data); }},
-            { data: 'response', render: function (data) { return formatJson(data); }}
-        ],
-    });
-
-    function formatJson(data) {
-        try {
-            var parsedData = JSON.parse(data);
-            return $('<pre></pre>').text(JSON.stringify(parsedData, null, 2)).prop('outerHTML');
-        } catch (e) {
-            console.error("Error parsing JSON:", e);
-            return 'NULL';
-        }
-    }
-
-    // Custom filter function for date range
-    $.fn.dataTable.ext.search.push(
-        function (settings, data, dataIndex) {
-            var startDate = $('#start_date').val();
-            var endDate = $('#end_date').val();
-            var date = data[2]; // Use data for the date column
-
-            if (
-                (startDate === "" && endDate === "") ||
-                (startDate === "" && date <= endDate) ||
-                (startDate <= date && endDate === "") ||
-                (startDate <= date && date <= endDate)
-            ) {
-                return true;
-            }
-            return false;
-        }
-    );
-
-    table.draw();
-
-    $('#filter').click(function () {
-        table.draw();
-    });
-
-    $('#reset').click(function () {
-        $('#start_date').val('{{ $startDate }}');
-        $('#end_date').val('{{ $endDate }}');
-        table.draw();
-    });
-});
-
-    </script>
-</body>
+<div class="table-responsive">
+    <table id="qltmg_data_kodebooking" class="table table-hover table-striped table-bordered">
+        <thead>
+            <tr>
+                <th style="width:4%;">No</th><th style="width:8%;">No RM</th>
+                <th style="width:10%;">Tgl Periksa</th><th style="width:7%;">Code</th>
+                <th style="width:16%;">Message</th><th style="width:27%;">Request</th><th style="width:28%;">Response</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($qltmg_data_kodebooking as $item)
+            @php
+                $code=$item->code; $bc=$code==200?'badge-success':($code==0?'badge-warning':'badge-danger');
+                $bl=$code==200?'✓ 200':($code==0?'⏳':'✗ '.$code);
+                $msg=json_decode($item->response)->metadata->message??'';
+            @endphp
+            <tr>
+                <td>{{ $loop->iteration }}</td><td>{{ $item->norm }}</td><td>{{ $item->tanggalperiksa }}</td>
+                <td class="text-center"><span class="status-badge {{ $bc }}">{{ $bl }}</span></td>
+                <td>{{ $msg }}</td>
+                <td class="text-center"><button class="btn-json-view" data-json="{{ htmlspecialchars($item->request) }}" data-title="Request — {{ $item->norm }}"><i class="fas fa-eye"></i> Lihat</button></td>
+                <td class="text-center"><button class="btn-json-view" data-json="{{ htmlspecialchars($item->response) }}" data-title="Response — {{ $item->norm }}"><i class="fas fa-eye"></i> Lihat</button></td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
 
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function () {
+    $('#qltmg_data_kodebooking').DataTable({
+        responsive: true, pageLength: 25,
+        columnDefs: [{ orderable: false, targets: [5, 6] }],
+        language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json' }
+    });
+});
+</script>
+@endpush

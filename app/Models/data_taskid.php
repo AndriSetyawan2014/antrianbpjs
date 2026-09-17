@@ -11,7 +11,7 @@ class data_taskid extends Model
 {
     use HasFactory;
 
-    protected $table; //= 'data_taskid'; // Pastikan ini sesuai dengan nama tabel Anda
+    protected $table = 'data_taskids'; // Default table
 
     protected $fillable = [
         'kodebooking',
@@ -24,22 +24,24 @@ class data_taskid extends Model
         'message',
         'request',
         'response',
+        'norm',
         'reupload',
     ];
 
     public $timestamps = true;
 
-    public function __construct(array $attributes = [], $urlQL = 'QLJ')
+    /**
+     * Set table name based on urlQL
+     */
+    public function setTableByQL($urlQL = 'QLJ')
     {
-        parent::__construct($attributes);
-
-        // Menentukan tabel berdasarkan nilai $urlQL
-        $this->table = match ($urlQL) {
+        $this->table = match (strtoupper($urlQL)) {
             'QLJ'   => 'data_taskids',
             'QLKP'  => 'qlkp_data_taskids',
             'QLTMG' => 'qltmg_data_taskids',
             default => 'data_taskids',
         };
+        return $this;
     }
 
     public function getWaktuTaskID4($kodebooking)
@@ -78,9 +80,10 @@ class data_taskid extends Model
                 $join->on('dk.kodebooking', '=', 'dt5.kodebooking')
                     ->where('dt5.taskid', '=', 5);
             })
-            ->where('dk.tanggalperiksa', '<', now()->setTimezone('Asia/Jakarta')->toDateString()) // DATE(NOW()) equivalent
-            ->where('dk.reupload', '=', 0)
-            ->where('dk.statuspemeriksaan', '!=', 'batal')
+            ->whereBetween('dk.tanggalperiksa', [
+                now()->setTimezone('Asia/Jakarta')->subDays(31)->toDateString(),
+                now()->setTimezone('Asia/Jakarta')->subDays(1)->toDateString()
+            ])
             ->whereNotNull('dt4.kodebooking')
             ->whereNull('dt5.kodebooking')
             ->get();

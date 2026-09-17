@@ -2,98 +2,65 @@
 
 @section('content')
 
-<head>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;400;600&display=swap" rel="stylesheet">
-</head>
+@section('page_title')
+    <i class="fas fa-chart-bar me-2"></i>Rekap Kode Booking — Kulon Progo
+@endsection
 
-    <h1> Sistem Pemantauan Data Bridging BPJS </h1>
-    <style>
-        h1 {
-            text-align: left;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 550;
-            margin-top: 10px;
-            margin-bottom: 10px;
-            color: #007bff;
-        }
-    </style>
-
-    <!-- Form untuk memilih tanggal -->
-    <form method="GET" action="{{ route('qlkp_rekap_kodebooking') }}">
-    <label for="start_date">Start Date:</label>
-    <input type="date" name="start_date" value="{{ old('start_date', request('start_date', date('Y-m-d'))) }}">
-
-    <label for="end_date">End Date:</label>
-    <input type="date" name="end_date" value="{{ old('end_date', request('end_date', date('Y-m-d'))) }}">
-
-    <button type="submit" class="btn btn-primary">Filter</button>
-    <a href="{{ route('qlkp_rekap_kodebooking') }}" class="btn btn-secondary">Reset</a>
-</form>
-
+<div class="filter-card">
+    <i class="fas fa-filter" style="color:var(--color-primary);"></i>
+    <form method="GET" action="{{ route('qlkp_rekap_kodebooking') }}" style="display:contents;">
+        <label>Dari:</label>
+        <input type="date" name="start_date" value="{{ request('start_date', date('Y-m-d')) }}">
+        <label>Sampai:</label>
+        <input type="date" name="end_date" value="{{ request('end_date', date('Y-m-d')) }}">
+        <button type="submit" class="btn-filter btn-primary"><i class="fas fa-search"></i> Filter</button>
+        <a href="{{ route('qlkp_rekap_kodebooking') }}" class="btn-filter btn-secondary"><i class="fas fa-undo"></i> Reset</a>
+    </form>
     @if(isset($messageFilter))
-        <!-- Button untuk kembali ke halaman sebelumnya -->
-        <a href="{{ route('qlkp_rekap_kodebooking', ['filter_date' => request('filter_date')]) }}" class="btn btn-secondary">Kembali</a>
-        <!-- Table displaying the data -->
-        <div class="mt-4">
-            <table class="table table-hover table-striped table-bordered">
-                <thead class="thead-dark bg-primary text-white sticky-top">
-                    <tr>
-                        <th style="width: 5px; text-align: center;">No</th>
-                        <th style="width: 15px; text-align: center;">No RM</th>
-                        <th style="width: 50px; text-align: center;">Check Date</th>
-                        <th style="width: 30px; text-align: center;">Code</th>
-                        <th style="width: 30px; text-align: center;">Message</th>
-                        <th style="width: 250px; text-align: center;">Request</th>
-                        <th style="width: 50px; text-align: center;">Response</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($detailData as $index => $item)
-                        <tr>
-                            <td style="text-align: center;">{{ $index + 1 }}</td>
-                            <td style="font-family: 'Poppins', sans-serif; font-size: 14px;">{{ $item->norm }}</td>
-                            <td style="font-family: 'Poppins', sans-serif; font-size: 14px;">{{ $item->tanggalperiksa }}</td>
-                            <td style="font-family: 'Poppins', sans-serif; font-size: 14px;">{{ $item->code }}</td>
-                            <td style="font-family: 'Poppins', sans-serif; font-size: 14px;">
-                                {{ json_decode($item->response)->metadata->message ?? '' }}
-                            </td>
-                            <td style="font-family: 'Poppins', sans-serif; font-size: 14px; text-align: left;">
-                                <pre>{{ json_encode(json_decode($item->request), JSON_PRETTY_PRINT) }}</pre>
-                            </td>
-                            <td style="font-family: 'Poppins', sans-serif; font-size: 14px; text-align: left;">
-                                <pre>{{ json_encode(json_decode($item->response), JSON_PRETTY_PRINT) }}</pre>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    @else
-        <!-- Table displaying the data -->
-        <div class="table-responsive mt-4">
-            <table class="table table-hover table-striped table-bordered">
-                <thead class="thead-dark bg-primary text-white sticky-top">
-                    <tr>
-                        <th>No</th>
-                        <th>Message</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($data as $index => $item)
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>
-                                <a href="{{ route('qlkp_rekap_kodebooking', ['filter_date' => request('filter_date'), 'message' => $item->message_all]) }}"
-                                    class="text-primary">
-                                    {{ $item->message_all }}
-                                </a>
-                            </td>
-                            <td>{{ $item->total }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+    <a href="{{ route('qlkp_rekap_kodebooking', ['start_date' => $startDate, 'end_date' => $endDate]) }}"
+       class="btn-filter btn-secondary ms-auto">
+        <i class="fas fa-arrow-left"></i> Kembali ke Rekap
+    </a>
     @endif
-    @endsection
+</div>
+
+<div class="table-responsive">
+    @if(isset($messageFilter))
+    <table class="table table-hover table-striped table-bordered">
+        <thead>
+            <tr>
+                <th style="width:4%;">No</th><th style="width:8%;">No RM</th>
+                <th style="width:10%;">Tgl Periksa</th><th style="width:7%;">Code</th>
+                <th style="width:16%;">Message</th><th style="width:27%;">Request</th><th>Response</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($detailData as $index => $item)
+            @php $code=$item->code; $bc=$code==200?'badge-success':($code==0?'badge-warning':'badge-danger'); $bl=$code==200?'✓ 200':($code==0?'⏳':'✗ '.$code); @endphp
+            <tr>
+                <td>{{ $index+1 }}</td><td>{{ $item->norm }}</td><td>{{ $item->tanggalperiksa }}</td>
+                <td class="text-center"><span class="status-badge {{ $bc }}">{{ $bl }}</span></td>
+                <td>{{ json_decode($item->response)->metadata->message ?? '' }}</td>
+                <td class="text-center"><button class="btn-json-view" data-json="{{ htmlspecialchars($item->request) }}" data-title="Request"><i class="fas fa-eye"></i> Lihat</button></td>
+                <td class="text-center"><button class="btn-json-view" data-json="{{ htmlspecialchars($item->response) }}" data-title="Response"><i class="fas fa-eye"></i> Lihat</button></td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    @else
+    <table class="table table-hover table-striped table-bordered">
+        <thead><tr><th style="width:6%;">No</th><th>Pesan / Message</th><th style="width:10%;">Total</th></tr></thead>
+        <tbody>
+            @foreach($data as $index => $item)
+            <tr>
+                <td>{{ $index+1 }}</td>
+                <td><a href="{{ route('qlkp_rekap_kodebooking', ['start_date'=>$startDate,'end_date'=>$endDate,'message'=>$item->message_all]) }}" style="color:var(--color-info);font-weight:500;"><i class="fas fa-search me-1" style="font-size:11px;"></i>{{ $item->message_all }}</a></td>
+                <td class="text-center"><span class="status-badge badge-muted">{{ $item->total }}</span></td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    @endif
+</div>
+
+@endsection

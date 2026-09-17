@@ -18,26 +18,25 @@ class FetchPendingData extends Command
 
     public function handle()
     {
-        // URL API yang diberikan
-        $urls = [
-            'http://localhost:80/api/data-pending-kodebooking',
-            'http://localhost:80/api/add-antrians-otomatis',
-            'http://localhost:80/api/data-pending-taskID',
-            'http://localhost:80/api/task-id-otomatis',
-        ];
+        $branches = ['QLJ', 'QLKP', 'QLTMG'];
+        $this->info("Starting TaskID Sync for all branches...");
 
-        foreach ($urls as $url) {
-            // Kirim HTTP GET request menggunakan Guzzle
-            $response = Http::get($url);
+        $controller = new \App\Http\Controllers\Api\PengirimanTaskIDController();
 
-            // Cek jika request sukses
-            if ($response->successful()) {
-                $this->info("Successfully fetched data from: {$url}");
-            } else {
-                $this->error("Failed to fetch data from: {$url}");
+        foreach ($branches as $branch) {
+            $this->info("Processing branch: {$branch}...");
+            
+            try {
+                // Call taskID_otomatis directly
+                // Passing null as second argument will process last 7 days
+                $controller->taskID_otomatis($branch);
+                $this->info("Branch {$branch} processed successfully.");
+            } catch (\Exception $e) {
+                $this->error("Error processing branch {$branch}: " . $e->getMessage());
             }
         }
 
+        $this->info("All branches processed.");
         return 0;
     }
 }

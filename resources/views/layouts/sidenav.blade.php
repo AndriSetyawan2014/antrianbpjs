@@ -1,271 +1,248 @@
-<style>
-    .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        height: 100vh;
-        width: 260px;
-        background: #0C356A;
-        padding-top: 10px;
-        padding-left: 10px;
-        overflow-y: auto;
-        transition: width 0.3s ease;
-        z-index: 5;
-    }
+{{-- ═══════════════════════════════════════════
+     SIDENAV — Sistem Pemantauan Bridging BPJS
+     resources/views/layouts/sidenav.blade.php
+     ═══════════════════════════════════════════ --}}
 
-    .sidebar.hidden {
-        transform: translateX(-100%);
-    }
+<div class="sidebar" id="sidebar">
+    <!-- Logo -->
+    <a href="{{ url('/dashboard') }}" class="sidebar-logo">
+        <img src="{{ asset('dist/img/logoqlheader.png') }}" alt="Queen Latifa Logo">
+    </a>
 
-    .sidebar .nav {
-        padding-bottom: 10px;
-    }
+    <nav>
+        <!-- Home -->
+        <a href="{{ url('/dashboard') }}"
+           class="nav-link {{ Request::is('dashboard') ? 'active' : '' }}">
+            <i class="fas fa-home nav-icon"></i>
+            <span>Dashboard</span>
+        </a>
 
-    .sidebar a {
-        padding: 8px 15px;
-        text-decoration: none;
-        font-size: 14px;
-        color: #ecf0f1;
-        display: block;
-        margin-bottom: 5px;
-    }
-
-    .sidebar a:hover {
-        background-color: #ffc436;
-        color: white;
-    }
-
-    .sidebar i {
-        font-size: 15px;
-    }
-
-    .nav-link.active {
-        background-color: #ffc436;
-        color: white;
-        font-weight: bold;
-    }
-
-    /* Button to toggle sidebar */
-    .toggle-sidebar {
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        z-index: 10;
-        background-color: #0C356A;
-        color: white;
-        border: none;
-        padding: 10px;
-        cursor: pointer;
-    }
-
-    @media (min-width: 768px) {
-        .toggle-sidebar {
-            display: none; /* Hide toggle button on larger screens */
-        }
-    }
-</style>
-
-<body class="hold-transition sidebar-mini">
-    <div class="wrapper">
-        <!-- Sidebar -->
-        <aside class="main-sidebar sidebar-dark-primary elevation-4" id="sidebar"></aside>
-        <div class="sidebar">
-            <!-- Sidebar Menu -->
-            <nav>
-                <div>
-                    <a class="{{ url('/dashboard') }}" class="nav-link">
-                        <img src="{{ asset('dist/img/logoqlheader.png') }}" alt="AdminLTE Logo" style="height: 38px;">
-                    </a>
-                </div>
-
-                <a href="{{ url('/dashboard') }}" class="nav-link {{ Request::is('dashboard') ? 'active' : '' }}">
-                    <i class="fas fa-home"></i>
-                    <span class="d-none d-md-inline">Home</span>
-                </a>
-                <!-- Yogyakarta -->
-                <a href="#" class="nav-link" data-bs-toggle="collapse" data-bs-target="#dropdownMenuJogja">
-                    <i class="fas fa-map-marker-alt nav-icon"></i> Queen Latifa Yogyakarta
-                    <i class="fas fa-angle-right ms-auto arrow-jogja"></i>
-                </a>
-                <div class="collapse {{ Request::is('data_kodebooking*') || Request::is('rekap_kodebooking*') || Request::is('TaskID*') || Request::is('rekap_taskid*') ? 'show' : '' }}"
-                    id="dropdownMenuJogja">
-                    <ul class="nav flex-column ms-4">
-                        <!-- Kode Booking -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-bs-toggle="collapse"
-                                data-bs-target="#dropdownMenuKodeBookingJogja">
-                                <i class="fas fa-cogs nav-icon"></i> Kode Booking
-                                <i class="fas fa-angle-right ms-auto arrow-kodebooking-jogja"></i>
-                            </a>
-                            <div class="collapse {{ Request::is('data_kodebooking*') || Request::is('rekap_kodebooking*') ? 'show' : '' }}"
-                                id="dropdownMenuKodeBookingJogja">
-                                <ul class="nav flex-column ms-4">
-                                    <li class="nav-item">
-                                        <a href="{{ url('/data_kodebooking') }}"
-                                            class="nav-link {{ Request::is('data_kodebooking') ? 'active' : '' }}">
-                                            <i class="fas fa-database nav-icon"></i> Data Kode Booking
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="{{ url('/rekap_kodebooking') }}"
-                                            class="nav-link {{ Request::is('rekap_kodebooking') ? 'active' : '' }}">
-                                            <i class="fas fa-database nav-icon"></i> Rekap Data Kode Booking
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                        <!-- Task ID -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-bs-toggle="collapse"
-                                data-bs-target="#dropdownMenuTaskIDJogja">
-                                <i class="fas fa-tasks nav-icon"></i> Task ID
-                                <i class="fas fa-angle-right ms-auto arrow-taskid-jogja"></i>
-                            </a>
-                            <div class="collapse {{ Request::is('TaskID*') || Request::is('rekap_taskid*') ? 'show' : '' }}"
-                                id="dropdownMenuTaskIDJogja">
-                                <ul class="nav flex-column ms-4">
-                                    <li class="nav-item">
-                                        <a href="{{ url('/TaskID') }}"
-                                            class="nav-link {{ Request::is('TaskID') ? 'active' : '' }}">
-                                            <i class="fas fa-database nav-icon"></i> Data Task ID
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="{{ url('/rekap_taskid') }}"
-                                            class="nav-link {{ Request::is('rekap_taskid') ? 'active' : '' }}">
-                                            <i class="fas fa-database nav-icon"></i> Rekap Data Task ID
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Kulon Progo -->
-                <a href="#" class="nav-link" data-bs-toggle="collapse" data-bs-target="#dropdownMenuKulonProgo">
-                    <i class="fas fa-map-marker-alt nav-icon"></i> Queen Latifa Kulon Progo
-                    <i class="fas fa-angle-right ms-auto arrow-kulonprogo"></i>
-                </a>
-                <div class="collapse {{ Request::is('qlkp_data_kodebooking*') || Request::is('qlkp_rekap_kodebooking*') || Request::is('qlkp_TaskID*') || Request::is('qlkp_rekap_taskid*') ? 'show' : '' }}"
-                    id="dropdownMenuKulonProgo">
-                    <ul class="nav flex-column ms-4">
-                        <!-- Kode Booking -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-bs-toggle="collapse"
-                                data-bs-target="#dropdownMenuKodeBookingKulonProgo">
-                                <i class="fas fa-cogs nav-icon"></i> Kode Booking
-                                <i class="fas fa-angle-right ms-auto arrow-kodebooking-kulonprogo"></i>
-                            </a>
-                            <div class="collapse {{ Request::is('qlkp_data_kodebooking*') || Request::is('qlkp_rekap_kodebooking*') ? 'show' : '' }}"
-                                id="dropdownMenuKodeBookingKulonProgo">
-                                <ul class="nav flex-column ms-4">
-                                    <li class="nav-item">
-                                        <a href="{{ url('/qlkp_data_kodebooking') }}"
-                                            class="nav-link {{ Request::is('qlkp_data_kodebooking') ? 'active' : '' }}">
-                                            <i class="fas fa-database nav-icon"></i> Data Kode Booking
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="{{ url('/qlkp_rekap_kodebooking') }}"
-                                            class="nav-link {{ Request::is('qlkp_rekap_kodebooking') ? 'active' : '' }}">
-                                            <i class="fas fa-database nav-icon"></i> Rekap Data Kode Booking
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                        <!-- Task ID -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-bs-toggle="collapse"
-                                data-bs-target="#dropdownMenuTaskIDKulonProgo">
-                                <i class="fas fa-tasks nav-icon"></i> Task ID
-                                <i class="fas fa-angle-right ms-auto arrow-taskid-kulonprogo"></i>
-                            </a>
-                            <div class="collapse {{ Request::is('qlkp_TaskID*') || Request::is('qlkp_rekap_taskid*') ? 'show' : '' }}"
-                                id="dropdownMenuTaskIDKulonProgo">
-                                <ul class="nav flex-column ms-4">
-                                    <li class="nav-item">
-                                        <a href="{{ url('/qlkp_TaskID') }}"
-                                            class="nav-link {{ Request::is('qlkp_TaskID') ? 'active' : '' }}">
-                                            <i class="fas fa-database nav-icon"></i> Data Task ID
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="{{ url('/qlkp_rekap_taskid') }}"
-                                            class="nav-link {{ Request::is('qlkp_rekap_taskid') ? 'active' : '' }}">
-                                            <i class="fas fa-database nav-icon"></i> Rekap Data Task ID
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Temanggung -->
-                <a href="#" class="nav-link" data-bs-toggle="collapse" data-bs-target="#dropdownMenuTemanggung">
-                    <i class="fas fa-map-marker-alt nav-icon"></i> Queen Latifa Temanggung
-                    <i class="fas fa-angle-right ms-auto arrow-temanggung"></i>
-                </a>
-                <div class="collapse {{ Request::is('qltmg_data_kodebooking*') || Request::is('qltmg_rekap_kodebooking*') || Request::is('qltmg_TaskID*') || Request::is('qltmg_rekap_taskid*') ? 'show' : '' }}"
-                    id="dropdownMenuTemanggung">
-                    <ul class="nav flex-column ms-4">
-                        <!-- Kode Booking -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-bs-toggle="collapse"
-                                data-bs-target="#dropdownMenuKodeBookingTemanggung">
-                                <i class="fas fa-cogs nav-icon"></i> Kode Booking
-                                <i class="fas fa-angle-right ms-auto arrow-kodebooking-temanggung"></i>
-                            </a>
-                            <div class="collapse {{ Request::is('qltmg_data_kodebooking*') || Request::is('qltmg_rekap_kodebooking*') ? 'show' : '' }}"
-                                id="dropdownMenuKodeBookingTemanggung">
-                                <ul class="nav flex-column ms-4">
-                                    <li class="nav-item">
-                                        <a href="{{ url('/qltmg_data_kodebooking') }}"
-                                            class="nav-link {{ Request::is('qltmg_data_kodebooking') ? 'active' : '' }}">
-                                            <i class="fas fa-database nav-icon"></i> Data Kode Booking
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="{{ url('/qltmg_rekap_kodebooking') }}"
-                                            class="nav-link {{ Request::is('qltmg_rekap_kodebooking') ? 'active' : '' }}">
-                                            <i class="fas fa-database nav-icon"></i> Rekap Data Kode Booking
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                        <!-- Task ID -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-bs-toggle="collapse"
-                                data-bs-target="#dropdownMenuTaskIDTemanggung">
-                                <i class="fas fa-tasks nav-icon"></i> Task ID
-                                <i class="fas fa-angle-right ms-auto arrow-taskid-temanggung"></i>
-                            </a>
-                            <div class="collapse {{ Request::is('qltmg_TaskID*') || Request::is('qltmg_rekap_taskid*') ? 'show' : '' }}"
-                                id="dropdownMenuTaskIDTemanggung">
-                                <ul class="nav flex-column ms-4">
-                                    <li class="nav-item">
-                                        <a href="{{ url('/qltmg_TaskID') }}"
-                                            class="nav-link {{ Request::is('qltmg_TaskID') ? 'active' : '' }}">
-                                            <i class="fas fa-database nav-icon"></i> Data Task ID
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="{{ url('/qltmg_rekap_taskid') }}"
-                                            class="nav-link {{ Request::is('qltmg_rekap_taskid') ? 'active' : '' }}">
-                                            <i class="fas fa-database nav-icon"></i> Rekap Data Task ID
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
+        {{-- ══ YOGYAKARTA ══ --}}
+        <div class="sidebar-section-label">
+            <i class="fas fa-map-marker-alt"></i> Queen Latifa Yogyakarta
         </div>
-    </div>
-</body>
+
+        {{-- Kode Booking Yogyakarta --}}
+        <a href="#" class="nav-link" data-bs-toggle="collapse"
+           data-bs-target="#ddKodeBookingJogja"
+           aria-expanded="{{ Request::is('data_kodebooking*') || Request::is('rekap_kodebooking*') ? 'true' : 'false' }}">
+            <i class="fas fa-calendar-check nav-icon"></i>
+            <span>Kode Booking</span>
+            <i class="fas fa-angle-down arrow-icon {{ Request::is('data_kodebooking*') || Request::is('rekap_kodebooking*') ? 'rotated' : '' }}"></i>
+        </a>
+        <div class="collapse {{ Request::is('data_kodebooking*') || Request::is('rekap_kodebooking*') ? 'show' : '' }}"
+             id="ddKodeBookingJogja">
+            <ul class="nav flex-column ms-3">
+                <li class="nav-item">
+                    <a href="{{ url('/data_kodebooking') }}"
+                       class="nav-link {{ Request::is('data_kodebooking') ? 'active' : '' }}">
+                        <i class="fas fa-table nav-icon"></i> Data Kode Booking
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url('/rekap_kodebooking') }}"
+                       class="nav-link {{ Request::is('rekap_kodebooking') ? 'active' : '' }}">
+                        <i class="fas fa-chart-bar nav-icon"></i> Rekap Kode Booking
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        {{-- Task ID Yogyakarta --}}
+        <a href="#" class="nav-link" data-bs-toggle="collapse"
+           data-bs-target="#ddTaskIDJogja"
+           aria-expanded="{{ Request::is('TaskID*') || Request::is('rekap_taskid*') ? 'true' : 'false' }}">
+            <i class="fas fa-tasks nav-icon"></i>
+            <span>Task ID</span>
+            <i class="fas fa-angle-down arrow-icon {{ Request::is('TaskID*') || Request::is('rekap_taskid*') ? 'rotated' : '' }}"></i>
+        </a>
+        <div class="collapse {{ Request::is('TaskID*') || Request::is('rekap_taskid*') ? 'show' : '' }}"
+             id="ddTaskIDJogja">
+            <ul class="nav flex-column ms-3">
+                <li class="nav-item">
+                    <a href="{{ url('/TaskID') }}"
+                       class="nav-link {{ Request::is('TaskID') ? 'active' : '' }}">
+                        <i class="fas fa-file-medical nav-icon"></i> Data Task ID
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url('/rekap_taskid') }}"
+                       class="nav-link {{ Request::is('rekap_taskid') ? 'active' : '' }}">
+                        <i class="fas fa-clipboard-list nav-icon"></i> Rekap Task ID
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        {{-- ══ KULON PROGO ══ --}}
+        <div class="sidebar-section-label">
+            <i class="fas fa-map-marker-alt"></i> Queen Latifa Kulon Progo
+        </div>
+
+        {{-- Kode Booking Kulon Progo --}}
+        <a href="#" class="nav-link" data-bs-toggle="collapse"
+           data-bs-target="#ddKodeBookingKP"
+           aria-expanded="{{ Request::is('qlkp_data_kodebooking*') || Request::is('qlkp_rekap_kodebooking*') ? 'true' : 'false' }}">
+            <i class="fas fa-calendar-check nav-icon"></i>
+            <span>Kode Booking</span>
+            <i class="fas fa-angle-down arrow-icon"></i>
+        </a>
+        <div class="collapse {{ Request::is('qlkp_data_kodebooking*') || Request::is('qlkp_rekap_kodebooking*') ? 'show' : '' }}"
+             id="ddKodeBookingKP">
+            <ul class="nav flex-column ms-3">
+                <li class="nav-item">
+                    <a href="{{ url('/qlkp_data_kodebooking') }}"
+                       class="nav-link {{ Request::is('qlkp_data_kodebooking') ? 'active' : '' }}">
+                        <i class="fas fa-table nav-icon"></i> Data Kode Booking
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url('/qlkp_rekap_kodebooking') }}"
+                       class="nav-link {{ Request::is('qlkp_rekap_kodebooking') ? 'active' : '' }}">
+                        <i class="fas fa-chart-bar nav-icon"></i> Rekap Kode Booking
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        {{-- Task ID Kulon Progo --}}
+        <a href="#" class="nav-link" data-bs-toggle="collapse"
+           data-bs-target="#ddTaskIDKP"
+           aria-expanded="{{ Request::is('qlkp_TaskID*') || Request::is('qlkp_rekap_taskid*') ? 'true' : 'false' }}">
+            <i class="fas fa-tasks nav-icon"></i>
+            <span>Task ID</span>
+            <i class="fas fa-angle-down arrow-icon"></i>
+        </a>
+        <div class="collapse {{ Request::is('qlkp_TaskID*') || Request::is('qlkp_rekap_taskid*') ? 'show' : '' }}"
+             id="ddTaskIDKP">
+            <ul class="nav flex-column ms-3">
+                <li class="nav-item">
+                    <a href="{{ url('/qlkp_TaskID') }}"
+                       class="nav-link {{ Request::is('qlkp_TaskID') ? 'active' : '' }}">
+                        <i class="fas fa-file-medical nav-icon"></i> Data Task ID
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url('/qlkp_rekap_taskid') }}"
+                       class="nav-link {{ Request::is('qlkp_rekap_taskid') ? 'active' : '' }}">
+                        <i class="fas fa-clipboard-list nav-icon"></i> Rekap Task ID
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        {{-- ══ TEMANGGUNG ══ --}}
+        <div class="sidebar-section-label">
+            <i class="fas fa-map-marker-alt"></i> Queen Latifa Temanggung
+        </div>
+
+        {{-- Kode Booking Temanggung --}}
+        <a href="#" class="nav-link" data-bs-toggle="collapse"
+           data-bs-target="#ddKodeBookingTMG"
+           aria-expanded="{{ Request::is('qltmg_data_kodebooking*') || Request::is('qltmg_rekap_kodebooking*') ? 'true' : 'false' }}">
+            <i class="fas fa-calendar-check nav-icon"></i>
+            <span>Kode Booking</span>
+            <i class="fas fa-angle-down arrow-icon"></i>
+        </a>
+        <div class="collapse {{ Request::is('qltmg_data_kodebooking*') || Request::is('qltmg_rekap_kodebooking*') ? 'show' : '' }}"
+             id="ddKodeBookingTMG">
+            <ul class="nav flex-column ms-3">
+                <li class="nav-item">
+                    <a href="{{ url('/qltmg_data_kodebooking') }}"
+                       class="nav-link {{ Request::is('qltmg_data_kodebooking') ? 'active' : '' }}">
+                        <i class="fas fa-table nav-icon"></i> Data Kode Booking
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url('/qltmg_rekap_kodebooking') }}"
+                       class="nav-link {{ Request::is('qltmg_rekap_kodebooking') ? 'active' : '' }}">
+                        <i class="fas fa-chart-bar nav-icon"></i> Rekap Kode Booking
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        {{-- Task ID Temanggung --}}
+        <a href="#" class="nav-link" data-bs-toggle="collapse"
+           data-bs-target="#ddTaskIDTMG"
+           aria-expanded="{{ Request::is('qltmg_TaskID*') || Request::is('qltmg_rekap_taskid*') ? 'true' : 'false' }}">
+            <i class="fas fa-tasks nav-icon"></i>
+            <span>Task ID</span>
+            <i class="fas fa-angle-down arrow-icon"></i>
+        </a>
+        <div class="collapse {{ Request::is('qltmg_TaskID*') || Request::is('qltmg_rekap_taskid*') ? 'show' : '' }}"
+             id="ddTaskIDTMG">
+            <ul class="nav flex-column ms-3">
+                <li class="nav-item">
+                    <a href="{{ url('/qltmg_TaskID') }}"
+                       class="nav-link {{ Request::is('qltmg_TaskID') ? 'active' : '' }}">
+                        <i class="fas fa-file-medical nav-icon"></i> Data Task ID
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url('/qltmg_rekap_taskid') }}"
+                       class="nav-link {{ Request::is('qltmg_rekap_taskid') ? 'active' : '' }}">
+                        <i class="fas fa-clipboard-list nav-icon"></i> Rekap Task ID
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        {{-- ══ VCLAIM ══ --}}
+        <div class="sidebar-section-label" style="color:#86efac;">
+            <i class="fas fa-stethoscope"></i> VClaim Monitoring
+        </div>
+
+        {{-- Monitoring Rawat Jalan --}}
+        <a href="#" class="nav-link" data-bs-toggle="collapse"
+           data-bs-target="#ddMonitoringRawatJalan"
+           aria-expanded="{{ Request::is('vclaim/kunjungan-rawat-jalan*') || Request::is('vclaim/rekap-kunjungan-rawat-jalan*') ? 'true' : 'false' }}">
+            <i class="fas fa-walking nav-icon" style="color:#86efac;"></i>
+            <span>Monitoring Rawat Jalan</span>
+            <i class="fas fa-angle-down arrow-icon {{ Request::is('vclaim/kunjungan-rawat-jalan*') || Request::is('vclaim/rekap-kunjungan-rawat-jalan*') ? 'rotated' : '' }}"></i>
+        </a>
+        <div class="collapse {{ Request::is('vclaim/kunjungan-rawat-jalan*') || Request::is('vclaim/rekap-kunjungan-rawat-jalan*') ? 'show' : '' }}"
+             id="ddMonitoringRawatJalan">
+            <ul class="nav flex-column ms-3">
+                <li class="nav-item">
+                    <a href="{{ route('vclaim.kunjungan.jalan') }}"
+                       class="nav-link {{ Request::is('vclaim/kunjungan-rawat-jalan') ? 'active' : '' }}">
+                        <i class="fas fa-list nav-icon" style="color:#86efac;"></i> Detail
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('vclaim.rekap.kunjungan.jalan') }}"
+                       class="nav-link {{ Request::is('vclaim/rekap-kunjungan-rawat-jalan') ? 'active' : '' }}">
+                        <i class="fas fa-chart-bar nav-icon" style="color:#86efac;"></i> Rekap
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        {{-- Endpoint Status --}}
+        <a href="{{ route('vclaim.endpoint.status') }}"
+           class="nav-link {{ Request::is('vclaim/endpoint-status*') ? 'active' : '' }}">
+            <i class="fas fa-network-wired nav-icon" style="color:#86efac;"></i>
+            <span>Endpoint Status</span>
+        </a>
+
+        {{-- Pengaturan Sistem --}}
+        <div class="sidebar-section-label" style="color:#fcd34d; margin-top: 20px;">
+            <i class="fas fa-cogs"></i> Sistem
+        </div>
+        <a href="{{ route('settings.index') }}"
+           class="nav-link {{ Request::is('settings*') ? 'active' : '' }}">
+            <i class="fas fa-tools nav-icon" style="color:#fcd34d;"></i>
+            <span>Pengaturan</span>
+        </a>
+
+    </nav>
+</div>
+
+<style>
+/* Arrow rotation for open collapse */
+.arrow-icon.rotated,
+[aria-expanded="true"] .arrow-icon {
+    transform: rotate(180deg);
+}
+</style>

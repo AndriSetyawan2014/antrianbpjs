@@ -1,4 +1,8 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    
+    # Hanya redirect jika URL TIDAK mengandung kata /public/
+    # Ini mencegah infinite loop saat mengakses localhost/antrianbpjs/public/
+    RewriteCond %{REQUEST_URI} !/public/
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>

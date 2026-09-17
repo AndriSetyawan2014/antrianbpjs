@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log; // Import class Log
 use App\Http\Controllers\Controller; // Import class Controller
 use Illuminate\Support\Facades\Validator; // Import class Validator
 use Illuminate\Support\Facades\DB;
+use App\Jobs\SendKodeBookingBatchJob;
 
 class TambahAntrianOnlineController extends Controller
 {
@@ -18,8 +19,14 @@ class TambahAntrianOnlineController extends Controller
     {
         set_time_limit(99999);
         $allowedQL = BpjsHelper::getUrlQLOptions();
+        
+        // --- Settingan Filter Tanggal (Edit di sini jika diperlukan) ---
+        $dari    = Carbon::now()->toDateString();    // Hari ini
+        $sampai  = Carbon::now()->addDay()->toDateString(); // Besok
+        // --------------------------------------------------------------
+
         foreach ($allowedQL as $ql) {
-            $this->data_pending_kodebooking_get($ql);
+            $this->data_pending_kodebooking_get($ql, null, $dari, $sampai);
         }
     }
 
@@ -29,6 +36,9 @@ class TambahAntrianOnlineController extends Controller
 
         $allowedQL = BpjsHelper::getUrlQLOptions();
         $urlQL = strtoupper($request->query('urlQL', $request->input('urlQL', '')));
+        $tanggal = $request->query('tanggal', $request->input('tanggal', ''));
+        $dari = $request->query('dari', $request->input('dari', ''));
+        $sampai = $request->query('sampai', $request->input('sampai', ''));
 
         if (!in_array($urlQL, $allowedQL)) {
             return response()->json([
@@ -39,25 +49,60 @@ class TambahAntrianOnlineController extends Controller
             ], 422);
         }
 
-        return $this->data_pending_kodebooking_get($urlQL);
+        return $this->data_pending_kodebooking_get($urlQL, $tanggal, $dari, $sampai);
     }
 
-    public function data_pending_kodebooking_get($urlQL = 'QLJ')
+    public function data_pending_kodebooking_get($urlQL = 'QLJ', $tanggal = null, $dari = null, $sampai = null)
     {
         Log::info('===[data_pending_kodebooking_get - ' . $urlQL . '] ===');
 
         set_time_limit(10000);
         $params = [];
+        if ($tanggal) $params['tanggal'] = $tanggal;
+        if ($dari) $params['dari'] = $dari;
+        if ($sampai) $params['sampai'] = $sampai;
         $endpoint = '/data_pending_kodebooking';
         try {
             $response = BpjsHelper::getRequest($urlQL, $endpoint, $params);
+            
+            if ($response === null) {
+                Log::error('[data_pending_kodebooking_get - ' . $urlQL . '] FAIL: BpjsHelper::getRequest returned NULL.');
+                return response()->json([
+                    'error' => 'Server SIRSTQL (' . $urlQL . ') tidak dapat dijangkau.',
+                ], 503);
+            }
+
             $decode_response = json_decode($response, true);
+            
+            Log::info('[data_pending_kodebooking_get - ' . $urlQL . '] Response received', [
+                'data_count' => isset($decode_response['metadata']['response']) ? count($decode_response['metadata']['response']) : 0
+            ]);
 
             if (isset($decode_response['metadata']['response']) && is_array($decode_response['metadata']['response'])) {
-                Log::info('===[data_pending_kodebooking_get - ' . $urlQL . '] start.... please wait.... ===');
-                foreach ($decode_response['metadata']['response'] as $data) {
+                $pendingData = $decode_response['metadata']['response'];
+                $totalIncoming = count($pendingData);
+                Log::info("=== [data_pending_kodebooking_get - $urlQL] === Processing $totalIncoming records...");
 
-                    $data_pending_kodebooking = [
+                $data_Kodebooking_model = (new DataKodebooking())->setTableByQL($urlQL);
+                
+                // Pra-penarikan (Pre-fetch) data yang sudah ada (berdasarkan kodebooking dan idpendaftaran)
+                $existingData = $data_Kodebooking_model
+                    ->whereIn('kodebooking', collect($pendingData)->pluck('kodebooking')->unique())
+                    ->get()
+                    ->keyBy(function($item) {
+                        return $item->kodebooking . '_' . $item->idpendaftaran;
+                    });
+
+                $upsertData = [];
+                foreach ($pendingData as $data) {
+                    $key = ($data['kodebooking'] ?? '') . '_' . ($data['idpendaftaran'] ?? '');
+                    
+                    // Skip jika kodebooking dan idpendaftaran sudah sama (mencegah overwrite status lokal)
+                    if ($existingData->has($key)) {
+                        continue;
+                    }
+
+                    $item = [
                         'idpendaftaran' => $data['idpendaftaran'] ?? null,
                         'norm' => $data['norm'] ?? null,
                         'kodebooking' => $data['kodebooking'] ?? null,
@@ -84,46 +129,38 @@ class TambahAntrianOnlineController extends Controller
                         'code' => $data['code'] ?? null,
                         'message' => $data['message'] ?? null,
                         'statuspemeriksaan' => $data['status'] ?? null,
+                        'updated_at' => now(),
                     ];
 
+                    $reupload = 1;
                     if (
                         in_array($data['code'], [200, 208]) ||
-                        preg_match('/ sudah terbit SEP/', $data_pending_kodebooking['message'])
+                        (isset($data['message']) && preg_match('/ sudah terbit SEP/', $data['message']))
                     ) {
-                        $data_pending_kodebooking['reupload'] = 0;
+                        $reupload = 0;
                     }
-                    $data_Kodebooking = new DataKodebooking([], $urlQL);
-                    $existingData = $data_Kodebooking->where('kodebooking', $data_pending_kodebooking['kodebooking'])->first();
-
-                    if (!$existingData || $existingData->reupload !== 0) {
-                        $saveUpdateData = $data_Kodebooking->updateOrCreate(
-                            [
-                                'kodebooking' => $data_pending_kodebooking['kodebooking'],
-                            ],
-                            $data_pending_kodebooking
-                        );
-                        Log::info('[data_pending_kodebooking_get - ' . $urlQL . '] saveUpdateData - '.$data_pending_kodebooking['kodebooking']);
-                    } else {
-                        $existingData->update([
-                            'statuspemeriksaan' => $data_pending_kodebooking['statuspemeriksaan']
-                        ]);
-                        $saveUpdateData = $existingData;
-                        Log::info('[data_pending_kodebooking_get - ' . $urlQL . '] update statuspemeriksaan - '.$data_pending_kodebooking['kodebooking']);
-                    }
-                    // $saveUpdateData = DataKodebooking::updateOrCreate(
-                    //     [
-                    //         'idpendaftaran' => $data_pending_kodebooking['idpendaftaran'],
-                    //     ],
-                    //     $data_pending_kodebooking
-                    // );
-
-                    if ($saveUpdateData && $saveUpdateData instanceof \Illuminate\Database\Eloquent\Model) {
-                        Log::info('[data_pending_kodebooking_get - ' . $urlQL . '] saved successfully :', $saveUpdateData->toArray());
-                    } else {
-                        Log::error('[data_pending_kodebooking_get - ' . $urlQL . '] Error: not saved correctly.');
-                    }
+                    $item['reupload'] = $reupload;
+                    $upsertData[] = $item;
                 }
-                $this->addAntrians_otomatis($urlQL);
+
+                if (!empty($upsertData)) {
+                    $chunks = array_chunk($upsertData, 500);
+                    foreach ($chunks as $chunk) {
+                        $data_Kodebooking_model->upsert($chunk, ['kodebooking'], [
+                            'idpendaftaran', 'norm', 'carabayar', 'noantrian', 'idjeniskunjungan', 'tanggalperiksa',
+                            'ispasienlama', 'nojkn', 'nik', 'notelpon', 'nomorreferensi', 'quota_jkn', 'quota_jkn_sisa',
+                            'quota_nonjkn', 'quota_nonjkn_sisa', 'estimasidilayani', 'bpjs_kodedokter', 'namadokter',
+                            'kodeunit', 'namaunit', 'jammulai', 'jamakhir', 'code', 'message', 'statuspemeriksaan', 'reupload', 'updated_at'
+                        ]);
+                    }
+                    Log::info("[data_pending_kodebooking_get - $urlQL] UPSERT_SUCCESS: Processed " . count($upsertData) . " / $totalIncoming records.");
+                    
+                    // Panggil otomatisasi antrean hanya jika ada data yang diproses
+                    $this->addAntrians_otomatis($urlQL);
+                } else {
+                    Log::info("[data_pending_kodebooking_get - $urlQL] No new or eligible records to update.");
+                }
+
                 Log::info('===[data_pending_kodebooking_get - ' . $urlQL . '] horray, process finished ===');
             }
             return response()->json($decode_response, 200);
@@ -136,7 +173,7 @@ class TambahAntrianOnlineController extends Controller
 
     public function nomor_rekon_post(Request $request)
     {
-        $urlQL = 'QLJ';
+        $urlQL = strtoupper($request->query('urlQL', $request->input('urlQL', 'QLJ')));
         Log::info('[nomor_rekon_get] method reached');
         $validator = Validator::make($request->all(), [
             'bulan' => 'required|numeric',
@@ -193,35 +230,41 @@ class TambahAntrianOnlineController extends Controller
     {
         set_time_limit(10000);
         try {
-            $data_Kodebooking = new DataKodebooking([], $urlQL);
+            $data_Kodebooking = (new DataKodebooking())->setTableByQL($urlQL);
             $today = Carbon::now('Asia/Jakarta')->toDateString();
-            $yesterday = Carbon::yesterday('Asia/Jakarta')->toDateString();
-            // $today = '2025-01-16';
+            
             Log::info('=== [addAntrians_otomatis - ' . $urlQL . '] tanggal hari ini = '.$today.' ===');
-            // $dataArray = $data_Kodebooking->where('kodebooking', '20241108539')->get()->toArray(); // spesific kodebooking
+            
             $dataArray = $data_Kodebooking
                 ->where('reupload', 1)
-                ->where('tanggalperiksa', $today)
-                // ->where('tanggalperiksa', '=','2025-11-26')
-                //->whereBetween('tanggalperiksa', [$yesterday, $today])
-                // ->where('statuspemeriksaan', '!=', 'batal')
+                ->whereBetween('tanggalperiksa', [
+                    Carbon::today()->subDays(1)->toDateString(),
+                    Carbon::today()->toDateString() 
+                ])
                 ->get()
                 ->toArray();
 
-            if (isset($dataArray) && is_array($dataArray)) {
-                Log::info('=== [addAntrians_otomatis - ' . $urlQL . '] isset && is_array with total '.count($dataArray).' data ===');
-                foreach ($dataArray as $data) {
-                    $this->addAntrians_single_arr($urlQL, $data);
+            if (!empty($dataArray)) {
+                $totalRecords = count($dataArray);
+                $chunks = array_chunk($dataArray, 30);
+                $totalJobs = count($chunks);
+
+                Log::info("[addAntrians_otomatis - $urlQL] Dispatching $totalRecords records into $totalJobs background jobs.");
+
+                foreach ($chunks as $chunk) {
+                    SendKodeBookingBatchJob::dispatch($urlQL, $chunk);
                 }
-                Log::info('=== [addAntrians_otomatis - ' . $urlQL . '] horray... processes finished ===');
+
+                Log::info("=== [addAntrians_otomatis - $urlQL] ALL JOBS DISPATCHED. Process finished. ===");
             }
 
             return response()->json([
                 'metadata' => [
                     'code' => 200,
-                    'message' => 'Pengiriman addAntrians_otomatis sukses.',
+                    'message' => 'OK. ' . count($dataArray) . ' records dispatched to background queue.',
                 ],
             ], 200);
+        } catch (\Exception $e) {
         } catch (\Exception $e) {
             Log::error('[addAntrians_otomatis - ' . $urlQL . '] Failed to add addAntrians_otomatis:', ['error' => $e->getMessage()]);
             return response()->json([
@@ -319,7 +362,7 @@ class TambahAntrianOnlineController extends Controller
             $data_addAntrians['code'] = '442';
             $data_addAntrians['message'] = $validator->errors()->toArray();
 
-            $data_Kodebooking = new DataKodebooking([], $urlQL);
+            $data_Kodebooking = (new DataKodebooking())->setTableByQL($urlQL);
             $addAntrians = $data_Kodebooking->updateOrCreate(
                 $conditions,
                 $data_addAntrians
@@ -454,7 +497,7 @@ class TambahAntrianOnlineController extends Controller
             if ($response_decode['metadata']['code'] == '208') {
                 $conditions['idpendaftaran'] = $arr['idpendaftaran'];
             }
-            $data_Kodebooking = new DataKodebooking([], $urlQL);
+            $data_Kodebooking = (new DataKodebooking())->setTableByQL($urlQL);
             $addAntrians = $data_Kodebooking->updateOrCreate(
                 $conditions,
                 $data_kodebooking
@@ -545,10 +588,11 @@ class TambahAntrianOnlineController extends Controller
             ], 422);
         }
 
+        $urlQL = strtoupper($arr->query('urlQL', $arr->input('urlQL', 'QLJ')));
         $endpoint = '/antrean/add';
 
         try {
-            $response = BpjsHelper::postRequestDirect('QLJ', $endpoint, $data_addAntrians);
+            $response = BpjsHelper::postRequestDirect($urlQL, $endpoint, $data_addAntrians);
             $response_decode = json_decode($response, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
@@ -596,7 +640,7 @@ class TambahAntrianOnlineController extends Controller
     public function addAntrians(Request $request)
     {
         set_time_limit(1000);
-        $urlQL = 'QLJ';
+        $urlQL = strtoupper($request->query('urlQL', $request->input('urlQL', 'QLJ')));
         Log::info('[addAntrians] method reached');
         $validator = Validator::make($request->all(), [
             'kodebooking' => 'required|string',
@@ -714,7 +758,7 @@ class TambahAntrianOnlineController extends Controller
             ) {
                 $data_kodebooking['reupload'] = 0;
             }
-            $data_Kodebooking = new DataKodebooking([], $urlQL);
+            $data_Kodebooking = (new DataKodebooking())->setTableByQL($urlQL);
             $addAntrians = $data_Kodebooking->updateOrCreate(
                 ['kodebooking' => $data_addAntrians['kodebooking']],
                 $data_addAntrians
@@ -864,5 +908,131 @@ class TambahAntrianOnlineController extends Controller
             'data' => $data_kodebookingData,
 
         ]);
+    }
+
+    public function queue_status()
+    {
+        try {
+            $total = \DB::table('jobs')->count();
+            $failed = \DB::table('failed_jobs')->count();
+            $detail = \DB::table('jobs')
+                ->select('queue', \DB::raw('count(*) as total'))
+                ->groupBy('queue')
+                ->get();
+
+            // Menghitung jumlah data aktual yang akan diproses dari payload tiap Job
+            $totalDataDiproses = 0;
+            $jobs = \DB::table('jobs')->get(['payload']);
+            foreach ($jobs as $job) {
+                $payload = json_decode($job->payload, true);
+                if (isset($payload['data']['command'])) {
+                    try {
+                        $commandStr = $payload['data']['command'];
+                        $command = unserialize($commandStr);
+                        
+                        if ($command instanceof \App\Jobs\SendKodeBookingBatchJob) {
+                            $reflection = new \ReflectionClass($command);
+                            $property = $reflection->getProperty('records');
+                            $property->setAccessible(true);
+                            $records = $property->getValue($command);
+                            $totalDataDiproses += is_array($records) ? count($records) : 0;
+                        } elseif ($command instanceof \App\Jobs\SendTaskIdBatchJob) {
+                            $reflection = new \ReflectionClass($command);
+                            $property = $reflection->getProperty('batchData');
+                            $property->setAccessible(true);
+                            $records = $property->getValue($command);
+                            $totalDataDiproses += is_array($records) ? count($records) : 0;
+                        }
+                    } catch (\Exception $ex) {
+                        // Skip if unserialize fails
+                    }
+                }
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'total_antrean' => $total,
+                    'total_gagal' => $failed,
+                    'total_data_diproses' => $totalDataDiproses,
+                    'detail' => $detail,
+                    'server_time' => date('Y-m-d H:i:s')
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function queue_work_start()
+    {
+        try {
+            $baseCommand = 'php artisan queue:work --queue=sync_lokal,default --tries=3 --timeout=600';
+            
+            if (PHP_OS_FAMILY === 'Windows') {
+                // Perintah untuk Windows
+                $command = "start /B php artisan queue:work --queue=sync_lokal,default --tries=3 --timeout=600 > nul 2>&1";
+                pclose(popen($command, "r"));
+            } else {
+                // Perintah untuk Linux (Ubuntu)
+                $phpPath = defined('PHP_BINARY') && PHP_BINARY ? PHP_BINARY : 'php';
+                $artisan = base_path('artisan');
+                $projectPath = base_path();
+                
+                // Gunakan perintah yang lebih eksplisit
+                $command = "cd $projectPath && nohup $phpPath $artisan queue:work --queue=sync_lokal,default --tries=3 --timeout=600 > /dev/null 2>&1 &";
+                shell_exec($command);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Queue worker started in background (' . PHP_OS_FAMILY . ').',
+                'command' => $command
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function queue_work_stop()
+    {
+        try {
+            // Perintah restart akan memberitahu semua worker yang sedang berjalan untuk berhenti setelah job selesai
+            \Artisan::call('queue:restart');
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Signal sent to stop all queue workers (queue:restart).',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function queue_clear()
+    {
+        try {
+            // Membersihkan semua antrean di database
+            \Artisan::call('queue:clear', ['--force' => true]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'All queues have been cleared successfully.',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

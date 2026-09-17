@@ -42,6 +42,13 @@ class WABlastControllerapi extends Controller
      */
     public function send(Request $request)
     {
+        // Dinonaktifkan sementara atas permintaan
+        return response()->json([
+            'success' => true,
+            'message' => 'Layanan WA Blast sedang dinonaktifkan.',
+            'data' => null,
+        ], 200);
+
         // Validasi input dari request
         $validated = $request->validate([
             'phone' => 'required|string',

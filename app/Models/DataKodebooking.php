@@ -9,7 +9,7 @@ class DataKodebooking extends Model
 {
     use HasFactory;
 
-    protected $table;// = 'data_kodebooking';
+    protected $table = 'data_kodebooking'; // Default table
 
     protected $fillable = [
         'idpendaftaran',
@@ -45,17 +45,18 @@ class DataKodebooking extends Model
 
     public $timestamps = true;
 
-    public function __construct(array $attributes = [], $urlQL = 'QLJ')
+    /**
+     * Set table name based on urlQL
+     */
+    public function setTableByQL($urlQL = 'QLJ')
     {
-        parent::__construct($attributes);
-
-        // Menentukan tabel berdasarkan nilai $urlQL
-        $this->table = match ($urlQL) {
+        $this->table = match (strtoupper($urlQL)) {
             'QLJ'   => 'data_kodebooking',
             'QLKP'  => 'qlkp_data_kodebooking',
             'QLTMG' => 'qltmg_data_kodebooking',
             default => 'data_kodebooking',
         };
+        return $this;
     }
 
     // public static function boot()

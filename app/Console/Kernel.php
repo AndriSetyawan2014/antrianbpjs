@@ -11,6 +11,9 @@ protected function schedule(Schedule $schedule)
 {
     // Menjalankan command fetch:pendingdata setiap jam
     $schedule->command('fetch:pendingdata')->hourly();
+
+    // Sinkronisasi otomatis VClaim kunjungan rawat jalan untuk hari ini (pada jam 23:45)
+    $schedule->command('vclaim:sync-kunjungan-daily')->dailyAt('23:45');
 }
 
     /**

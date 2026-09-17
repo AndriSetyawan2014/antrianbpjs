@@ -9,6 +9,7 @@ use App\Exports\QlkpTaskIdExport;
 use App\Exports\QltmgDataKodebookingExport;
 use App\Exports\QltmgTaskIdExport;
 use App\Http\Controllers\WABlastController;
+use App\Http\Controllers\Api\VclaimController;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\DataKodebooking;
 use App\Models\data_taskid;
@@ -107,3 +108,82 @@ Route::get('/qltmg-taskid', [AntrianController::class, 'qltmg_TaskID'])->name('q
 
 // Route::get('/wablast', [WABlastController::class, 'index'])->name('wablast.index');
 // Route::post('/wablast/send', [WABlastController::class, 'send'])->name('wablast.send');
+
+// ── VClaim — Monitoring Kunjungan ──────────────────────────────────────────
+Route::get('/vclaim/kunjungan-rawat-jalan', [VclaimController::class, 'pageKunjunganJalan'])
+    ->name('vclaim.kunjungan.jalan');
+
+Route::get('/vclaim/rekap-kunjungan-rawat-jalan', [VclaimController::class, 'pageRekapKunjunganJalan'])
+    ->name('vclaim.rekap.kunjungan.jalan');
+
+Route::get('/vclaim/endpoint-status', [VclaimController::class, 'endpointStatus'])
+    ->name('vclaim.endpoint.status');
+
+Route::get('/vclaim/ping-peserta', [VclaimController::class, 'pingPeserta'])
+    ->name('vclaim.ping.peserta');
+
+Route::get('/vclaim/ping-rujukan', [VclaimController::class, 'pingRujukan'])
+    ->name('vclaim.ping.rujukan');
+
+Route::get('/vclaim/ping-rujukan-kartu', [VclaimController::class, 'pingRujukanByNoKartu'])
+    ->name('vclaim.ping.rujukan.kartu');
+
+Route::get('/vclaim/ping-rujukan-list', [VclaimController::class, 'pingRujukanListPeserta'])
+    ->name('vclaim.ping.rujukan.list');
+
+Route::get('/vclaim/ping-referensi-diagnosa', [VclaimController::class, 'pingReferensiDiagnosa'])
+    ->name('vclaim.ping.referensi.diagnosa');
+
+Route::get('/vclaim/ping-referensi-dpjp', [VclaimController::class, 'pingReferensiDpjp'])
+    ->name('vclaim.ping.referensi.dpjp');
+
+Route::get('/vclaim/ping-sep', [VclaimController::class, 'pingSep'])
+    ->name('vclaim.ping.sep');
+
+Route::get('/vclaim/ping-surat-kontrol', [VclaimController::class, 'pingSuratKontrol'])
+    ->name('vclaim.ping.surat.kontrol');
+
+Route::get('/vclaim/ping-riwayat-pelayanan', [VclaimController::class, 'pingRiwayatPelayanan'])
+    ->name('vclaim.ping.riwayat.pelayanan');
+
+Route::get('/vclaim/ping-antrol-referensi-poli', [VclaimController::class, 'pingAntrolReferensiPoli'])
+    ->name('vclaim.ping.antrol.referensi.poli');
+
+Route::get('/vclaim/ping-antrol-jadwal-dokter', [VclaimController::class, 'pingAntrolJadwalDokter'])
+    ->name('vclaim.ping.antrol.jadwal.dokter');
+
+Route::get('/vclaim/ping-antrol-antrean-add', [VclaimController::class, 'pingAntrolAntreanAdd'])
+    ->name('vclaim.ping.antrol.antrean.add');
+
+Route::get('/vclaim/ping-antrol-update-jadwal', [VclaimController::class, 'pingAntrolUpdateJadwal'])
+    ->name('vclaim.ping.antrol.update.jadwal');
+
+Route::get('/vclaim/ping-get-fingerprint', [VclaimController::class, 'pingVclaimFingerprint'])
+    ->name('vclaim.ping.get.fingerprint');
+
+Route::get('/vclaim/ping-antrol-batal-antrean', [VclaimController::class, 'pingAntrolBatalAntrean'])
+    ->name('vclaim.ping.antrol.batal.antrean');
+
+Route::get('/vclaim/ping-antrol-get-list-task', [VclaimController::class, 'pingAntrolGetListTask'])
+    ->name('vclaim.ping.antrol.get.list.task');
+
+Route::get('/vclaim/ping-antrol-antrean-per-tanggal', [VclaimController::class, 'pingAntrolAntreanPerTanggal'])
+    ->name('vclaim.ping.antrol.antrean.per.tanggal');
+
+Route::get('/vclaim/ping-antrol-antrean-per-kode-booking', [VclaimController::class, 'pingAntrolAntreanPerKodeBooking'])
+    ->name('vclaim.ping.antrol.antrean.per.kode.booking');
+
+// Settings & Tools
+Route::get('/settings', function () {
+    return view('settings.index');
+})->name('settings.index');
+
+Route::post('/settings/clear-cache', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+        $output = \Illuminate\Support\Facades\Artisan::output();
+        return back()->with('success', 'Cache berhasil dibersihkan! Log: ' . $output);
+    } catch (\Exception $e) {
+        return back()->with('error', 'Gagal membersihkan cache: ' . $e->getMessage());
+    }
+})->name('settings.clear-cache');

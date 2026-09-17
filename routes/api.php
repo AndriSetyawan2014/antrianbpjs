@@ -5,8 +5,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\PengirimanTaskIDController;
 use App\Http\Controllers\Api\WABlastControllerapi;
 use App\Http\Controllers\Api\TambahAntrianOnlineController;
-use App\Http\Controllers\WABlastControllerapi as ControllersWABlastControllerapi;
 use App\Http\Controllers\Api\VclaimController;
+use App\Http\Controllers\WABlastControllerapi as ControllersWABlastControllerapi;
+//use App\Http\Controllers\Api\VclaimController;
 
 /*
 |--------------------------------------------------------------------------
@@ -79,8 +80,18 @@ Route::get('/data-pending-taskID', [PengirimanTaskIDController::class, 'data_pen
 // route untuk menjalankan kodebooking dan task id
 Route::get('/kodebooking-all-ql', [TambahAntrianOnlineController::class, 'kodebooking_get']);
 Route::get('/taskid-all-ql', [PengirimanTaskIDController::class, 'taskid_get']);
+// Cek status antrean via web
+Route::get('/queue-status', [TambahAntrianOnlineController::class, 'queue_status']);
+Route::get('/queue-work-start', [TambahAntrianOnlineController::class, 'queue_work_start']);
+Route::get('/queue-work-stop', [TambahAntrianOnlineController::class, 'queue_work_stop']);
+Route::get('/queue-clear', [TambahAntrianOnlineController::class, 'queue_clear']);
+
+
+
 // Akses endpoint data pending task ID berdasarkan urlQL tertentu (misal: ?urlQL=QLTMG)
 Route::match(['get', 'post'], '/taskid-by-ql', [PengirimanTaskIDController::class, 'taskid_get_by_ql']);
+Route::match(['get', 'post'], '/run-taskid-ql', [PengirimanTaskIDController::class, 'run_taskid_ql']);
+Route::match(['get', 'post'], '/run-taskid-by-kodebooking', [PengirimanTaskIDController::class, 'run_taskid_by_kodebooking']);
 // Akses endpoint data pending kode booking berdasarkan urlQL tertentu (misal: ?urlQL=QLTMG)
 Route::match(['get', 'post'], '/kodebooking-by-ql', [TambahAntrianOnlineController::class, 'kodebooking_get_by_ql']);
 
@@ -92,4 +103,12 @@ Route::match(['get', 'post'], '/kodebooking-by-ql', [TambahAntrianOnlineControll
 Route::get('/kirimpesan', [WABlastControllerapi::class, 'send_all'])->name('wablast.send-all');
 
 // VClaim - Monitoring Kunjungan
-Route::post('/vclaim/kunjungan', [VclaimController::class, 'dataKunjungan']);
+//Route::post('/vclaim/kunjungan', [VclaimController::class, 'dataKunjungan']);
+Route::match(['get', 'post'], '/vclaim/kunjungan', [VclaimController::class, 'dataKunjungan']);
+
+// VClaim - Rawat Jalan (Jenis Pelayanan = 2)
+Route::match(['get', 'post'], '/vclaim/sync-kunjungan-jalan',       [VclaimController::class, 'syncKunjunganJalan'])->name('api.vclaim.sync.jalan');
+Route::match(['get', 'post'], '/vclaim/sync-kunjungan-jalan-range', [VclaimController::class, 'syncKunjunganJalanRange'])->name('api.vclaim.sync.jalan.range');
+Route::get('/vclaim/kunjungan-jalan',        [VclaimController::class, 'getKunjunganJalan'])->name('api.vclaim.kunjungan.jalan');
+Route::get('/vclaim/kunjungan-jalan-direct', [VclaimController::class, 'getKunjunganJalanDirect'])->name('api.vclaim.kunjungan.jalan.direct');
+Route::get('/vclaim/sync-status',            [VclaimController::class, 'syncStatus'])->name('api.vclaim.sync.status');

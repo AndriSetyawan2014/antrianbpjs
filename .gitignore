@@ -1,32 +1,62 @@
 # File besar (melebihi batas 100MB GitHub)
 *.sql
 Composer-Setup.exe
+simrs_bridging_bpjs.sql
 
-
+# Laravel
+/vendor
+/public/build
 /public/hot
 /public/storage
 /storage/*.key
-/vendor
 .env
-.env.backup
-.env.production
+.env.*
+!.env.example
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
 auth.json
+
+# Node & NPM
+/node_modules
 npm-debug.log
 yarn-error.log
+yarn.log
+
+# IDE & OS
 /.idea
-/.vscode/sftp.json
+/.vscode/*
+!/.vscode/extensions.json
 /.fleet
 /.DS_Store
+Thumbs.db
+
+# Storage Directories
 /storage/logs/*
 !/storage/logs/.gitkeep
 /storage/framework/cache/*
 !/storage/framework/cache/.gitkeep
+/storage/framework/cache/data/*
+!/storage/framework/cache/data/.gitkeep
 /storage/framework/sessions/*
 !/storage/framework/sessions/.gitkeep
+/storage/framework/testing/*
+!/storage/framework/testing/.gitkeep
 /storage/framework/views/*
 !/storage/framework/views/.gitkeep
+/storage/app/public/*
+!/storage/app/public/.gitkeep
+
+# Bootstrap
 /bootstrap/cache/*
 !/bootstrap/cache/.gitkeep
+
+# Testing
+/.phpunit.cache
+/tests/Reports
+
+# Temp / Scratch files
+/scratch/
+debug_*.php
+check_logs.php
+test_*.php
