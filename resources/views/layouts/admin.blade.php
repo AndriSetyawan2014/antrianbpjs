@@ -90,8 +90,8 @@
 
     <!-- JSON Viewer Modal (shared) -->
     <div class="modal fade" id="jsonViewerModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div class="modal-content border-0 shadow">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow bg-white" style="height: 90vh;">
                 <div class="modal-header" style="background:var(--color-primary);">
                     <h5 class="modal-title text-white" id="jsonModalTitle">
                         <i class="fas fa-list-alt me-2"></i>Detail Data
@@ -103,8 +103,8 @@
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                 </div>
-                <div class="modal-body p-4" style="background:var(--color-bg);">
-                    <div id="jsonViewerContent"></div>
+                <div class="modal-body p-3 bg-white">
+                    <div id="jsonViewerContent" style="height: 100%;"></div>
                 </div>
             </div>
         </div>
@@ -170,11 +170,11 @@
                 // Blade htmlspecialchars() sering menghasilkan double-escaping (menjadi &quot;).
                 let jsonToParse = currentRawJson.replace(/&quot;/g, '"');
                 const parsed = JSON.parse(jsonToParse); 
-                const prettyJson = JSON.stringify(parsed, null, 4);
-                container.innerHTML = `<pre class="bg-white p-3 border rounded shadow-sm" style="font-size: 0.85rem; color: #1f2937; white-space: pre-wrap; word-break: break-word;">${escapeHtml(prettyJson)}</pre>`;
+                const prettyJson = JSON.stringify(parsed, null, 2);
+                container.innerHTML = `<pre class="m-0 p-0 bg-white" style="font-size: 0.85rem; color: #1f2937; white-space: pre-wrap; word-break: break-word; line-height: 1.35; border: none; height: 100%;">${escapeHtml(prettyJson)}</pre>`;
             } catch(ex) {
                 // Fallback warna teks gelap (#1f2937) agar tidak saru dengan background putih
-                container.innerHTML = `<pre class="bg-white p-3 border rounded shadow-sm" style="font-size: 0.85rem; color: #1f2937; white-space: pre-wrap; word-break: break-word;">${currentRawJson}</pre>`;
+                container.innerHTML = `<pre class="m-0 p-0 bg-white" style="font-size: 0.85rem; color: #1f2937; white-space: pre-wrap; word-break: break-word; line-height: 1.35; border: none; height: 100%;">${currentRawJson}</pre>`;
             }
             
             new bootstrap.Modal(document.getElementById('jsonViewerModal')).show();
@@ -214,7 +214,7 @@
                 const btn = this;
                 let textToCopy = currentRawJson.replace(/&quot;/g, '"');
                 try {
-                    textToCopy = JSON.stringify(JSON.parse(textToCopy), null, 4);
+                    textToCopy = JSON.stringify(JSON.parse(textToCopy), null, 2);
                 } catch(e) {}
                 
                 const copySuccess = () => {
