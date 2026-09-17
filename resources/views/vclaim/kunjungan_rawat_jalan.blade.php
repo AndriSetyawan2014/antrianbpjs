@@ -233,7 +233,7 @@
                 </div>
                 <div>
                     <label class="form-label">Cabang QL</label>
-                    <select name="urlQL" class="form-select" style="width:140px;">
+                    <select name="urlQL" class="form-select" style="width:170px;">
                         <option value="">Semua Cabang</option>
                         @foreach($availableQLs as $ql)
                             <option value="{{ $ql }}" {{ strtoupper($urlQL) === $ql ? 'selected' : '' }}>{{ $ql }}</option>
@@ -272,7 +272,7 @@
         <div class="stat-cards">
             @forelse($availableQLs as $ql)
                 @php $st = $statistik[$ql] ?? null; @endphp
-                <div class="stat-card">
+                <div class="stat-card" onclick="filterByQL('{{ $ql }}')" style="cursor:pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';" title="Filter data {{ $ql }}">
                     <div class="ql-label">{{ $ql }}</div>
                     <div class="ql-total">
                         {{ $st ? number_format($st->total) : 0 }}
@@ -290,7 +290,7 @@
             @empty
                 <div class="stat-card"><div class="ql-label">-</div><div class="ql-total">0 <span>pasien</span></div></div>
             @endforelse
-            <div class="stat-card stat-card-total">
+            <div class="stat-card stat-card-total" onclick="filterByQL('')" style="cursor:pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.2)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';" title="Tampilkan Semua Cabang">
                 <div class="ql-label">Total Semua</div>
                 <div class="ql-total">
                     {{ number_format($statistik->sum('total')) }}
@@ -667,6 +667,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    window.filterByQL = function(ql) {
+        const select = document.querySelector('select[name="urlQL"]');
+        if (select) {
+            select.value = ql;
+            document.getElementById('filterForm').submit();
+        }
+    };
 });
 </script>
 @endpush
