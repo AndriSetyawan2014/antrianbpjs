@@ -9,230 +9,119 @@
 <style>
     /* ── Filter / Control Bar (from standard template) ── */
     .vclaim-control-bar {
-        background: var(--color-surface);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-md);
+        background: var(--color-surface, #fff);
+        border: 1px solid var(--color-border, #e5e7eb);
+        border-radius: var(--radius-md, 0.5rem);
         padding: 14px 20px;
         margin-bottom: 20px;
         display: flex;
         flex-wrap: wrap;
         gap: 12px;
         align-items: flex-end;
-        box-shadow: var(--shadow-sm);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         justify-content: space-between;
     }
     .vclaim-control-bar .filter-group {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-items: flex-end;
+        display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;
     }
     .vclaim-control-bar .form-label {
-        font-size: .75rem;
-        color: var(--color-text-secondary);
-        margin-bottom: .2rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: .05em;
-    }
-    .vclaim-control-bar .form-control,
-    .vclaim-control-bar .form-select {
-        background: var(--color-bg);
-        border: 1.5px solid var(--color-border);
-        color: var(--color-text-primary);
-        border-radius: var(--radius-sm);
-        font-size: .85rem;
-        transition: border-color .2s, box-shadow .2s;
-    }
-    .vclaim-control-bar .form-control:focus,
-    .vclaim-control-bar .form-select:focus {
-        border-color: var(--color-primary);
-        box-shadow: 0 0 0 3px rgba(12,53,106,.12);
+        font-size: .75rem; color: var(--color-text-secondary, #6b7280);
+        margin-bottom: .2rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em;
     }
 
     /* ── Dashboard Header ── */
     .dashboard-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-        padding: 0 5px;
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 20px; padding: 0 5px;
     }
-    
-    .header-left {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    }
-
-    .last-updated {
-        font-size: 0.75rem;
-        color: var(--color-text-muted);
-        font-family: monospace;
-    }
-
-    .endpoint-count {
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--color-text-primary);
-    }
-
-    .status-summary {
-        display: flex;
-        gap: 10px;
-    }
-
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        background-color: var(--color-surface);
-        border: 1px solid var(--color-border);
-        box-shadow: var(--shadow-sm);
-    }
-
-    .status-badge.success { color: var(--color-success); border-color: #a7f3d0; background-color: #ecfdf5;}
-    .status-badge.warning { color: var(--color-warning); border-color: #fde68a; background-color: #fffbeb;}
-    .status-badge.danger  { color: var(--color-danger); border-color: #fca5a5; background-color: #fef2f2;}
+    .last-updated { font-size: 0.85rem; color: var(--color-text-muted, #9ca3af); font-style: italic; }
 
     /* ── Endpoint Grid ── */
     .endpoint-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 15px;
+        gap: 20px;
     }
 
     .endpoint-card {
-        background-color: var(--color-surface);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-md);
-        padding: 16px;
-        box-shadow: var(--shadow-sm);
-        transition: var(--transition-base);
+        background-color: var(--color-surface, #fff);
+        border: 1px solid var(--color-border, #e5e7eb);
+        border-radius: 0.75rem;
+        padding: 20px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
         position: relative;
-    }
-
-    .endpoint-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-        border-color: var(--color-primary);
-    }
-
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 15px;
-    }
-
-    .card-title {
-        font-size: 0.9rem;
-        font-weight: 700;
-        color: var(--color-text-primary);
-        margin: 0;
-    }
-
-    .status-label {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 0.65rem;
-        font-weight: 700;
-        text-transform: uppercase;
-    }
-    
-    .status-label.ok {
-        background-color: #d1fae5;
-        color: #065f46;
-        border: 1px solid #a7f3d0;
-    }
-
-    .status-label.err {
-        background-color: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
-    }
-    
-    .status-label.pending {
-        background-color: #f3f4f6;
-        color: #374151;
-        border: 1px solid #e5e7eb;
-    }
-
-    .card-body {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .data-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 0.75rem;
-        font-family: monospace;
-    }
-
-    .data-label {
-        color: var(--color-text-secondary);
-        font-weight: 600;
-    }
-
-    .data-value {
-        color: var(--color-text-primary);
-        font-weight: 700;
-    }
-
-    .response-time-section {
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px dashed var(--color-border);
-    }
-
-    .response-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 6px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        color: var(--color-text-secondary);
-    }
-
-    .response-value {
-        font-weight: 700;
-        font-size: 0.8rem;
-    }
-    
-    .response-value.ok { color: var(--color-success); }
-    .response-value.err { color: var(--color-danger); }
-    .response-value.pending { color: var(--color-text-muted); }
-
-    .progress-track {
-        width: 100%;
-        height: 6px;
-        background-color: var(--color-bg);
-        border: 1px solid var(--color-border);
-        border-radius: 3px;
         overflow: hidden;
     }
 
-    .progress-bar {
-        height: 100%;
-        border-radius: 2px;
-        transition: width 0.5s ease-out;
+    .endpoint-card::before {
+        content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+    }
+    .endpoint-card.ok::before { background-color: #10b981; }
+    .endpoint-card.err::before { background-color: #ef4444; }
+    .endpoint-card.pending::before { background-color: #d1d5db; }
+
+    .endpoint-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
 
-    .progress-bar.ok { background-color: var(--color-success); }
-    .progress-bar.err { background-color: var(--color-danger); }
-    .progress-bar.pending { background-color: var(--color-text-muted); width: 0%; }
+    @keyframes pulsePending {
+        0% { opacity: 1; }
+        50% { opacity: 0.4; }
+        100% { opacity: 1; }
+    }
+    .pulse-animation {
+        animation: pulsePending 1.5s infinite ease-in-out;
+    }
+
+    .card-header {
+        display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;
+    }
+    .card-title {
+        font-size: 0.95rem; font-weight: 700; color: var(--color-text-primary, #111827); margin: 0;
+    }
+
+    .status-label {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 4px 10px; border-radius: 20px; font-size: 0.7rem;
+        font-weight: 700; text-transform: uppercase; letter-spacing: .02em;
+    }
+    .status-label.ok { background-color: #d1fae5; color: #065f46; }
+    .status-label.err { background-color: #fee2e2; color: #991b1b; }
+    .status-label.pending { background-color: #f3f4f6; color: #374151; }
+
+    .card-body { display: flex; flex-direction: column; gap: 10px; }
+    .data-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; font-family: monospace; }
+    .data-label { color: var(--color-text-secondary, #6b7280); font-weight: 600; }
+    .data-value { color: var(--color-text-primary, #111827); font-weight: 700; background: #f9fafb; padding: 2px 6px; border-radius: 4px; }
+
+    .response-time-section {
+        margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--color-border, #e5e7eb);
+    }
+    .response-header {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 8px; font-size: 0.75rem; font-weight: 600; color: var(--color-text-secondary, #6b7280);
+    }
+    .response-value { font-weight: 700; font-size: 0.85rem; }
+
+    /* Kecepatan warna teks */
+    .text-fast { color: #10b981; }
+    .text-medium { color: #f59e0b; }
+    .text-slow { color: #ef4444; }
+    .text-pending { color: #9ca3af; }
+
+    .progress-track {
+        width: 100%; height: 6px; background-color: #f3f4f6;
+        border-radius: 3px; overflow: hidden;
+    }
+    .progress-bar {
+        height: 100%; border-radius: 3px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s;
+    }
+    /* Kecepatan warna bar */
+    .bg-fast { background-color: #10b981; }
+    .bg-medium { background-color: #f59e0b; }
+    .bg-slow { background-color: #ef4444; }
 </style>
 @endpush
 
@@ -267,15 +156,38 @@
 
         {{-- ══ Dashboard ══ --}}
         <div id="appMonitor">
+            <div class="row mb-3 mt-4">
+                <div class="col-md-4 col-sm-12 mb-2">
+                    <div class="info-box shadow-sm" style="border-radius: 0.75rem;">
+                        <span class="info-box-icon bg-info elevation-1" style="border-radius: 0.75rem 0 0 0.75rem;"><i class="fas fa-network-wired"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text text-uppercase" style="font-size: 0.75rem; font-weight:600; letter-spacing:0.05em;">Total Endpoint</span>
+                            <span class="info-box-number" id="totalEndpoints" style="font-size: 1.5rem;">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-2">
+                    <div class="info-box shadow-sm" style="border-radius: 0.75rem;">
+                        <span class="info-box-icon bg-success elevation-1" style="border-radius: 0.75rem 0 0 0.75rem;"><i class="fas fa-check-circle"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text text-uppercase" style="font-size: 0.75rem; font-weight:600; letter-spacing:0.05em;">Status OK</span>
+                            <span class="info-box-number" id="countOk" style="font-size: 1.5rem;">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-2">
+                    <div class="info-box shadow-sm" style="border-radius: 0.75rem;">
+                        <span class="info-box-icon bg-danger elevation-1" style="border-radius: 0.75rem 0 0 0.75rem;"><i class="fas fa-times-circle"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text text-uppercase" style="font-size: 0.75rem; font-weight:600; letter-spacing:0.05em;">Status Error</span>
+                            <span class="info-box-number" id="countErr" style="font-size: 1.5rem;">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="dashboard-header">
-                <div class="header-left">
-                    <div class="endpoint-count">Menampilkan <span id="totalEndpoints">0</span> endpoint</div>
-                    <div class="last-updated" id="lastUpdatedTime">Belum dilakukan analisa</div>
-                </div>
-                <div class="status-summary">
-                    <span class="status-badge success"><i class="fas fa-check-circle me-1"></i> <span id="countOk">0</span></span>
-                    <span class="status-badge danger"><i class="fas fa-times-circle me-1"></i> <span id="countErr">0</span></span>
-                </div>
+                <div class="last-updated" id="lastUpdatedTime">Belum dilakukan analisa</div>
             </div>
 
             <div class="endpoint-grid" id="endpointGrid">
@@ -343,11 +255,20 @@ document.addEventListener('DOMContentLoaded', function() {
             else if (!isPending) { statusClass = 'err'; iconClass = 'fa-times'; }
 
             // max scale 1000ms for green, larger for red
-            const maxTime = isOk ? 1000 : (ep.time > 1000 ? ep.time : 1000); 
+            const maxTime = 1000; 
             const progressWidth = (isPending || isNa) ? 0 : Math.min(100, (ep.time / maxTime) * 100);
 
+            // Tentukan indikator kecepatan berdasarkan response time
+            let speedClass = 'text-pending';
+            let bgClass = 'bg-pending';
+            if (!isPending && !isNa) {
+                if (ep.time > 800) { speedClass = 'text-slow'; bgClass = 'bg-slow'; }
+                else if (ep.time >= 300) { speedClass = 'text-medium'; bgClass = 'bg-medium'; }
+                else { speedClass = 'text-fast'; bgClass = 'bg-fast'; }
+            }
+
             const cardHTML = `
-                <div class="endpoint-card" style="border-left: 3px solid ${isOk ? 'var(--color-success)' : ((isPending || isNa) ? 'transparent' : 'var(--color-danger)')}">
+                <div class="endpoint-card ${statusClass} ${isPending ? 'pulse-animation' : ''}">
                     <div class="card-header">
                         <h3 class="card-title">${ep.name}</h3>
                         <div class="status-label ${statusClass}">
@@ -367,10 +288,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="response-time-section">
                         <div class="response-header">
                             <span>RESPONSE TIME</span>
-                            <span class="response-value ${statusClass}">${(isPending || isNa) ? '-' : ep.time + ' ms'}</span>
+                            <span class="response-value ${speedClass}">${(isPending || isNa) ? '-' : ep.time + ' ms'}</span>
                         </div>
                         <div class="progress-track">
-                            <div class="progress-bar ${statusClass}" style="width: ${progressWidth}%;"></div>
+                            <div class="progress-bar ${bgClass}" style="width: ${progressWidth}%;"></div>
                         </div>
                     </div>
                 </div>
