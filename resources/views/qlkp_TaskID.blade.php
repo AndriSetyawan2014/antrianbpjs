@@ -38,7 +38,8 @@
                 <th style="width:6%;">Jam</th>
                 <th style="width:8%;">Request</th>
                 <th style="width:8%;">Response</th>
-                <th style="width:6%;">Reupload</th>
+                <th style="width:5%;">Reupload</th>
+                <th style="width:5%;">Aksi</th>
             </tr>
         </thead>
         <tbody id="taskid-body">
@@ -70,13 +71,60 @@
                         <i class="fas fa-eye"></i> Lihat
                     </button>
                 </td>
-                <td>{{ $item->reupload }}</td>
+                <td class="text-center">{{ $item->reupload }}</td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-info btn-duplicate" 
+                        data-kodebooking="{{ $item->kodebooking }}"
+                        data-taskid="{{ $item->taskid }}"
+                        data-waktu="{{ $item->waktu }}"
+                        data-idpendaftaran="{{ $item->idpendaftaran }}"
+                        title="Duplikat Task ID ini">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </td>
             </tr>
             @endforeach
         </tbody>
     </table>
 </div>
 
+<!-- Modal Duplicate Task ID -->
+<div class="modal fade" id="modalDuplicate" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="formDuplicate">
+      <div class="modal-header">
+        <h5 class="modal-title">Duplikat Task ID</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="dup_urlQL" name="urlQL" value="QLKP">
+        <div class="mb-3">
+            <label class="form-label">Kode Booking</label>
+            <input type="text" class="form-control" id="dup_kodebooking" name="kodebooking" required readonly>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">ID Pendaftaran</label>
+            <input type="text" class="form-control" id="dup_idpendaftaran" name="idpendaftaran">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Task ID</label>
+            <input type="number" class="form-control" id="dup_taskid" name="taskid" min="1" max="99" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Waktu (Waktu RS)</label>
+            <input type="datetime-local" step="1" class="form-control" id="dup_waktu" name="waktu" required>
+            <small class="text-muted">Ubah waktu ini sesuai kebutuhan sebelum disimpan.</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="submit" class="btn btn-primary" id="btnSaveDuplicate"><i class="fas fa-save me-1"></i> Simpan Task ID Baru</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -85,12 +133,57 @@ $(document).ready(function () {
     var table = $('#qlkp_table').DataTable({
         paging: true, searching: true, ordering: true, autoWidth: false, pageLength: 25,
         language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json' },
-        columnDefs: [{ orderable: false, targets: [9, 10] }]
+        columnDefs: [{ orderable: false, targets: [9, 10, 12] }]
     });
 
     function formatDateToISO(d) {
         const o = new Date(d); return isNaN(o.getTime()) ? null : o.toISOString().split('T')[0];
     }
+
+    // Logic for duplicate modal
+    $('.btn-duplicate').on('click', function() {
+        var btn = $(this);
+        $('#dup_kodebooking').val(btn.data('kodebooking'));
+        $('#dup_idpendaftaran').val(btn.data('idpendaftaran'));
+        $('#dup_taskid').val(btn.data('taskid'));
+        
+        // Convert timestamp (ms) to YYYY-MM-DDThh:mm:ss
+        var ms = parseInt(btn.data('waktu'));
+        if(!isNaN(ms)) {
+            var d = new Date(ms);
+            var tzOffset = d.getTimezoneOffset() * 60000;
+            var localISOTime = (new Date(d - tzOffset)).toISOString().slice(0, 19);
+            $('#dup_waktu').val(localISOTime);
+        } else {
+            $('#dup_waktu').val('');
+        }
+        
+        $('#modalDuplicate').modal('show');
+    });
+
+    $('#formDuplicate').on('submit', function(e) {
+        e.preventDefault();
+        var form = $(this);
+        var btn = $('#btnSaveDuplicate');
+        var originalText = btn.html();
+        
+        btn.html('<i class="fas fa-spinner fa-spin me-1"></i> Menyimpan...').prop('disabled', true);
+        
+        $.ajax({
+            url: '{{ url("api/manual-add-taskid") }}',
+            type: 'POST',
+            data: form.serialize(),
+            success: function(res) {
+                alert('Berhasil: ' + (res.metadata.message || ''));
+                $('#modalDuplicate').modal('hide');
+                location.reload();
+            },
+            error: function(err) {
+                alert('Gagal menyimpan: ' + (err.responseJSON ? err.responseJSON.metadata.message : 'Error server'));
+                btn.html(originalText).prop('disabled', false);
+            }
+        });
+    });
 
     $.fn.dataTable.ext.search.push(function(settings, data) {
         var s = $('#start_date').val(), e = $('#end_date').val();

@@ -110,6 +110,63 @@ class PengirimanTaskIDController extends Controller
         return $this->taskID_otomatis($urlQL, null, $kodebooking);
     }
 
+    public function manualAddTaskid(Request $request)
+    {
+        $urlQL = strtoupper($request->input('urlQL', 'QLJ'));
+        $allowedQL = \App\Helpers\BpjsHelper::getUrlQLOptions();
+
+        if (!in_array($urlQL, $allowedQL)) {
+            return response()->json([
+                'metadata' => ['code' => 422, 'message' => 'Cabang tidak valid.']
+            ], 422);
+        }
+
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'kodebooking' => 'required|string',
+            'taskid' => 'required|integer',
+            'waktu' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'metadata' => ['code' => 422, 'message' => 'Parameter tidak lengkap.']
+            ], 422);
+        }
+
+        try {
+            $waktuInput = $request->input('waktu'); // expect string like 2026-09-17T16:45
+            // Convert to milliseconds timestamp
+            $timestamp = \Carbon\Carbon::parse($waktuInput, 'Asia/Jakarta')->getTimestamp();
+            $waktuMillis = $timestamp * 1000;
+
+            $model = (new \App\Models\data_taskid())->setTableByQL($urlQL);
+            
+            $model->create([
+                'kodebooking' => $request->input('kodebooking'),
+                'taskid' => $request->input('taskid'),
+                'waktu' => $waktuMillis,
+                'idpendaftaran' => $request->input('idpendaftaran'),
+                'tanggal' => \Carbon\Carbon::parse($waktuInput)->toDateString(),
+                'jam' => \Carbon\Carbon::parse($waktuInput)->toTimeString(),
+                'code' => 0,
+                'message' => 'Menunggu Sinkronisasi',
+                'reupload' => 1,
+            ]);
+
+            return response()->json([
+                'metadata' => [
+                    'code' => 200,
+                    'message' => 'Task ID berhasil ditambahkan dan siap disinkronisasi.'
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error manualAddTaskid: ' . $e->getMessage());
+            return response()->json([
+                'metadata' => ['code' => 500, 'message' => 'Terjadi kesalahan pada server.']
+            ], 500);
+        }
+    }
+
     public function data_pending_taskID_get($urlQL = 'QLJ', $tanggal = null, $dari = null, $sampai = null)
     {
         set_time_limit(99999);
