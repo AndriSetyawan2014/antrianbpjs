@@ -156,31 +156,37 @@
 
         {{-- ══ Dashboard ══ --}}
         <div id="appMonitor">
-            <div class="row mb-3 mt-4">
-                <div class="col-md-4 col-sm-12 mb-2">
-                    <div class="info-box shadow-sm" style="border-radius: 0.75rem;">
-                        <span class="info-box-icon bg-info elevation-1" style="border-radius: 0.75rem 0 0 0.75rem;"><i class="fas fa-network-wired"></i></span>
-                        <div class="info-box-content">
-                            <span class="info-box-text text-uppercase" style="font-size: 0.75rem; font-weight:600; letter-spacing:0.05em;">Total Endpoint</span>
-                            <span class="info-box-number" id="totalEndpoints" style="font-size: 1.5rem;">0</span>
+            <div class="row mb-4 mt-2">
+                <div class="col-md-4 col-sm-12 mb-3">
+                    <div class="summary-card shadow-sm bg-white" style="border-radius:0.75rem; padding:20px; display:flex; align-items:center; gap:15px; border:1px solid #e5e7eb;">
+                        <div class="summary-icon d-flex align-items-center justify-content-center" style="width:50px; height:50px; border-radius:12px; font-size:1.4rem; background:#e0f2fe; color:#0284c7;">
+                            <i class="fas fa-network-wired"></i>
+                        </div>
+                        <div>
+                            <div class="text-uppercase text-muted" style="font-size:0.7rem; font-weight:700; letter-spacing:0.05em;">Total Endpoint</div>
+                            <div id="totalEndpoints" style="font-size:1.5rem; font-weight:700; color:#111827; line-height:1.2;">0</div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 col-sm-6 mb-2">
-                    <div class="info-box shadow-sm" style="border-radius: 0.75rem;">
-                        <span class="info-box-icon bg-success elevation-1" style="border-radius: 0.75rem 0 0 0.75rem;"><i class="fas fa-check-circle"></i></span>
-                        <div class="info-box-content">
-                            <span class="info-box-text text-uppercase" style="font-size: 0.75rem; font-weight:600; letter-spacing:0.05em;">Status OK</span>
-                            <span class="info-box-number" id="countOk" style="font-size: 1.5rem;">0</span>
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="summary-card shadow-sm bg-white" style="border-radius:0.75rem; padding:20px; display:flex; align-items:center; gap:15px; border:1px solid #e5e7eb;">
+                        <div class="summary-icon d-flex align-items-center justify-content-center" style="width:50px; height:50px; border-radius:12px; font-size:1.4rem; background:#dcfce7; color:#16a34a;">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div>
+                            <div class="text-uppercase text-muted" style="font-size:0.7rem; font-weight:700; letter-spacing:0.05em;">Status OK</div>
+                            <div id="countOk" style="font-size:1.5rem; font-weight:700; color:#111827; line-height:1.2;">0</div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 col-sm-6 mb-2">
-                    <div class="info-box shadow-sm" style="border-radius: 0.75rem;">
-                        <span class="info-box-icon bg-danger elevation-1" style="border-radius: 0.75rem 0 0 0.75rem;"><i class="fas fa-times-circle"></i></span>
-                        <div class="info-box-content">
-                            <span class="info-box-text text-uppercase" style="font-size: 0.75rem; font-weight:600; letter-spacing:0.05em;">Status Error</span>
-                            <span class="info-box-number" id="countErr" style="font-size: 1.5rem;">0</span>
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="summary-card shadow-sm bg-white" style="border-radius:0.75rem; padding:20px; display:flex; align-items:center; gap:15px; border:1px solid #e5e7eb;">
+                        <div class="summary-icon d-flex align-items-center justify-content-center" style="width:50px; height:50px; border-radius:12px; font-size:1.4rem; background:#fee2e2; color:#dc2626;">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                        <div>
+                            <div class="text-uppercase text-muted" style="font-size:0.7rem; font-weight:700; letter-spacing:0.05em;">Status Error</div>
+                            <div id="countErr" style="font-size:1.5rem; font-weight:700; color:#111827; line-height:1.2;">0</div>
                         </div>
                     </div>
                 </div>

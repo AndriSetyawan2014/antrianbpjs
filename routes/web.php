@@ -75,6 +75,8 @@ Route::get('/export-taskid', function () {
 Route::get('/qlkp_data_kodebooking', [AntrianController::class, 'qlkp_datakodebooking'])->name('qlkp_data_kodebooking');
 Route::get('/qlkp_rekap_kodebooking', [AntrianController::class, 'qlkp_rekap_kodebooking'])->name('qlkp_rekap_kodebooking');
 Route::get('/qlkp_TaskID', [AntrianController::class, 'qlkp_TaskID'])->name('qlkp_TaskID');
+Route::get('/qlkp_taskid/filter', [AntrianController::class, 'qlkp_TaskID'])->name('qlkp_taskid.filter');
+Route::get('/qlkp_taskid/reset', [AntrianController::class, 'qlkp_TaskID'])->name('qlkp_taskid.reset');
 Route::get('/qlkp_rekap_taskid', [AntrianController::class, 'qlkp_rekap_taskid'])->name('qlkp_rekap_taskid');
 
 // Export Excel - QL Kulon Progo
@@ -93,6 +95,8 @@ Route::get('/qlkp-taskid', [AntrianController::class, 'qlkp_TaskID'])->name('qlk
 Route::get('/qltmg_data_kodebooking', [AntrianController::class, 'qltmg_datakodebooking'])->name('qltmg_data_kodebooking');
 Route::get('/qltmg_rekap_kodebooking', [AntrianController::class, 'qltmg_rekap_kodebooking'])->name('qltmg_rekap_kodebooking');
 Route::get('/qltmg_TaskID', [AntrianController::class, 'qltmg_TaskID'])->name('qltmg_TaskID');
+Route::get('/qltmg_taskid/filter', [AntrianController::class, 'qltmg_TaskID'])->name('qltmg_taskid.filter');
+Route::get('/qltmg_taskid/reset', [AntrianController::class, 'qltmg_TaskID'])->name('qltmg_taskid.reset');
 Route::get('/qltmg_rekap_taskid', [AntrianController::class, 'qltmg_rekap_taskid'])->name('qltmg_rekap_taskid');
 
 // Export Excel - QL Temanggung

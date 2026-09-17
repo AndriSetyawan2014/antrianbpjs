@@ -8,12 +8,14 @@
 
 <div class="filter-card">
     <i class="fas fa-filter" style="color:var(--color-primary);"></i>
-    <label>Dari:</label>
-    <input type="date" id="start_date" value="{{ $startDate }}">
-    <label>Sampai:</label>
-    <input type="date" id="end_date" value="{{ $endDate }}">
-    <button id="filter" class="btn-filter btn-primary"><i class="fas fa-search"></i> Filter</button>
-    <button id="reset" class="btn-filter btn-secondary"><i class="fas fa-undo"></i> Reset</button>
+    <form id="filterForm" action="{{ route('qlkp_taskid.filter') }}" method="GET" style="display:inline-flex; align-items:center; gap:8px; margin:0;">
+        <label>Dari:</label>
+        <input type="date" name="start_date" id="start_date" value="{{ $startDate }}">
+        <label>Sampai:</label>
+        <input type="date" name="end_date" id="end_date" value="{{ $endDate }}">
+        <button type="submit" id="filter" class="btn-filter btn-primary"><i class="fas fa-search"></i> Filter</button>
+        <a href="{{ route('qlkp_taskid.reset') }}" id="reset" class="btn-filter btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center;"><i class="fas fa-undo"></i> Reset</a>
+    </form>
     <label class="ms-3">Task ID:</label>
     <input type="text" id="taskid_filter" placeholder="Cari Task ID..."
            style="height:36px; font-size:13px; padding:5px 10px; border:1.5px solid var(--color-border); border-radius:var(--radius-sm); width:130px;">
@@ -101,8 +103,9 @@ $(document).ready(function () {
         return td >= s && td <= e;
     });
 
-    $('#filter').on('click', () => table.draw());
-    $('#reset').on('click', () => { $('#start_date').val(''); $('#end_date').val(''); $('#taskid_filter').val(''); table.column(3).search('').draw(); });
+    // Custom filter tanggal untuk JS Datatable tidak diperlukan lagi (menggunakan server-side filter)
+    // $('#filter').on('click', () => table.draw());
+    // $('#reset').on('click', () => { $('#start_date').val(''); $('#end_date').val(''); $('#taskid_filter').val(''); table.column(3).search('').draw(); });
     $('#filter_taskid').on('click', () => table.column(3).search($('#taskid_filter').val().trim()).draw());
 });
 </script>
