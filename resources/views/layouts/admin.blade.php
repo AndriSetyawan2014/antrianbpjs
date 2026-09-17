@@ -166,29 +166,71 @@
             document.getElementById('jsonModalTitle').innerHTML = '<i class="fas fa-list-alt me-2"></i>' + title;
             
             const container = document.getElementById('jsonViewerContent');
-            try { 
-                const parsed = JSON.parse(currentRawJson); 
-                container.innerHTML = renderJsonToHtml(parsed);
+            try {
+                // Blade htmlspecialchars() sering menghasilkan double-escaping (menjadi &quot;).
+                let jsonToParse = currentRawJson.replace(/&quot;/g, '"');
+                const parsed = JSON.parse(jsonToParse); 
+                const prettyJson = JSON.stringify(parsed, null, 4);
+                container.innerHTML = `<pre class="bg-white p-3 border rounded shadow-sm" style="font-size: 0.85rem; color: #1f2937; white-space: pre-wrap; word-break: break-word;">${escapeHtml(prettyJson)}</pre>`;
             } catch(ex) {
-                container.innerHTML = `<pre class="bg-white p-3 border rounded shadow-sm" style="font-size: 0.85rem;">${currentRawJson}</pre>`;
+                // Fallback warna teks gelap (#1f2937) agar tidak saru dengan background putih
+                container.innerHTML = `<pre class="bg-white p-3 border rounded shadow-sm" style="font-size: 0.85rem; color: #1f2937; white-space: pre-wrap; word-break: break-word;">${currentRawJson}</pre>`;
             }
             
             new bootstrap.Modal(document.getElementById('jsonViewerModal')).show();
         });
 
+        function fallbackCopyTextToClipboard(text, onSuccess) {
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            textArea.style.opacity = "0"; // Supaya tidak terlihat
+            
+            // Bootstrap Modal memiliki fitur "Enforce Focus". Jika kita menempelkan textarea ke document.body, 
+            // modal akan merebut kembali focus-nya sebelum execCommand('copy') sempat berjalan.
+            // Solusinya adalah menempelkan textarea ke dalam modal itu sendiri.
+            var modalEl = document.getElementById('jsonViewerModal') || document.body;
+            modalEl.appendChild(textArea);
+            
+            textArea.focus();
+            textArea.select();
+            try {
+                var successful = document.execCommand('copy');
+                if (successful && onSuccess) {
+                    onSuccess();
+                }
+            } catch (err) {}
+            
+            modalEl.removeChild(textArea);
+        }
+
         const btnCopy = document.getElementById('btnCopyJson');
         if(btnCopy) {
             btnCopy.addEventListener('click', function() {
                 if(!currentRawJson) return;
-                let textToCopy = currentRawJson;
+                
+                const btn = this;
+                let textToCopy = currentRawJson.replace(/&quot;/g, '"');
                 try {
-                    textToCopy = JSON.stringify(JSON.parse(currentRawJson), null, 2);
+                    textToCopy = JSON.stringify(JSON.parse(textToCopy), null, 4);
                 } catch(e) {}
-                navigator.clipboard.writeText(textToCopy).then(() => {
-                    const originalHTML = this.innerHTML;
-                    this.innerHTML = '<i class="fas fa-check"></i> Disalin';
-                    setTimeout(() => { this.innerHTML = originalHTML; }, 2000);
-                });
+                
+                const copySuccess = () => {
+                    const originalHTML = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i> Disalin';
+                    setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
+                };
+
+                // Jika HTTPS maka coba pakai clipboard API, jika gagal/HTTP fallback ke execCommand
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(textToCopy)
+                        .then(copySuccess)
+                        .catch(() => fallbackCopyTextToClipboard(textToCopy, copySuccess));
+                } else {
+                    fallbackCopyTextToClipboard(textToCopy, copySuccess);
+                }
             });
         }
     </script>
