@@ -118,9 +118,25 @@ class AntrianController extends Controller
 
         // Ambil semua kodebooking sebagai array
         $kbs = $kodebookings->pluck('kodebooking')->toArray();
+        $nojkns = $kodebookings->pluck('nojkn')->filter()->toArray();
         
         // Ambil data_taskid untuk kodebooking terkait
         $taskids = data_taskid::whereIn('kodebooking', $kbs)->get();
+
+        // Ambil data SEP dari VclaimKunjungan
+        $vclaimMap = [];
+        if (count($nojkns) > 0) {
+            $vclaims = \App\Models\VclaimKunjungan::whereIn('no_kartu', $nojkns)
+                ->whereDate('tgl_kunjungan', '>=', $start_date)
+                ->whereDate('tgl_kunjungan', '<=', $end_date)
+                ->get();
+
+            foreach ($vclaims as $v) {
+                // Tgl Kunjungan cast to date, so format it back
+                $tgl = $v->tgl_kunjungan ? $v->tgl_kunjungan->format('Y-m-d') : '';
+                $vclaimMap[$v->no_kartu][$tgl] = $v->no_sep;
+            }
+        }
 
         // Grouping berdasarkan kodebooking
         $groupedTasks = [];
@@ -128,7 +144,7 @@ class AntrianController extends Controller
             $groupedTasks[$t->kodebooking][$t->taskid] = $t;
         }
 
-        return view('monitoring_taskid', compact('kodebookings', 'groupedTasks', 'start_date', 'end_date'));
+        return view('monitoring_taskid', compact('kodebookings', 'groupedTasks', 'start_date', 'end_date', 'vclaimMap'));
     }
 
     public function getMonitoringTaskidDetail($kodebooking)

@@ -55,11 +55,19 @@
                 $tasks = [1, 2, 3, 4, 5, 6, 7, 99];
             @endphp
             @foreach($kodebookings as $index => $kb)
+                @php
+                    $tgl = date('Y-m-d', strtotime($kb->tanggalperiksa));
+                    $noSep = $vclaimMap[$kb->nojkn][$tgl] ?? null;
+                @endphp
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td style="text-align: left;">
                         <strong>{{ $kb->kodebooking }}</strong><br>
-                        <small>RM: {{ $kb->norm }}</small><br>
+                        <small>RM: {{ $kb->norm }}</small>
+                        @if($noSep)
+                            <br><small class="text-primary"><i class="fas fa-file-medical"></i> SEP: {{ $noSep }}</small>
+                        @endif
+                        <br>
                         <small>{{ $kb->namadokter }}</small><br>
                         <small class="text-muted">{{ $kb->namaunit }}</small>
                     </td>
