@@ -47,8 +47,8 @@
                 <th style="width:10%;">Tgl Periksa</th>
                 <th style="width:7%;">Code</th>
                 <th style="width:16%;">Message</th>
-                <th style="width:27%;">Request</th>
-                <th style="width:28%;">Response</th>
+                <th style="width:27%;" class="text-center">Request</th>
+                <th style="width:28%;" class="text-center">Response</th>
             </tr>
         </thead>
         <tbody>

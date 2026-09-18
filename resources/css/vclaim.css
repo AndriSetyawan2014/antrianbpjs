@@ -130,13 +130,13 @@
 .stat-cards .stat-card { cursor: pointer; }
 .stat-cards .stat-card:hover,
 .stat-cards .stat-card:focus-visible {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-  border-color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border);
   outline: none;
 }
 .stat-cards .stat-card:focus-visible {
-  outline: 3px solid rgba(255, 196, 54, 0.5);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
@@ -294,38 +294,38 @@
 
 /* ── Kartu endpoint ── */
 .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 5px; }
-.last-updated { font-size: 0.85rem; color: var(--color-text-muted, #9ca3af); font-style: italic; }
+.last-updated { font-size: 0.85rem; color: var(--color-text-muted); font-style: italic; }
 .endpoint-card {
-  background-color: var(--color-surface, #fff);
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 0.75rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   padding: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s;
   position: relative;
   overflow: hidden;
 }
 .endpoint-card::before { content: ""; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
-.endpoint-card.ok::before { background-color: #10b981; }
-.endpoint-card.err::before { background-color: #ef4444; }
-.endpoint-card.pending::before { background-color: #d1d5db; }
-.endpoint-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+.endpoint-card.ok::before { background-color: var(--color-success); }
+.endpoint-card.err::before { background-color: var(--color-danger); }
+.endpoint-card.pending::before { background-color: var(--color-border); }
+.endpoint-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: rgba(0,0,0,0.1); }
 .endpoint-card .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
-.endpoint-card .card-title { font-size: 0.95rem; font-weight: 700; color: var(--color-text-primary, #111827); margin: 0; }
+.endpoint-card .card-title { font-size: 0.95rem; font-weight: 600; color: var(--color-text-primary); margin: 0; }
 .status-label {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   padding: 4px 10px;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
-.status-label.ok { background-color: #d1fae5; color: #065f46; }
-.status-label.err { background-color: #fee2e2; color: #991b1b; }
-.status-label.pending { background-color: #f3f4f6; color: #374151; }
+.status-label.ok { background-color: var(--color-success-light); color: var(--color-success); }
+.status-label.err { background-color: var(--color-danger-light); color: var(--color-danger); }
+.status-label.pending { background-color: var(--color-bg); color: var(--color-text-secondary); }
 .endpoint-card .card-body { display: flex; flex-direction: column; gap: 10px; }
 .endpoint-card .data-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; font-family: monospace; }
 .endpoint-card .data-label { color: var(--color-text-secondary, #6b7280); font-weight: 600; }

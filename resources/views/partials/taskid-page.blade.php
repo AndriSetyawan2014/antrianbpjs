@@ -60,8 +60,8 @@
                 <th style="width:13%;">Message</th>
                 <th style="width:8%;">Tanggal</th>
                 <th style="width:6%;">Jam</th>
-                <th style="width:8%;">Request</th>
-                <th style="width:8%;">Response</th>
+                <th style="width:8%;" class="text-center">Request</th>
+                <th style="width:8%;" class="text-center">Response</th>
                 <th style="width:5%;">Reupload</th>
                 <th style="width:5%;">Aksi</th>
             </tr>
