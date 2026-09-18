@@ -215,9 +215,10 @@
   text-transform: uppercase;
   padding: 0.7rem 1rem;
   white-space: nowrap;
-  position: sticky;
-  top: 0;
-  z-index: 2;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+  background-clip: padding-box;
 }
 .vclaim-table-wrap .table tbody tr { border-bottom: 1px solid var(--color-border); transition: background 0.15s; }
 .vclaim-table-wrap .table tbody tr:hover { background: var(--color-surface-alt); }

@@ -437,9 +437,10 @@ h4 {
 }
 
 .table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+  background-clip: padding-box;
 }
 
 .table td {
