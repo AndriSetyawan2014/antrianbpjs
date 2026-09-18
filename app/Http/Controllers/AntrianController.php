@@ -8,11 +8,14 @@ use Illuminate\Http\Request;
 use App\Models\DataKodebooking;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Cache;
 
 class AntrianController extends Controller
 {
     public function index()
     {
+        // Cache seluruh data dashboard selama 5 menit (300 detik) untuk mengatasi loading lama
+        $dashboardData = Cache::remember('dashboard_data_v1', 300, function () {
         // Group data for QLJ
         $data_kodebooking = DataKodebooking::select('tanggalperiksa', 'message', DB::raw('count(*) as total'))
             ->groupBy('tanggalperiksa', 'message')
@@ -68,21 +71,24 @@ class AntrianController extends Controller
             ];
         }
 
-        return view('dashboard.index', [
-            'data_kodebooking' => $data_kodebooking,
-            'dataTaskId' => $TaskID,
-            'totalKodebooking' => $totalKodebooking,
-            'rekapKodebooking' => $rekapKodebooking,
-            'totalTaskId' => $totalTaskId,
-            'rekapTaskId' => $rekapTaskId,
-            'qlkptotalKodebooking' => $qlkptotalKodebooking,
-            'qlkprekapKodebooking' => $qlkprekapKodebooking,
-            'qlkptotalTaskId' => $qlkptotalTaskId,
-            'qlkprekapTaskId' => $qlkprekapTaskId,
-            'qlkp_data_kodebooking' => $qlkp_data_kodebooking,
-            'qlkp_TaskID' => $qlkp_TaskID,
-            'graphData' => json_encode($graphData),
-        ]);
+            return [
+                'data_kodebooking' => $data_kodebooking,
+                'dataTaskId' => $TaskID,
+                'totalKodebooking' => $totalKodebooking,
+                'rekapKodebooking' => $rekapKodebooking,
+                'totalTaskId' => $totalTaskId,
+                'rekapTaskId' => $rekapTaskId,
+                'qlkptotalKodebooking' => $qlkptotalKodebooking,
+                'qlkprekapKodebooking' => $qlkprekapKodebooking,
+                'qlkptotalTaskId' => $qlkptotalTaskId,
+                'qlkprekapTaskId' => $qlkprekapTaskId,
+                'qlkp_data_kodebooking' => $qlkp_data_kodebooking,
+                'qlkp_TaskID' => $qlkp_TaskID,
+                'graphData' => json_encode($graphData),
+            ];
+        });
+
+        return view('dashboard.index', $dashboardData);
     }
 
     // public function showKodeBooking($kodebooking)

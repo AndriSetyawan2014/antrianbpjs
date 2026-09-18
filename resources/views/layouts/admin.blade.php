@@ -213,13 +213,11 @@
                     const m = new Date(today.getFullYear(), today.getMonth(), 1);
                     s.value = fmt(m); e.value = fmt(today);
                 }
-                // Picu filter DataTables bila ada, atau submit form bila ada
-                if (typeof $ !== 'undefined' && $.fn.DataTable) {
-                    try {
-                        Object.values($.fn.dataTable.tables()).forEach(function () {});
-                        const t = $('.table').DataTable();
-                        if (t) t.draw();
-                    } catch (err) {}
+                
+                // Submit form otomatis setelah tanggal diubah
+                const form = s.form || s.closest('form');
+                if (form) {
+                    form.submit();
                 }
             };
             document.addEventListener('click', function (ev) {

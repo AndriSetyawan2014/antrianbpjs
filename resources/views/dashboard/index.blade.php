@@ -14,52 +14,60 @@
 </div>
 
 {{-- ── Control Bar ── --}}
-<div class="control-bar">
-    <div class="control-bar-left">
-        <div class="control-item">
-            <label for="regionSelector"><i class="fas fa-map-marker-alt"></i> Wilayah:</label>
-            <select id="regionSelector">
-                <option value="yogyakarta">Queen Latifa Yogyakarta</option>
-                <option value="kulonprogo">Queen Latifa Kulon Progo</option>
-                <option value="temanggung">Queen Latifa Temanggung</option>
-            </select>
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-3 d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
+        <div class="d-flex flex-column flex-sm-row align-items-center gap-3 w-100">
+            <div class="input-group" style="max-width: 300px;">
+                <span class="input-group-text bg-white"><i class="fas fa-map-marker-alt text-primary"></i></span>
+                <select id="regionSelector" class="form-select">
+                    <option value="yogyakarta">Queen Latifa Yogyakarta</option>
+                    <option value="kulonprogo">Queen Latifa Kulon Progo</option>
+                    <option value="temanggung">Queen Latifa Temanggung</option>
+                </select>
+            </div>
+
+            {{-- Yogyakarta Filter --}}
+            <div id="filter-wrap-yogyakarta" class="input-group region-filter" style="max-width: 250px;">
+                <span class="input-group-text bg-white"><i class="fas fa-calendar-alt text-primary"></i></span>
+                <input type="date" id="filterDateYogyakarta" class="form-control">
+            </div>
+            
+            {{-- Kulon Progo Filter --}}
+            <div id="filter-wrap-kulonprogo" class="input-group region-filter d-none" style="max-width: 250px;">
+                <span class="input-group-text bg-white"><i class="fas fa-calendar-alt text-primary"></i></span>
+                <input type="date" id="filterDateKulonProgo" class="form-control">
+            </div>
+            
+            {{-- Temanggung Filter --}}
+            <div id="filter-wrap-temanggung" class="input-group region-filter d-none" style="max-width: 250px;">
+                <span class="input-group-text bg-white"><i class="fas fa-calendar-alt text-primary"></i></span>
+                <input type="date" id="filterDateTemanggung" class="form-control">
+            </div>
         </div>
-        {{-- Yogyakarta Filter --}}
-        <div id="filter-wrap-yogyakarta" class="control-item region-filter">
-            <label for="filterDateYogyakarta"><i class="fas fa-calendar-alt"></i> Tanggal:</label>
-            <input type="date" id="filterDateYogyakarta">
+
+        <div class="d-flex align-items-center gap-2 w-100 justify-content-md-end mt-3 mt-md-0">
+            <button id="sendButton" class="btn btn-primary shadow-sm text-nowrap">
+                <i class="fas fa-paper-plane me-2"></i> Kirim Pesan
+            </button>
+            <button onclick="location.reload()" class="btn btn-outline-secondary shadow-sm text-nowrap">
+                <i class="fas fa-sync-alt me-2"></i> Refresh
+            </button>
         </div>
-        {{-- Kulon Progo Filter --}}
-        <div id="filter-wrap-kulonprogo" class="control-item region-filter hidden">
-            <label for="filterDateKulonProgo"><i class="fas fa-calendar-alt"></i> Tanggal:</label>
-            <input type="date" id="filterDateKulonProgo">
-        </div>
-        {{-- Temanggung Filter --}}
-        <div id="filter-wrap-temanggung" class="control-item region-filter hidden">
-            <label for="filterDateTemanggung"><i class="fas fa-calendar-alt"></i> Tanggal:</label>
-            <input type="date" id="filterDateTemanggung">
-        </div>
-    </div>
-    <div class="control-bar-right">
-        <button id="sendButton" class="btn-filter btn-primary">
-            <i class="fas fa-paper-plane"></i> Kirim Pesan
-        </button>
-        <button onclick="location.reload()" class="btn-filter btn-secondary">
-            <i class="fas fa-sync-alt"></i> Refresh
-        </button>
     </div>
 </div>
 
 {{-- ── Status operasional (queue worker) ── --}}
-<div class="control-bar" id="queueStatusBar" style="margin-top:-8px;">
-    <div class="control-item">
-        <i class="fas fa-server" style="color:var(--color-primary);"></i>
-        <span id="queueStatusText" style="font-size:13px;color:var(--color-text-secondary);">Memeriksa status queue…</span>
-    </div>
-    <div class="control-bar-right">
-        <a href="{{ route('settings.index') }}" class="btn-filter btn-secondary" style="text-decoration:none;">
-            <i class="fas fa-cogs"></i> Kelola Queue
-        </a>
+<div class="card shadow-sm border-0 mb-4" id="queueStatusBar">
+    <div class="card-body p-2 px-3 d-flex flex-column flex-sm-row align-items-center justify-content-between gap-2">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-server me-2 text-primary"></i>
+            <span id="queueStatusText" class="text-muted small">Memeriksa status queue…</span>
+        </div>
+        <div>
+            <a href="{{ route('settings.index') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-cogs me-1"></i> Kelola Queue
+            </a>
+        </div>
     </div>
 </div>
 
@@ -254,10 +262,10 @@ REGIONS.forEach(r => {
 // ── Region Switcher (diingat via localStorage) ──
 const regionSelector = document.getElementById('regionSelector');
 function showRegion(selectedRegion) {
-    document.querySelectorAll('.region-content').forEach(el => el.classList.add('hidden'));
-    document.getElementById(selectedRegion)?.classList.remove('hidden');
-    document.querySelectorAll('.region-filter').forEach(el => el.classList.add('hidden'));
-    document.getElementById(`filter-wrap-${selectedRegion}`)?.classList.remove('hidden');
+    document.querySelectorAll('.region-content').forEach(el => el.classList.add('d-none'));
+    document.getElementById(selectedRegion)?.classList.remove('d-none');
+    document.querySelectorAll('.region-filter').forEach(el => el.classList.add('d-none'));
+    document.getElementById(`filter-wrap-${selectedRegion}`)?.classList.remove('d-none');
 }
 regionSelector.addEventListener('change', function() {
     showRegion(this.value);
