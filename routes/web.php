@@ -53,6 +53,7 @@ Route::get('/data_kodebooking', [AntrianController::class, 'data_kodebooking'])-
 Route::get('/rekap_kodebooking', [AntrianController::class, 'rekapKodebooking'])->name('rekap_kodebooking');
 Route::get('/TaskID', [AntrianController::class, 'TaskID'])->name('TaskID');
 Route::get('/monitoring_taskid', [AntrianController::class, 'monitoringTaskid'])->name('monitoring_taskid');
+Route::get('/monitoring_taskid/{kodebooking}', [AntrianController::class, 'getMonitoringTaskidDetail']);
 Route::get('/rekap_taskid', [AntrianController::class, 'rekapTaskId'])->name('rekap_taskid');
 Route::get('/get-patient-data', [AntrianController::class, 'getPatientData']);
 Route::get('/get-patient-data-kulonprogo', [AntrianController::class, 'getPatientDataKulonProgo']);

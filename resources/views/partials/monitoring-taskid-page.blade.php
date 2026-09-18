@@ -92,7 +92,7 @@
                         </td>
                     @endforeach
                     <td>
-                        <button class="btn btn-sm btn-info" onclick="alert('Detail history {{ $kb->kodebooking }} akan segera hadir')">
+                        <button class="btn btn-sm btn-info" onclick="showDetail('{{ $kb->kodebooking }}')">
                             <i class="fas fa-search"></i>
                         </button>
                     </td>
@@ -102,8 +102,82 @@
     </table>
 </div>
 
+{{-- Modal Detail Task ID --}}
+<div class="modal fade" id="modalDetailTask" tabindex="-1" aria-labelledby="modalDetailTaskLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-info">
+        <h5 class="modal-title" id="modalDetailTaskLabel">Detail Task ID - <span id="detailKodebookingTitle"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped" id="tableDetailTask">
+                <thead>
+                    <tr>
+                        <th>Task ID</th>
+                        <th>Waktu Eksekusi</th>
+                        <th>Status / Message</th>
+                        <th>Request (Raw)</th>
+                        <th>Response (Raw)</th>
+                    </tr>
+                </thead>
+                <tbody id="bodyDetailTask">
+                    <!-- Data will be populated via AJAX -->
+                </tbody>
+            </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 @push('scripts')
 <script>
+function showDetail(kodebooking) {
+    $('#detailKodebookingTitle').text(kodebooking);
+    $('#bodyDetailTask').html('<tr><td colspan="5" class="text-center">Memuat data...</td></tr>');
+    
+    // Tampilkan modal (asumsi menggunakan Bootstrap 5)
+    var modal = new bootstrap.Modal(document.getElementById('modalDetailTask'));
+    modal.show();
+
+    // Fetch data
+    fetch('{{ url("/monitoring_taskid") }}/' + kodebooking)
+        .then(response => response.json())
+        .then(data => {
+            if(data.metadata.code === 200 && data.response.length > 0) {
+                let html = '';
+                data.response.forEach(function(task) {
+                    let badgeClass = 'bg-danger';
+                    if (task.message.toLowerCase().includes('success') || task.message.toLowerCase().includes('ok')) {
+                        badgeClass = 'bg-success';
+                    } else if (task.message.toLowerCase().includes('antrean') || task.message == '') {
+                        badgeClass = 'bg-warning text-dark';
+                    }
+                    
+                    html += `<tr>
+                        <td class="text-center"><strong>${task.taskid}</strong></td>
+                        <td>${task.waktu}</td>
+                        <td><span class="badge ${badgeClass}">${task.message}</span></td>
+                        <td style="max-width: 200px; overflow-wrap: break-word;"><small>${task.request || '-'}</small></td>
+                        <td style="max-width: 200px; overflow-wrap: break-word;"><small>${task.response || '-'}</small></td>
+                    </tr>`;
+                });
+                $('#bodyDetailTask').html(html);
+            } else {
+                $('#bodyDetailTask').html('<tr><td colspan="5" class="text-center">Tidak ada riwayat Task ID.</td></tr>');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching detail:', error);
+            $('#bodyDetailTask').html('<tr><td colspan="5" class="text-center text-danger">Terjadi kesalahan saat memuat data.</td></tr>');
+        });
+}
+
 $(document).ready(function() {
     $('#{{ $tableId }}').DataTable({
         "paging": true,

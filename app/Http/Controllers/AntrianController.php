@@ -131,6 +131,21 @@ class AntrianController extends Controller
         return view('monitoring_taskid', compact('kodebookings', 'groupedTasks', 'start_date', 'end_date'));
     }
 
+    public function getMonitoringTaskidDetail($kodebooking)
+    {
+        $taskids = data_taskid::where('kodebooking', $kodebooking)
+            ->orderBy('taskid', 'asc')
+            ->get();
+
+        return response()->json([
+            'metadata' => [
+                'code' => 200,
+                'message' => 'Sukses'
+            ],
+            'response' => $taskids
+        ]);
+    }
+
     public function data_kodebooking(Request $request)
     {
     // Mendapatkan tanggal hari ini
