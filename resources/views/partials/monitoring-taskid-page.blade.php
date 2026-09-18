@@ -159,6 +159,24 @@ function showDetail(kodebooking) {
         .then(data => {
             if(data.metadata.code === 200 && data.response.length > 0) {
                 let html = '';
+                
+                // Helper untuk format tanggal dari timestamp (ms) ke format WIB
+                const formatWaktuWIB = (waktuMs) => {
+                    if (!waktuMs) return '-';
+                    // Cek jika waktuMs berupa 13 digit angka (milliseconds BPJS)
+                    if (String(waktuMs).length === 13 && !isNaN(waktuMs)) {
+                        let d = new Date(parseInt(waktuMs));
+                        let day = String(d.getDate()).padStart(2, '0');
+                        let month = String(d.getMonth() + 1).padStart(2, '0');
+                        let year = d.getFullYear();
+                        let hr = String(d.getHours()).padStart(2, '0');
+                        let min = String(d.getMinutes()).padStart(2, '0');
+                        let sec = String(d.getSeconds()).padStart(2, '0');
+                        return `${day}-${month}-${year} ${hr}:${min}:${sec} WIB <br><small class="text-muted">(${waktuMs})</small>`;
+                    }
+                    return waktuMs;
+                };
+
                 data.response.forEach(function(task) {
                     let badgeClass = 'bg-danger';
                     if (task.message.toLowerCase().includes('success') || task.message.toLowerCase().includes('ok')) {
@@ -167,9 +185,11 @@ function showDetail(kodebooking) {
                         badgeClass = 'bg-warning text-dark';
                     }
                     
+                    let waktuWIB = formatWaktuWIB(task.waktu);
+
                     html += `<tr>
                         <td class="text-center"><strong>${task.taskid}</strong></td>
-                        <td>${task.waktu}</td>
+                        <td>${waktuWIB}</td>
                         <td><span class="badge ${badgeClass}">${task.message}</span></td>
                         <td style="max-width: 200px; overflow-wrap: break-word;"><small>${task.request || '-'}</small></td>
                         <td style="max-width: 200px; overflow-wrap: break-word;"><small>${task.response || '-'}</small></td>
