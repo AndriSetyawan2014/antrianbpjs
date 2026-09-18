@@ -45,7 +45,7 @@
 
         <!-- ═══ Top Header ═══ -->
         <header class="top-header">
-            <button type="button" id="btnSidebarToggle" class="btn-hamburger d-md-none"
+            <button type="button" id="btnSidebarToggle" class="btn-hamburger"
                 aria-label="Buka/tutup menu navigasi" aria-expanded="false" aria-controls="sidebar">
                 <i class="fas fa-bars"></i>
             </button>
@@ -108,10 +108,11 @@
     <!-- Global UI helpers: sidebar mobile, toast, date presets -->
     <script>
         (function () {
-            // ── Sidebar mobile (hamburger + overlay) ──
+            // ── Sidebar: overlay di mobile, collapse-ikon di desktop ──
             const btnToggle = document.getElementById('btnSidebarToggle');
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
+            const isMobileView = () => window.innerWidth <= 768;
             function setSidebar(open) {
                 if (!sidebar) return;
                 sidebar.classList.toggle('show', open);
@@ -119,10 +120,40 @@
                 if (btnToggle) btnToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
                 document.body.classList.toggle('sidebar-open', open);
             }
+            function applyCollapsedTitles() {
+                const collapsed = document.body.classList.contains('sidebar-collapsed');
+                document.querySelectorAll('#sidebar .nav-link').forEach(function (a) {
+                    if (collapsed) {
+                        if (!a.hasAttribute('title')) {
+                            const t = (a.textContent || '').trim().replace(/\s+/g, ' ');
+                            if (t) { a.setAttribute('title', t); a.setAttribute('data-auto-title', '1'); }
+                        }
+                    } else if (a.getAttribute('data-auto-title') === '1') {
+                        a.removeAttribute('title');
+                        a.removeAttribute('data-auto-title');
+                    }
+                });
+            }
+            function setCollapsed(collapsed) {
+                document.body.classList.toggle('sidebar-collapsed', collapsed);
+                try { localStorage.setItem('ql_sidebar', collapsed ? 'collapsed' : 'expanded'); } catch (e) {}
+                if (btnToggle) btnToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+                applyCollapsedTitles();
+            }
+            try {
+                if (!isMobileView() && localStorage.getItem('ql_sidebar') === 'collapsed') {
+                    document.body.classList.add('sidebar-collapsed');
+                }
+            } catch (e) {}
+            applyCollapsedTitles();
             if (btnToggle) {
                 btnToggle.addEventListener('click', function () {
-                    const isOpen = sidebar && sidebar.classList.contains('show');
-                    setSidebar(!isOpen);
+                    if (isMobileView()) {
+                        const isOpen = sidebar && sidebar.classList.contains('show');
+                        setSidebar(!isOpen);
+                    } else {
+                        setCollapsed(!document.body.classList.contains('sidebar-collapsed'));
+                    }
                 });
             }
             if (overlay) overlay.addEventListener('click', function () { setSidebar(false); });
@@ -255,6 +286,8 @@
                     if (sidebarEmpty) sidebarEmpty.style.display = visible ? 'none' : 'block';
                 });
             }
+
+
         })();
     </script>
 
@@ -267,7 +300,7 @@
     <!-- JSON Viewer Modal (shared) -->
     <div class="modal fade" id="jsonViewerModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable" style="max-width: 850px; height: 95vh; margin: 2.5vh auto;">
-            <div class="modal-content border-0 shadow" style="height: 100%; max-height: 100%; background-color: #ffffff !important;">
+            <div class="modal-content border-0 shadow" style="height: 100%; max-height: 100%; background-color: var(--color-surface) !important;">
                 <div class="modal-header py-2 px-3" style="background:var(--color-primary);">
                     <h6 class="modal-title text-white m-0" id="jsonModalTitle" style="font-size: 0.95rem;">
                         <i class="fas fa-list-alt me-2"></i>Detail Data
@@ -279,7 +312,7 @@
                         <button type="button" class="btn-close btn-close-white" style="font-size: 0.75rem;" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                 </div>
-                <div class="modal-body p-0" style="background-color: #ffffff !important;">
+                <div class="modal-body p-0" style="background-color: var(--color-surface) !important;">
                     <div id="jsonContentArea"></div>
                 </div>
             </div>
@@ -350,9 +383,9 @@
             try {
                 const parsed = JSON.parse(decodeEntities(currentRawJson));
                 const prettyJson = JSON.stringify(parsed, null, 2);
-                container.innerHTML = `<div style="background-color: #ffffff !important; font-size: 0.85rem; font-family: monospace; color: #1f2937; white-space: pre-wrap; word-break: break-word; line-height: 1.4; border: none; max-height: none !important; overflow: visible !important;">${escapeHtml(prettyJson)}</div>`;
+                container.innerHTML = `<div style="background-color: var(--color-surface) !important; font-size: 0.85rem; font-family: monospace; color: var(--color-text-primary); white-space: pre-wrap; word-break: break-word; line-height: 1.4; border: none; max-height: none !important; overflow: visible !important;">${escapeHtml(prettyJson)}</div>`;
             } catch(ex) {
-                container.innerHTML = `<div style="background-color: #ffffff !important; font-size: 0.85rem; font-family: monospace; color: #1f2937; white-space: pre-wrap; word-break: break-word; line-height: 1.4; border: none; max-height: none !important; overflow: visible !important;">${escapeHtml(decodeEntities(currentRawJson))}</div>`;
+                container.innerHTML = `<div style="background-color: var(--color-surface) !important; font-size: 0.85rem; font-family: monospace; color: var(--color-text-primary); white-space: pre-wrap; word-break: break-word; line-height: 1.4; border: none; max-height: none !important; overflow: visible !important;">${escapeHtml(decodeEntities(currentRawJson))}</div>`;
             }
             
             new bootstrap.Modal(document.getElementById('jsonViewerModal')).show();

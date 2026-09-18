@@ -197,6 +197,29 @@
   display: none !important;
 }
 
+/* ─── Skeleton shimmer untuk chart tren ─── */
+.chart-container.is-loading {
+  position: relative;
+}
+.chart-container.is-loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    100deg,
+    var(--color-surface-alt) 40%,
+    var(--color-border) 50%,
+    var(--color-surface-alt) 60%
+  );
+  background-size: 200% 100%;
+  animation: chartShimmer 1.2s infinite linear;
+  pointer-events: none;
+}
+@keyframes chartShimmer {
+  to { background-position: -200% 0; }
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 768px) {
   .stat-card {

@@ -110,6 +110,25 @@
     'barId' => 'patientChartTemanggungOverall',
     'pieId' => 'patientPieChartTemanggung',
 ])
+{{-- ── Tren 7 hari terakhir (mengikuti wilayah & tanggal aktif) ── --}}
+<div class="row">
+    <div class="col-12">
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <i class="fas fa-chart-line"></i>&nbsp;<span id="trendTitle">Tren 7 Hari Terakhir</span>
+                <span id="trendLoading" class="ms-auto" style="font-weight:400;font-size:11px;opacity:.85;display:none;">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memuat…
+                </span>
+            </div>
+            <div class="chart-card-body">
+                <div class="chart-container" id="trendWrap" style="height:220px;">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -251,6 +270,81 @@ try {
         showRegion(saved);
     }
 } catch (e) {}
+
+// ── Tren 7 hari: total pasien per hari untuk wilayah & tanggal aktif ──
+let trendChart = null;
+const REGION_INDEX = { yogyakarta: 0, kulonprogo: 1, temanggung: 2 };
+const REGION_NAMES = { yogyakarta: 'Yogyakarta', kulonprogo: 'Kulon Progo', temanggung: 'Temanggung' };
+function shiftISO(dateStr, delta) {
+    const d = new Date(dateStr + 'T00:00:00');
+    d.setDate(d.getDate() + delta);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+async function loadTrend() {
+    const key = regionSelector.value || 'yogyakarta';
+    const cfg = REGIONS[REGION_INDEX[key] ?? 0];
+    const endInput = document.getElementById(cfg.input);
+    const end = (endInput && endInput.value) || localToday();
+    const days = Array.from({ length: 7 }, (_, i) => shiftISO(end, i - 6));
+    const wrap = document.getElementById('trendWrap');
+    const loading = document.getElementById('trendLoading');
+    document.getElementById('trendTitle').textContent =
+        `Tren 7 Hari — ${REGION_NAMES[key] ?? key} (s/d ${end})`;
+    if (wrap) wrap.classList.add('is-loading');
+    if (loading) loading.style.display = '';
+    try {
+        const totals = await Promise.all(days.map(dt =>
+            fetch(`${cfg.url}?date=${dt}`)
+                .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+                .then(d => (d.values || []).reduce((a, b) => a + (Number(b) || 0), 0))
+                .catch(() => null)
+        ));
+        const primary = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#0C356A';
+        if (trendChart) trendChart.destroy();
+        trendChart = new Chart(document.getElementById('trendChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: days.map(d => new Date(d + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })),
+                datasets: [{
+                    label: 'Total pasien',
+                    data: totals,
+                    borderColor: primary,
+                    backgroundColor: primary + '22',
+                    fill: true,
+                    tension: 0.35,
+                    pointRadius: 4,
+                    pointBackgroundColor: primary,
+                    spanGaps: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { backgroundColor: '#1A202C', bodyFont: { family: 'Poppins' } }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        ticks: { font: { family: 'Poppins', size: 11 }, precision: 0 }
+                    },
+                    x: { grid: { display: false }, ticks: { font: { family: 'Poppins', size: 11 } } }
+                }
+            }
+        });
+    } finally {
+        if (wrap) wrap.classList.remove('is-loading');
+        if (loading) loading.style.display = 'none';
+    }
+}
+regionSelector.addEventListener('change', () => loadTrend());
+['filterDateYogyakarta', 'filterDateKulonProgo', 'filterDateTemanggung'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', () => loadTrend());
+});
+loadTrend();
 
 // ── Status queue (ringkas, tanpa timeout dashboard) ──
 (function loadQueueStatus() {

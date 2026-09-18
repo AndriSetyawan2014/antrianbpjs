@@ -72,6 +72,12 @@
 
   /* ── Layout ── */
   --sidebar-width: 260px;
+  --sidebar-collapsed-width: 76px;
   --topbar-height: 56px;
   --font-base: "Poppins", "Segoe UI", sans-serif;
+
+  /* ── Fokus & aksen teks (kontras di atas terang) ── */
+  --focus-ring: rgba(255, 196, 54, 0.55);
+  --color-accent-ink: #8a6100; /* teks emas di atas permukaan terang */
 }
+
