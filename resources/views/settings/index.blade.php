@@ -4,12 +4,13 @@
 <div class="content">
     <div class="container-fluid">
         <!-- Page Title -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <h4 class="page-title text-uppercase font-weight-bold" style="color: var(--secondary-dark);">
-                    <i class="fas fa-cogs me-2"></i> Pengaturan Sistem
-                </h4>
-            </div>
+        <div class="page-header">
+            <h2 class="page-title"><i class="fas fa-cogs me-2"></i>Pengaturan Sistem</h2>
+            <nav class="breadcrumb-nav">
+                <span>Sistem Pemantauan Bridging BPJS</span>
+                <i class="fas fa-chevron-right"></i>
+                <span>Pengaturan</span>
+            </nav>
         </div>
 
         @if(session('success'))
@@ -57,13 +58,62 @@
                     </div>
                     <div class="card-body">
                         <p class="text-muted">Gunakan fitur ini jika Anda baru saja melakukan perubahan kode (terutama tampilan/View) namun tidak muncul di halaman aplikasi (tersangkut di memori cache server).</p>
-                        
-                        <form action="{{ route('settings.clear-cache') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin membersihkan semua cache sistem?');">
+
+                        <form id="formClearCache" action="{{ route('settings.clear-cache') }}" method="POST">
                             @csrf
                             <button type="submit" class="btn btn-danger btn-lg shadow-sm w-100">
                                 <i class="fas fa-trash-alt me-2"></i> Bersihkan Semua Cache
                             </button>
                         </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                        <h5 class="card-title font-weight-bold"><i class="fas fa-server me-2 text-primary"></i> Background Queue</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Kelola worker pengiriman Task ID / Kode Booking ke BPJS tanpa timeout dashboard.</p>
+                        <div class="alert alert-info py-2" id="queueStatusBox" role="status">
+                            <i class="fas fa-spinner fa-spin me-1"></i> Memeriksa status queue…
+                        </div>
+                        <div class="d-grid gap-2" style="display:grid;gap:.5rem;">
+                            <button type="button" class="btn btn-outline-primary" id="btnQueueStart">
+                                <i class="fas fa-play me-2"></i> Start Worker
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" id="btnQueueStop">
+                                <i class="fas fa-stop me-2"></i> Stop Worker
+                            </button>
+                            <button type="button" class="btn btn-outline-danger" id="btnQueueClear">
+                                <i class="fas fa-trash me-2"></i> Clear Queue
+                            </button>
+                            <button type="button" class="btn btn-outline-dark" id="btnQueueRefresh">
+                                <i class="fas fa-sync-alt me-2"></i> Refresh Status
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                        <h5 class="card-title font-weight-bold"><i class="fas fa-hospital-user me-2 text-success"></i> VClaim Harian</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Sinkronisasi kunjungan Rawat Jalan hari ini untuk semua cabang, atau buka halaman monitoring.</p>
+                        <div class="d-grid gap-2" style="display:grid;gap:.5rem;">
+                            <a href="{{ route('vclaim.kunjungan.jalan') }}" class="btn btn-outline-success">
+                                <i class="fas fa-list me-2"></i> Buka Monitoring Kunjungan
+                            </a>
+                            <a href="{{ route('vclaim.rekap.kunjungan.jalan') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-chart-bar me-2"></i> Buka Rekap Bulanan
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -77,6 +127,67 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 $(document).ready(function() {
+    // Konfirmasi clear-cache via SweetAlert (konsisten, bukan confirm bawaan)
+    $('#formClearCache').on('submit', function(e) {
+        e.preventDefault();
+        const form = this;
+        Swal.fire({
+            title: 'Bersihkan cache?',
+            text: 'Seluruh cache sistem akan dibersihkan.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, bersihkan',
+            cancelButtonText: 'Batal'
+        }).then((r) => { if (r.isConfirmed) form.submit(); });
+    });
+
+    // ── Queue management (tanpa curl manual) ──
+    function queueToast(msg, type) {
+        if (window.showGlobalToast) window.showGlobalToast(msg, type);
+    }
+    function refreshQueueStatus() {
+        const box = $('#queueStatusBox');
+        box.html('<i class="fas fa-spinner fa-spin me-1"></i> Memeriksa status queue…');
+        $.get('{{ url("api/queue-status") }}')
+            .done(function(res) {
+                const pending = res?.response?.pending ?? res?.pending ?? '?';
+                box.removeClass('alert-info alert-success alert-warning')
+                   .addClass(Number(pending) > 0 ? 'alert-warning' : 'alert-success')
+                   .html(`<i class="fas fa-server me-1"></i> <strong>${pending}</strong> job menunggu di queue.`);
+            })
+            .fail(function() {
+                box.removeClass('alert-info').addClass('alert-warning')
+                   .html('<i class="fas fa-exclamation-triangle me-1"></i> Gagal memuat status queue.');
+            });
+    }
+    function hitQueue(url, okMsg) {
+        Swal.fire({ title: 'Memproses…', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        $.get(url)
+            .done(function(res) {
+                const msg = res?.metadata?.message || okMsg;
+                Swal.fire({ icon: 'success', title: 'Berhasil', text: msg }).then(refreshQueueStatus);
+                queueToast(msg, 'success');
+            })
+            .fail(function() {
+                Swal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal menghubungi endpoint queue.' });
+                queueToast('Gagal menghubungi endpoint queue.', 'error');
+            });
+    }
+    $('#btnQueueRefresh').on('click', refreshQueueStatus);
+    $('#btnQueueStart').on('click', () => hitQueue('{{ url("api/queue-work-start") }}', 'Worker dijalankan.'));
+    $('#btnQueueStop').on('click', () => hitQueue('{{ url("api/queue-work-stop") }}', 'Worker dihentikan.'));
+    $('#btnQueueClear').on('click', function() {
+        Swal.fire({
+            title: 'Clear queue?',
+            text: 'Seluruh job tertunda akan dihapus dan tidak dikirim ke BPJS.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, hapus',
+            cancelButtonText: 'Batal'
+        }).then((r) => { if (r.isConfirmed) hitQueue('{{ url("api/queue-clear") }}', 'Queue dibersihkan.'); });
+    });
+    refreshQueueStatus();
+
     $('.btn-sync-taskid').on('click', function() {
         var urlQL = $(this).data('urlql');
         

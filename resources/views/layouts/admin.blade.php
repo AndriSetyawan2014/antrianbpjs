@@ -9,33 +9,46 @@
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('dist/img/favicon.ico') }}">
 
+    <!-- Preconnect CDN (versi dikunci: FA 5.15.4, Bootstrap 5.3.0, DataTables 1.13.6, jQuery 3.7.1) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://code.jquery.com">
+    <link rel="preconnect" href="https://cdn.datatables.net">
+
     <!-- Google Fonts: Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- FontAwesome -->
+    <!-- FontAwesome 5.15.4 -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 
-    <!-- Bootstrap CSS -->
+    <!-- Bootstrap CSS 5.3.0 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- DataTables CSS -->
+    <!-- DataTables CSS 1.13.6 -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 
-    <!-- App CSS (global styles + design tokens) -->
-    <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <!-- App CSS/JS via Vite (jalankan `npm run dev` saat development, `npm run build` untuk produksi) -->
+    @vite(['resources/css/variables.css', 'resources/css/app.css', 'resources/css/index.css', 'resources/css/vclaim.css', 'resources/js/app.js'])
 
     <!-- Page-specific CSS -->
     @stack('styles')
 </head>
 
 <body>
+    <a href="#mainContent" class="skip-link">Lewati ke konten utama</a>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="wrapper">
         <!-- ═══ Sidebar ═══ -->
         @include('layouts.sidenav')
 
         <!-- ═══ Top Header ═══ -->
         <header class="top-header">
+            <button type="button" id="btnSidebarToggle" class="btn-hamburger d-md-none"
+                aria-label="Buka/tutup menu navigasi" aria-expanded="false" aria-controls="sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
             <h1 class="system-title d-flex align-items-center mb-0">
                 <i class="fas fa-hospital-symbol me-2"></i>
                 <span class="d-none d-md-inline">Sistem Pemantauan Bridging BPJS</span>
@@ -58,11 +71,15 @@
 
         <!-- ═══ Content Wrapper ═══ -->
         <div class="content-wrapper">
-            <section class="content">
+            <section class="content" id="mainContent" tabindex="-1">
                 <div class="container-fluid px-0">
                     @yield('content')
                 </div>
             </section>
+            <footer class="app-footer">
+                <span><i class="fas fa-hospital-symbol me-1"></i> Sistem Pemantauan Bridging BPJS — Queen Latifa</span>
+                <span class="app-footer-right">{{ date('Y') }} · QLJ · QLKP · QLTMG</span>
+            </footer>
         </div>
     </div>
 
@@ -87,6 +104,165 @@
         updateClock();
         setInterval(updateClock, 1000);
     </script>
+
+    <!-- Global UI helpers: sidebar mobile, toast, date presets -->
+    <script>
+        (function () {
+            // ── Sidebar mobile (hamburger + overlay) ──
+            const btnToggle = document.getElementById('btnSidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            function setSidebar(open) {
+                if (!sidebar) return;
+                sidebar.classList.toggle('show', open);
+                if (overlay) overlay.classList.toggle('show', open);
+                if (btnToggle) btnToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                document.body.classList.toggle('sidebar-open', open);
+            }
+            if (btnToggle) {
+                btnToggle.addEventListener('click', function () {
+                    const isOpen = sidebar && sidebar.classList.contains('show');
+                    setSidebar(!isOpen);
+                });
+            }
+            if (overlay) overlay.addEventListener('click', function () { setSidebar(false); });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') setSidebar(false);
+            });
+            // Auto-close saat pilih menu di layar kecil
+            document.querySelectorAll('#sidebar .nav-link').forEach(function (a) {
+                a.addEventListener('click', function () {
+                    if (window.innerWidth <= 768) setSidebar(false);
+                });
+            });
+
+            // ── Toast global (pengganti alert) ──
+            window.showGlobalToast = function (msg, type = 'success') {
+                const toast = document.getElementById('globalToast');
+                if (!toast) { alert(msg); return; }
+                const icon = document.getElementById('globalToastIcon');
+                const msgEl = document.getElementById('globalToastMsg');
+                const icons = {
+                    success: 'fas fa-check-circle text-success fa-lg',
+                    warning: 'fas fa-exclamation-triangle text-warning fa-lg',
+                    error: 'fas fa-times-circle text-danger fa-lg',
+                    info: 'fas fa-info-circle text-info fa-lg'
+                };
+                if (icon) icon.className = icons[type] || icons.success;
+                if (msgEl) msgEl.textContent = msg;
+                toast.classList.remove('show-success', 'show-error', 'show-warning', 'show-info');
+                toast.classList.add('show-' + type);
+                toast.style.display = 'block';
+                clearTimeout(window._globalToastTimer);
+                window._globalToastTimer = setTimeout(function () {
+                    toast.style.display = 'none';
+                }, 4000);
+            };
+
+            // ── Preset tanggal: Hari ini / Kemarin / 7 hari / Bulan ini (zona lokal, bukan UTC) ──
+            function fmt(d) {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${day}`;
+            }
+            window.applyDatePreset = function (preset, startSel = '#start_date', endSel = '#end_date') {
+                const s = document.querySelector(startSel);
+                const e = document.querySelector(endSel);
+                if (!s || !e) return;
+                const today = new Date();
+                if (preset === 'today') { s.value = fmt(today); e.value = fmt(today); }
+                else if (preset === 'yesterday') {
+                    const y = new Date(today); y.setDate(y.getDate() - 1);
+                    s.value = fmt(y); e.value = fmt(y);
+                } else if (preset === 'week') {
+                    const w = new Date(today); w.setDate(w.getDate() - 6);
+                    s.value = fmt(w); e.value = fmt(today);
+                } else if (preset === 'month') {
+                    const m = new Date(today.getFullYear(), today.getMonth(), 1);
+                    s.value = fmt(m); e.value = fmt(today);
+                }
+                // Picu filter DataTables bila ada, atau submit form bila ada
+                if (typeof $ !== 'undefined' && $.fn.DataTable) {
+                    try {
+                        Object.values($.fn.dataTable.tables()).forEach(function () {});
+                        const t = $('.table').DataTable();
+                        if (t) t.draw();
+                    } catch (err) {}
+                }
+            };
+            document.addEventListener('click', function (ev) {
+                const b = ev.target.closest('[data-preset]');
+                if (!b) return;
+                ev.preventDefault();
+                window.applyDatePreset(b.getAttribute('data-preset'));
+            });
+
+            // ── Sidebar search (filter menu) ──
+            const sidebarSearch = document.getElementById('sidebarSearch');
+            const sidebarEmpty = document.getElementById('sidebarSearchEmpty');
+            if (sidebarSearch) {
+                sidebarSearch.addEventListener('input', function () {
+                    const q = this.value.trim().toLowerCase();
+                    const links = document.querySelectorAll('#sidebar .nav-link');
+                    let visible = 0;
+                    links.forEach(function (a) {
+                        const text = (a.textContent || '').toLowerCase();
+                        const hit = !q || text.includes(q);
+                        const li = a.closest('li');
+                        const target = li || a;
+                        target.style.display = hit ? '' : 'none';
+                        if (hit) visible++;
+                    });
+                    // Sembunyikan label section yang tidak punya item terlihat
+                    document.querySelectorAll('#sidebar .sidebar-section-label').forEach(function (label) {
+                        let el = label.nextElementSibling;
+                        let hasVisible = false;
+                        while (el && !el.classList.contains('sidebar-section-label')) {
+                            if (el.querySelector) {
+                                const items = el.querySelectorAll(':scope .nav-link, :scope > .nav-link');
+                                items.forEach(function (a) {
+                                    const li = a.closest('li');
+                                    const t = li || a;
+                                    if (t.style.display !== 'none') hasVisible = true;
+                                });
+                                if (el.classList.contains('nav-link') && el.style.display !== 'none') hasVisible = true;
+                            }
+                            el = el.nextElementSibling;
+                            if (el && el.classList && el.classList.contains('collapse')) {
+                                const inner = el.querySelectorAll('.nav-link');
+                                inner.forEach(function (a) {
+                                    const li = a.closest('li');
+                                    const t = li || a;
+                                    if (t.style.display !== 'none') hasVisible = true;
+                                });
+                                el = el.nextElementSibling;
+                                continue;
+                            }
+                            if (!el || (el.tagName === 'A' && el.classList.contains('nav-link'))) {
+                                if (el && el.style.display !== 'none') hasVisible = true;
+                                break;
+                            }
+                        }
+                        label.style.display = (!q || hasVisible) ? '' : 'none';
+                    });
+                    // Auto-expand saat mencari
+                    if (q) {
+                        document.querySelectorAll('#sidebar .collapse').forEach(function (c) {
+                            if (c.querySelector('.nav-link:not([style*="none"])')) c.classList.add('show');
+                        });
+                    }
+                    if (sidebarEmpty) sidebarEmpty.style.display = visible ? 'none' : 'block';
+                });
+            }
+        })();
+    </script>
+
+    <!-- Global Toast (shared, pengganti alert) -->
+    <div id="globalToast" class="global-toast" role="status" aria-live="polite" style="display:none;">
+        <i id="globalToastIcon" class="fas fa-check-circle text-success fa-lg"></i>
+        <span id="globalToastMsg"></span>
+    </div>
 
     <!-- JSON Viewer Modal (shared) -->
     <div class="modal fade" id="jsonViewerModal" tabindex="-1" aria-hidden="true">
@@ -162,18 +338,21 @@
             
             currentRawJson = btn.getAttribute('data-json') || '';
             const title = btn.getAttribute('data-title') || 'Detail Data';
-            
-            document.getElementById('jsonModalTitle').innerHTML = '<i class="fas fa-list-alt me-2"></i>' + title;
-            
+
+            document.getElementById('jsonModalTitle').innerHTML = '<i class="fas fa-list-alt me-2"></i>' + escapeHtml(title);
+
+            // Decode semua entitas HTML dari htmlspecialchars(ENT_QUOTES): &amp; &lt; &gt; &quot; &#039;
+            function decodeEntities(s) {
+                return s.replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+            }
+
             const container = document.getElementById('jsonContentArea');
             try {
-                // Blade htmlspecialchars() sering menghasilkan double-escaping (menjadi &quot;).
-                let jsonToParse = currentRawJson.replace(/&quot;/g, '"');
-                const parsed = JSON.parse(jsonToParse); 
+                const parsed = JSON.parse(decodeEntities(currentRawJson));
                 const prettyJson = JSON.stringify(parsed, null, 2);
                 container.innerHTML = `<div style="background-color: #ffffff !important; font-size: 0.85rem; font-family: monospace; color: #1f2937; white-space: pre-wrap; word-break: break-word; line-height: 1.4; border: none; max-height: none !important; overflow: visible !important;">${escapeHtml(prettyJson)}</div>`;
             } catch(ex) {
-                container.innerHTML = `<div style="background-color: #ffffff !important; font-size: 0.85rem; font-family: monospace; color: #1f2937; white-space: pre-wrap; word-break: break-word; line-height: 1.4; border: none; max-height: none !important; overflow: visible !important;">${currentRawJson}</div>`;
+                container.innerHTML = `<div style="background-color: #ffffff !important; font-size: 0.85rem; font-family: monospace; color: #1f2937; white-space: pre-wrap; word-break: break-word; line-height: 1.4; border: none; max-height: none !important; overflow: visible !important;">${escapeHtml(decodeEntities(currentRawJson))}</div>`;
             }
             
             new bootstrap.Modal(document.getElementById('jsonViewerModal')).show();
@@ -211,7 +390,7 @@
                 if(!currentRawJson) return;
                 
                 const btn = this;
-                let textToCopy = currentRawJson.replace(/&quot;/g, '"');
+                let textToCopy = currentRawJson.replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
                 try {
                     textToCopy = JSON.stringify(JSON.parse(textToCopy), null, 2);
                 } catch(e) {}

@@ -46,3 +46,23 @@ If the web endpoints are not accessible, you can manage the queue via artisan co
 - **Restart worker**: `php artisan queue:restart`
 - **Clear specific queue**: `php artisan queue:clear database --queue=default`
 - **Clear failed jobs**: `php artisan queue:flush`
+
+## Task ID Management Endpoints (New Features)
+The system now includes specific endpoints to manage and resync Task IDs manually without waiting for the automatic cron.
+
+### 1. Manual Add Task ID
+Allows inserting a duplicate or completely manual Task ID row into the queue.
+- **Endpoint:** `POST /api/manual-add-taskid`
+- **Parameters:** `urlQL` (Branch code), `kodebooking`, `taskid`, `waktu` (timestamp in ms), `idpendaftaran`.
+- **Behavior:** Inserts the row with `reupload = 1` and `code = 0`.
+
+### 2. Manual Edit Task ID
+Allows correcting existing Task ID rows (e.g. wrong time or ID pendaftaran).
+- **Endpoint:** `POST /api/manual-edit-taskid`
+- **Parameters:** `id` (Primary Key), `urlQL`, `kodebooking`, `taskid`, `waktu` (timestamp in ms), `idpendaftaran`.
+- **Behavior:** Updates the row and resets its status to `reupload = 1` and `code = 0` (Menunggu Sinkronisasi).
+
+### 3. Sync Task ID by Kodebooking
+Allows forcefully resending all Task IDs associated with a specific Kode Booking.
+- **Endpoint:** `GET /api/run-taskid-by-kodebooking?urlQL={BRANCH}&kodebooking={KB}`
+- **Behavior:** Sets `reupload = 1` for all rows matching the `kodebooking`, then instantly processes them sequentially to BPJS. This endpoint is extremely useful to clear out individual stuck booking flows.

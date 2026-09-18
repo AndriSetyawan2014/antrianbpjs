@@ -74,6 +74,7 @@ Route::post('/pengiriman-task-id', [PengirimanTaskIDController::class, 'pengirim
 Route::post('/taskid', [PengirimanTaskIDController::class, 'getTaskIDs']);
 Route::get('/task-id', [PengirimanTaskIDController::class, 'getTaskIDs']);
 Route::post('/manual-add-taskid', [PengirimanTaskIDController::class, 'manualAddTaskid']);
+Route::post('/manual-edit-taskid', [PengirimanTaskIDController::class, 'manualEditTaskid']);
 Route::get('/addantrians/paginate', [TambahAntrianOnlineController::class, 'getAddAntrians']);
 // Akses endpoint data pending task ID
 Route::get('/data-pending-taskID', [PengirimanTaskIDController::class, 'data_pending_taskID_get']);

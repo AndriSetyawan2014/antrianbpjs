@@ -9,7 +9,16 @@
         <img src="{{ asset('dist/img/logoqlheader.png') }}" alt="Queen Latifa Logo">
     </a>
 
-    <nav>
+    <!-- Pencarian menu (filter cepat) -->
+    <div class="sidebar-search">
+        <i class="fas fa-search" aria-hidden="true"></i>
+        <input type="search" id="sidebarSearch" placeholder="Cari menu…" aria-label="Cari menu navigasi" autocomplete="off">
+    </div>
+    <div class="sidebar-search-empty" id="sidebarSearchEmpty" style="display:none;">
+        <i class="fas fa-search-minus me-1"></i> Menu tidak ditemukan
+    </div>
+
+    <nav id="sidebarNav">
         <!-- Home -->
         <a href="{{ url('/dashboard') }}"
            class="nav-link {{ Request::is('dashboard') ? 'active' : '' }}">
@@ -23,13 +32,13 @@
         </div>
 
         {{-- Kode Booking Yogyakarta --}}
-        <a href="#" class="nav-link" data-bs-toggle="collapse"
+        <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddKodeBookingJogja"
            aria-expanded="{{ Request::is('data_kodebooking*') || Request::is('rekap_kodebooking*') ? 'true' : 'false' }}">
             <i class="fas fa-calendar-check nav-icon"></i>
             <span>Kode Booking</span>
             <i class="fas fa-angle-down arrow-icon {{ Request::is('data_kodebooking*') || Request::is('rekap_kodebooking*') ? 'rotated' : '' }}"></i>
-        </a>
+        </button>
         <div class="collapse {{ Request::is('data_kodebooking*') || Request::is('rekap_kodebooking*') ? 'show' : '' }}"
              id="ddKodeBookingJogja">
             <ul class="nav flex-column ms-3">
@@ -49,13 +58,13 @@
         </div>
 
         {{-- Task ID Yogyakarta --}}
-        <a href="#" class="nav-link" data-bs-toggle="collapse"
+        <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddTaskIDJogja"
            aria-expanded="{{ Request::is('TaskID*') || Request::is('rekap_taskid*') ? 'true' : 'false' }}">
             <i class="fas fa-tasks nav-icon"></i>
             <span>Task ID</span>
             <i class="fas fa-angle-down arrow-icon {{ Request::is('TaskID*') || Request::is('rekap_taskid*') ? 'rotated' : '' }}"></i>
-        </a>
+        </button>
         <div class="collapse {{ Request::is('TaskID*') || Request::is('rekap_taskid*') ? 'show' : '' }}"
              id="ddTaskIDJogja">
             <ul class="nav flex-column ms-3">
@@ -80,13 +89,13 @@
         </div>
 
         {{-- Kode Booking Kulon Progo --}}
-        <a href="#" class="nav-link" data-bs-toggle="collapse"
+        <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddKodeBookingKP"
            aria-expanded="{{ Request::is('qlkp_data_kodebooking*') || Request::is('qlkp_rekap_kodebooking*') ? 'true' : 'false' }}">
             <i class="fas fa-calendar-check nav-icon"></i>
             <span>Kode Booking</span>
-            <i class="fas fa-angle-down arrow-icon"></i>
-        </a>
+            <i class="fas fa-angle-down arrow-icon {{ Request::is('qlkp_data_kodebooking*') || Request::is('qlkp_rekap_kodebooking*') ? 'rotated' : '' }}"></i>
+        </button>
         <div class="collapse {{ Request::is('qlkp_data_kodebooking*') || Request::is('qlkp_rekap_kodebooking*') ? 'show' : '' }}"
              id="ddKodeBookingKP">
             <ul class="nav flex-column ms-3">
@@ -106,13 +115,13 @@
         </div>
 
         {{-- Task ID Kulon Progo --}}
-        <a href="#" class="nav-link" data-bs-toggle="collapse"
+        <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddTaskIDKP"
            aria-expanded="{{ Request::is('qlkp_TaskID*') || Request::is('qlkp_rekap_taskid*') ? 'true' : 'false' }}">
             <i class="fas fa-tasks nav-icon"></i>
             <span>Task ID</span>
-            <i class="fas fa-angle-down arrow-icon"></i>
-        </a>
+            <i class="fas fa-angle-down arrow-icon {{ Request::is('qlkp_TaskID*') || Request::is('qlkp_rekap_taskid*') ? 'rotated' : '' }}"></i>
+        </button>
         <div class="collapse {{ Request::is('qlkp_TaskID*') || Request::is('qlkp_rekap_taskid*') ? 'show' : '' }}"
              id="ddTaskIDKP">
             <ul class="nav flex-column ms-3">
@@ -137,13 +146,13 @@
         </div>
 
         {{-- Kode Booking Temanggung --}}
-        <a href="#" class="nav-link" data-bs-toggle="collapse"
+        <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddKodeBookingTMG"
            aria-expanded="{{ Request::is('qltmg_data_kodebooking*') || Request::is('qltmg_rekap_kodebooking*') ? 'true' : 'false' }}">
             <i class="fas fa-calendar-check nav-icon"></i>
             <span>Kode Booking</span>
-            <i class="fas fa-angle-down arrow-icon"></i>
-        </a>
+            <i class="fas fa-angle-down arrow-icon {{ Request::is('qltmg_data_kodebooking*') || Request::is('qltmg_rekap_kodebooking*') ? 'rotated' : '' }}"></i>
+        </button>
         <div class="collapse {{ Request::is('qltmg_data_kodebooking*') || Request::is('qltmg_rekap_kodebooking*') ? 'show' : '' }}"
              id="ddKodeBookingTMG">
             <ul class="nav flex-column ms-3">
@@ -163,13 +172,13 @@
         </div>
 
         {{-- Task ID Temanggung --}}
-        <a href="#" class="nav-link" data-bs-toggle="collapse"
+        <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddTaskIDTMG"
            aria-expanded="{{ Request::is('qltmg_TaskID*') || Request::is('qltmg_rekap_taskid*') ? 'true' : 'false' }}">
             <i class="fas fa-tasks nav-icon"></i>
             <span>Task ID</span>
-            <i class="fas fa-angle-down arrow-icon"></i>
-        </a>
+            <i class="fas fa-angle-down arrow-icon {{ Request::is('qltmg_TaskID*') || Request::is('qltmg_rekap_taskid*') ? 'rotated' : '' }}"></i>
+        </button>
         <div class="collapse {{ Request::is('qltmg_TaskID*') || Request::is('qltmg_rekap_taskid*') ? 'show' : '' }}"
              id="ddTaskIDTMG">
             <ul class="nav flex-column ms-3">
@@ -194,13 +203,13 @@
         </div>
 
         {{-- Monitoring Rawat Jalan --}}
-        <a href="#" class="nav-link" data-bs-toggle="collapse"
+        <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddMonitoringRawatJalan"
            aria-expanded="{{ Request::is('vclaim/kunjungan-rawat-jalan*') || Request::is('vclaim/rekap-kunjungan-rawat-jalan*') ? 'true' : 'false' }}">
             <i class="fas fa-walking nav-icon" style="color:#86efac;"></i>
             <span>Monitoring Rawat Jalan</span>
             <i class="fas fa-angle-down arrow-icon {{ Request::is('vclaim/kunjungan-rawat-jalan*') || Request::is('vclaim/rekap-kunjungan-rawat-jalan*') ? 'rotated' : '' }}"></i>
-        </a>
+        </button>
         <div class="collapse {{ Request::is('vclaim/kunjungan-rawat-jalan*') || Request::is('vclaim/rekap-kunjungan-rawat-jalan*') ? 'show' : '' }}"
              id="ddMonitoringRawatJalan">
             <ul class="nav flex-column ms-3">

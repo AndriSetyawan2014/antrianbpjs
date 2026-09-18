@@ -5,125 +5,7 @@
     Monitoring Endpoints BPJS
 @endsection
 
-@push('styles')
-<style>
-    /* ── Filter / Control Bar (from standard template) ── */
-    .vclaim-control-bar {
-        background: var(--color-surface, #fff);
-        border: 1px solid var(--color-border, #e5e7eb);
-        border-radius: var(--radius-md, 0.5rem);
-        padding: 14px 20px;
-        margin-bottom: 20px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-items: flex-end;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-        justify-content: space-between;
-    }
-    .vclaim-control-bar .filter-group {
-        display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;
-    }
-    .vclaim-control-bar .form-label {
-        font-size: .75rem; color: var(--color-text-secondary, #6b7280);
-        margin-bottom: .2rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em;
-    }
-
-    /* ── Dashboard Header ── */
-    .dashboard-header {
-        display: flex; justify-content: space-between; align-items: center;
-        margin-bottom: 20px; padding: 0 5px;
-    }
-    .last-updated { font-size: 0.85rem; color: var(--color-text-muted, #9ca3af); font-style: italic; }
-
-    /* ── Endpoint Grid ── */
-    .endpoint-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 20px;
-    }
-
-    .endpoint-card {
-        background-color: var(--color-surface, #fff);
-        border: 1px solid var(--color-border, #e5e7eb);
-        border-radius: 0.75rem;
-        padding: 20px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .endpoint-card::before {
-        content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
-    }
-    .endpoint-card.ok::before { background-color: #10b981; }
-    .endpoint-card.err::before { background-color: #ef4444; }
-    .endpoint-card.pending::before { background-color: #d1d5db; }
-
-    .endpoint-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    }
-
-    @keyframes pulsePending {
-        0% { opacity: 1; }
-        50% { opacity: 0.4; }
-        100% { opacity: 1; }
-    }
-    .pulse-animation {
-        animation: pulsePending 1.5s infinite ease-in-out;
-    }
-
-    .card-header {
-        display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;
-    }
-    .card-title {
-        font-size: 0.95rem; font-weight: 700; color: var(--color-text-primary, #111827); margin: 0;
-    }
-
-    .status-label {
-        display: inline-flex; align-items: center; gap: 5px;
-        padding: 4px 10px; border-radius: 20px; font-size: 0.7rem;
-        font-weight: 700; text-transform: uppercase; letter-spacing: .02em;
-    }
-    .status-label.ok { background-color: #d1fae5; color: #065f46; }
-    .status-label.err { background-color: #fee2e2; color: #991b1b; }
-    .status-label.pending { background-color: #f3f4f6; color: #374151; }
-
-    .card-body { display: flex; flex-direction: column; gap: 10px; }
-    .data-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; font-family: monospace; }
-    .data-label { color: var(--color-text-secondary, #6b7280); font-weight: 600; }
-    .data-value { color: var(--color-text-primary, #111827); font-weight: 700; background: #f9fafb; padding: 2px 6px; border-radius: 4px; }
-
-    .response-time-section {
-        margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--color-border, #e5e7eb);
-    }
-    .response-header {
-        display: flex; justify-content: space-between; align-items: center;
-        margin-bottom: 8px; font-size: 0.75rem; font-weight: 600; color: var(--color-text-secondary, #6b7280);
-    }
-    .response-value { font-weight: 700; font-size: 0.85rem; }
-
-    /* Kecepatan warna teks */
-    .text-fast { color: #10b981; }
-    .text-medium { color: #f59e0b; }
-    .text-slow { color: #ef4444; }
-    .text-pending { color: #9ca3af; }
-
-    .progress-track {
-        width: 100%; height: 6px; background-color: #f3f4f6;
-        border-radius: 3px; overflow: hidden;
-    }
-    .progress-bar {
-        height: 100%; border-radius: 3px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s;
-    }
-    /* Kecepatan warna bar */
-    .bg-fast { background-color: #10b981; }
-    .bg-medium { background-color: #f59e0b; }
-    .bg-slow { background-color: #ef4444; }
-</style>
-@endpush
+{{-- styles VClaim dimuat global via Vite (resources/css/vclaim.css) --}}
 
 @section('content')
 <div class="row g-3">
@@ -151,6 +33,25 @@
                 <button type="button" id="btnStartAnalysis" class="btn btn-primary btn-sm" style="height:38px;padding:0 1.2rem;">
                     <i class="fas fa-play me-1"></i> Mulai Analisa
                 </button>
+                <button type="button" id="btnCancelAnalysis" class="btn btn-secondary btn-sm" style="height:38px;padding:0 1.2rem;display:none;">
+                    <i class="fas fa-stop me-1"></i> Batal
+                </button>
+            </div>
+        </div>
+
+        {{-- ══ Toolbar hasil (search + filter status) ══ --}}
+        <div class="vclaim-control-bar" style="margin-top:-8px;">
+            <div class="filter-group">
+                <div>
+                    <label class="form-label" for="endpointSearch">Cari endpoint</label>
+                    <input type="search" id="endpointSearch" class="form-control" placeholder="cth: SEP, Poli…" style="width:220px;" autocomplete="off">
+                </div>
+            </div>
+            <div class="endpoint-toolbar" role="group" aria-label="Filter status endpoint">
+                <button type="button" class="btn-preset" data-epfilter="ALL" aria-pressed="true">Semua</button>
+                <button type="button" class="btn-preset" data-epfilter="OK" aria-pressed="false">OK</button>
+                <button type="button" class="btn-preset" data-epfilter="ERR" aria-pressed="false">Error</button>
+                <button type="button" class="btn-preset" data-epfilter="PENDING" aria-pressed="false">Pending</button>
             </div>
         </div>
 
@@ -247,9 +148,24 @@ document.addEventListener('DOMContentLoaded', function() {
         updateStats();
     }
 
+    let epQuery = '';
+    let epFilter = 'ALL';
+    function visibleEndpoints() {
+        return currentEndpoints.filter(ep => {
+            if (epFilter !== 'ALL' && ep.status !== epFilter) return false;
+            if (epQuery && !ep.name.toLowerCase().includes(epQuery)) return false;
+            return true;
+        });
+    }
+
     function renderCards() {
         grid.innerHTML = '';
-        currentEndpoints.forEach(ep => {
+        const list = visibleEndpoints();
+        if (!list.length) {
+            grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-search"></i><p>Tidak ada endpoint yang cocok dengan pencarian/filter.</p></div>';
+            return;
+        }
+        list.forEach(ep => {
             const isOk = ep.status === 'OK';
             const isPending = ep.status === 'PENDING';
             const isNa = ep.status === 'N/A';
@@ -314,144 +230,137 @@ document.addEventListener('DOMContentLoaded', function() {
 
     initCards();
 
-    // Simulasi Analisa (karena endpoint cek spesifik per URL belum tersedia di backend)
-    btnStartAnalysis.addEventListener('click', function() {
+    // Search + filter status (client-side)
+    const epSearch = document.getElementById('endpointSearch');
+    if (epSearch) {
+        epSearch.addEventListener('input', function () {
+            epQuery = this.value.trim().toLowerCase();
+            renderCards();
+        });
+    }
+    document.querySelectorAll('[data-epfilter]').forEach(btn => {
+        btn.addEventListener('click', function () {
+            epFilter = this.getAttribute('data-epfilter');
+            document.querySelectorAll('[data-epfilter]').forEach(b => b.setAttribute('aria-pressed', b === this ? 'true' : 'false'));
+            renderCards();
+        });
+    });
+
+    // Analisa paralel batch-5 + tombol Batal (ganti ping sekuensial 1-per-1)
+    let analysisCancelled = false;
+    const btnCancelAnalysis = document.getElementById('btnCancelAnalysis');
+    if (btnCancelAnalysis) {
+        btnCancelAnalysis.addEventListener('click', function () {
+            analysisCancelled = true;
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Membatalkan…';
+        });
+    }
+
+    function pingUrlFor(name, ql) {
+        const base = `{{ url('') }}`;
+        const map = {
+            "Get Peserta": '/vclaim/ping-peserta',
+            "Get Rujukan": '/vclaim/ping-rujukan',
+            "Get Rujukan by No Kartu": '/vclaim/ping-rujukan-kartu',
+            "Get Rujukan by No Kartu Multiple": '/vclaim/ping-rujukan-list',
+            "Get Diagnosa": '/vclaim/ping-referensi-diagnosa',
+            "Get DPJP": '/vclaim/ping-referensi-dpjp',
+            "Get SEP": '/vclaim/ping-sep',
+            "Get Surat Kontrol": '/vclaim/ping-surat-kontrol',
+            "Get Riwayat Pelayanan": '/vclaim/ping-riwayat-pelayanan',
+            "Get Referensi Poli Antrol": '/vclaim/ping-antrol-referensi-poli',
+            "Get Jadwal Dokter Antrol": '/vclaim/ping-antrol-jadwal-dokter',
+            "Post Antrian Antrol": '/vclaim/ping-antrol-antrean-add',
+            "Update Jadwal Antrol": '/vclaim/ping-antrol-update-jadwal',
+            "Get Fingerprint": '/vclaim/ping-get-fingerprint',
+            "Batal Antrian Antrol": '/vclaim/ping-antrol-batal-antrean',
+            "Get Task ID": '/vclaim/ping-antrol-get-list-task',
+            "Antrean Per Tanggal": '/vclaim/ping-antrol-antrean-per-tanggal',
+            "Antrean Per Kode Booking": '/vclaim/ping-antrol-antrean-per-kode-booking'
+        };
+        return map[name] ? base + map[name] + `?urlQL=${ql}` : '';
+    }
+
+    function setRunning(running) {
+        btnStartAnalysis.disabled = running;
+        btnStartAnalysis.innerHTML = running
+            ? '<span class="spinner-border spinner-border-sm me-1"></span> Menganalisa...'
+            : '<i class="fas fa-play me-1"></i> Analisa Ulang';
+        if (btnCancelAnalysis) {
+            btnCancelAnalysis.style.display = running ? '' : 'none';
+            btnCancelAnalysis.disabled = !running;
+            btnCancelAnalysis.innerHTML = '<i class="fas fa-stop me-1"></i> Batal';
+        }
+    }
+
+    function finishAnalysis(qlText, note) {
+        setRunning(false);
+        const now = new Date();
+        const p2 = n => String(n).padStart(2, '0');
+        document.getElementById('lastUpdatedTime').innerHTML =
+            `${note || 'Analisa terakhir'}: ${p2(now.getDate())}/${p2(now.getMonth() + 1)}/${now.getFullYear()}, ` +
+            `${p2(now.getHours())}.${p2(now.getMinutes())}.${p2(now.getSeconds())} WIB | Cabang: <strong>${qlText}</strong>`;
+    }
+
+    async function pingOne(ep, ql) {
+        const pingUrl = pingUrlFor(ep.name, ql);
+        if (!pingUrl) {
+            ep.status = 'N/A'; ep.http = '-'; ep.message = '-'; ep.time = 0;
+            return;
+        }
+        try {
+            const response = await fetch(pingUrl);
+            const data = await response.json();
+            // HTTP 200 + message code 1/200/201/202/204/208 = BPJS UP
+            const validCodes = [1, 200, 201, 202, 204, 208];
+            ep.status = (data.success && data.http_code == 200 && validCodes.includes(parseInt(data.message_code))) ? 'OK' : 'ERR';
+            ep.http = data.http_code || '-';
+            ep.message = (data.message_code !== null && data.message_code !== undefined) ? data.message_code : '-';
+            ep.time = data.response_time || 0;
+        } catch (err) {
+            ep.status = 'ERR'; ep.http = 500; ep.message = 'Fetch Error'; ep.time = 0;
+        }
+    }
+
+    btnStartAnalysis.addEventListener('click', async function() {
         const ql = selectQL.value;
         const qlText = selectQL.options[selectQL.selectedIndex].text;
         if (!ql) {
-            alert('Silakan pilih Cabang Queen Latifa terlebih dahulu.');
+            (window.showGlobalToast || alert)('Silakan pilih Cabang Queen Latifa terlebih dahulu.', 'warning');
             selectQL.focus();
             return;
         }
 
-        btnStartAnalysis.disabled = true;
-        btnStartAnalysis.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menganalisa...';
-        
+        analysisCancelled = false;
+        setRunning(true);
+
         // Reset state
         initCards();
-        document.getElementById('lastUpdatedTime').innerHTML = `Menganalisa API BPJS untuk cabang <strong>${qlText}</strong>...`;
-
-        // Simulasi request satu per satu (seolah-olah sedang ping)
-        let index = 0;
         const total = currentEndpoints.length;
-        
-        function pingNext() {
-            if (index >= total) {
-                // Selesai
-                btnStartAnalysis.disabled = false;
-                btnStartAnalysis.innerHTML = '<i class="fas fa-play me-1"></i> Analisa Ulang';
-                
-                const now = new Date();
-                const strDate = now.getDate().toString().padStart(2, '0') + '/' + 
-                                (now.getMonth() + 1).toString().padStart(2, '0') + '/' + 
-                                now.getFullYear();
-                const strTime = now.getHours().toString().padStart(2, '0') + '.' + 
-                                now.getMinutes().toString().padStart(2, '0') + '.' + 
-                                now.getSeconds().toString().padStart(2, '0');
-                
-                document.getElementById('lastUpdatedTime').innerHTML = `Analisa terakhir: ${strDate}, ${strTime} WIB | Cabang: <strong>${qlText}</strong>`;
-                return;
-            }
+        document.getElementById('lastUpdatedTime').innerHTML = `Menganalisa API BPJS untuk cabang <strong>${qlText}</strong>…`;
 
-            const ep = currentEndpoints[index];
-
-            const realEndpoints = [
-                "Get Peserta", 
-                "Get Rujukan", 
-                "Get Rujukan by No Kartu", 
-                "Get Rujukan by No Kartu Multiple",
-                "Get Diagnosa",
-                "Get DPJP",
-                "Get SEP",
-                "Get Surat Kontrol",
-                "Get Riwayat Pelayanan",
-                "Get Referensi Poli Antrol",
-                "Get Jadwal Dokter Antrol",
-                "Post Antrian Antrol",
-                "Update Jadwal Antrol",
-                "Get Fingerprint",
-                "Batal Antrian Antrol",
-                "Get Task ID",
-                "Antrean Per Tanggal",
-                "Antrean Per Kode Booking"
-            ];
-
-            // Jika endpoint memiliki AJAX backend nyata
-            if (realEndpoints.includes(ep.name)) {
-                let pingUrl = '';
-                if (ep.name === "Get Peserta") pingUrl = `{{ url('/vclaim/ping-peserta') }}?urlQL=${ql}`;
-                else if (ep.name === "Get Rujukan") pingUrl = `{{ url('/vclaim/ping-rujukan') }}?urlQL=${ql}`;
-                else if (ep.name === "Get Rujukan by No Kartu") pingUrl = `{{ url('/vclaim/ping-rujukan-kartu') }}?urlQL=${ql}`;
-                else if (ep.name === "Get Rujukan by No Kartu Multiple") pingUrl = `{{ url('/vclaim/ping-rujukan-list') }}?urlQL=${ql}`;
-                else if (ep.name === "Get Diagnosa") pingUrl = `{{ url('/vclaim/ping-referensi-diagnosa') }}?urlQL=${ql}`;
-                else if (ep.name === "Get DPJP") pingUrl = `{{ url('/vclaim/ping-referensi-dpjp') }}?urlQL=${ql}`;
-                else if (ep.name === "Get SEP") pingUrl = `{{ url('/vclaim/ping-sep') }}?urlQL=${ql}`;
-                else if (ep.name === "Get Surat Kontrol") pingUrl = `{{ url('/vclaim/ping-surat-kontrol') }}?urlQL=${ql}`;
-                else if (ep.name === "Get Riwayat Pelayanan") pingUrl = `{{ url('/vclaim/ping-riwayat-pelayanan') }}?urlQL=${ql}`;
-                else if (ep.name === "Get Referensi Poli Antrol") pingUrl = `{{ url('/vclaim/ping-antrol-referensi-poli') }}?urlQL=${ql}`;
-                else if (ep.name === "Get Jadwal Dokter Antrol") pingUrl = `{{ url('/vclaim/ping-antrol-jadwal-dokter') }}?urlQL=${ql}`;
-                else if (ep.name === "Post Antrian Antrol") pingUrl = `{{ url('/vclaim/ping-antrol-antrean-add') }}?urlQL=${ql}`;
-                else if (ep.name === "Update Jadwal Antrol") pingUrl = `{{ url('/vclaim/ping-antrol-update-jadwal') }}?urlQL=${ql}`;
-                else if (ep.name === "Get Fingerprint") pingUrl = `{{ url('/vclaim/ping-get-fingerprint') }}?urlQL=${ql}`;
-                else if (ep.name === "Batal Antrian Antrol") pingUrl = `{{ url('/vclaim/ping-antrol-batal-antrean') }}?urlQL=${ql}`;
-                else if (ep.name === "Get Task ID") pingUrl = `{{ url('/vclaim/ping-antrol-get-list-task') }}?urlQL=${ql}`;
-                else if (ep.name === "Antrean Per Tanggal") pingUrl = `{{ url('/vclaim/ping-antrol-antrean-per-tanggal') }}?urlQL=${ql}`;
-                else if (ep.name === "Antrean Per Kode Booking") pingUrl = `{{ url('/vclaim/ping-antrol-antrean-per-kode-booking') }}?urlQL=${ql}`;
-
-                fetch(pingUrl)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Untuk monitoring koneksi, HTTP 200 dengan message code:
-                        // 200, 201, 202 (standar VClaim/beberapa Antrol) 
-                        // atau 1 (standar API Referensi Antrol/HFIS)
-                        // menandakan server BPJS UP dan menerima request kita.
-                        const validCodes = [1, 200, 201, 202, 204, 208]; // 208 biasanya untuk "Sudah Ada", 204 "No Content"
-                        if (data.success && data.http_code == 200 && validCodes.includes(parseInt(data.message_code))) {
-                            ep.status = 'OK';
-                        } else {
-                            ep.status = 'ERR';
-                        }
-                        ep.http = data.http_code || '-';
-                        ep.message = (data.message_code !== null && data.message_code !== undefined) ? data.message_code : '-';
-                        ep.time = data.response_time || 0;
-                        
-                        renderCards();
-                        updateStats();
-                        index++;
-                        pingNext();
-                    })
-                    .catch(err => {
-                        ep.status = 'ERR';
-                        ep.http = 500;
-                        ep.message = 'Fetch Error';
-                        ep.time = 0;
-                        
-                        renderCards();
-                        updateStats();
-                        index++;
-                        pingNext();
-                    });
-            } else {
-                // Endpoint belum terhubung ke BPJS (dummy), biarkan kosong untuk membedakan
-                setTimeout(() => {
-                    ep.status = 'N/A';
-                    ep.http = '-';
-                    ep.message = '-';
-                    ep.time = 0;
-
-                    renderCards();
-                    updateStats();
-                    
-                    index++;
-                    pingNext();
-                    
-                }, 50); // delay sangat singkat agar cepat terlewat
-            }
+        // Paralel batch-5 agar ~5x lebih cepat tanpa membanjiri server
+        const BATCH = 5;
+        for (let i = 0; i < total; i += BATCH) {
+            if (analysisCancelled) break;
+            const slice = currentEndpoints.slice(i, i + BATCH);
+            await Promise.allSettled(slice.map(ep => pingOne(ep, ql)));
+            renderCards();
+            updateStats();
+            document.getElementById('lastUpdatedTime').innerHTML =
+                `Menganalisa… ${Math.min(i + BATCH, total)}/${total} endpoint (cabang <strong>${qlText}</strong>)`;
         }
 
-        // Mulai ping
-        pingNext();
+        if (analysisCancelled) {
+            finishAnalysis(qlText, 'Analisa dibatalkan');
+        } else {
+            renderCards();
+            updateStats();
+            finishAnalysis(qlText, 'Analisa terakhir');
+        }
     });
+
 
 });
 </script>

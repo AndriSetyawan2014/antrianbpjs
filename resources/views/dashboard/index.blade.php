@@ -1,9 +1,6 @@
 @extends('layouts.admin')
 
-@push('styles')
-<link rel="stylesheet" href="{{ asset('css/index.css') }}">
-@endpush
-
+{{-- index.css sudah dimuat global via @vite di layouts/admin --}}
 @section('content')
 
 {{-- ── Page Header ── --}}
@@ -53,216 +50,66 @@
     </div>
 </div>
 
-{{-- ══════════════════════════════════════════
-     YOGYAKARTA SECTION
-═════════════════════════════════════════════ --}}
-<div id="yogyakarta" class="region-content">
-
-    {{-- Stat Cards --}}
-    <div class="row mb-3">
-        <div class="col-sm-6 col-lg-3">
-            <a href="{{ route('data_kodebooking') }}" class="stat-card card-kode-booking">
-                <div class="stat-card-label"><i class="fas fa-calendar-check me-1"></i>Kode Booking</div>
-                <div class="stat-card-value">{{ $totalKodebooking }}</div>
-                <div class="stat-card-sub"><i class="fas fa-arrow-right"></i> Lihat Detail</div>
-                <div class="stat-card-icon-bg"><i class="fas fa-calendar-check"></i></div>
-            </a>
-        </div>
-        <div class="col-sm-6 col-lg-3">
-            <a href="{{ route('rekap_kodebooking') }}" class="stat-card card-rekap-booking">
-                <div class="stat-card-label"><i class="fas fa-chart-bar me-1"></i>Rekap Kode Booking</div>
-                <div class="stat-card-value">{{ $rekapKodebooking }}</div>
-                <div class="stat-card-sub"><i class="fas fa-arrow-right"></i> Lihat Detail</div>
-                <div class="stat-card-icon-bg"><i class="fas fa-chart-bar"></i></div>
-            </a>
-        </div>
-        <div class="col-sm-6 col-lg-3">
-            <a href="{{ route('TaskID') }}" class="stat-card card-task-id">
-                <div class="stat-card-label"><i class="fas fa-tasks me-1"></i>Task ID</div>
-                <div class="stat-card-value">{{ $totalTaskId }}</div>
-                <div class="stat-card-sub"><i class="fas fa-arrow-right"></i> Lihat Detail</div>
-                <div class="stat-card-icon-bg"><i class="fas fa-tasks"></i></div>
-            </a>
-        </div>
-        <div class="col-sm-6 col-lg-3">
-            <a href="{{ route('rekap_taskid') }}" class="stat-card card-rekap-taskid">
-                <div class="stat-card-label"><i class="fas fa-clipboard-list me-1"></i>Rekap Task ID</div>
-                <div class="stat-card-value">{{ $rekapTaskId }}</div>
-                <div class="stat-card-sub"><i class="fas fa-arrow-right"></i> Lihat Detail</div>
-                <div class="stat-card-icon-bg"><i class="fas fa-clipboard-list"></i></div>
-            </a>
-        </div>
+{{-- ── Status operasional (queue worker) ── --}}
+<div class="control-bar" id="queueStatusBar" style="margin-top:-8px;">
+    <div class="control-item">
+        <i class="fas fa-server" style="color:var(--color-primary);"></i>
+        <span id="queueStatusText" style="font-size:13px;color:var(--color-text-secondary);">Memeriksa status queue…</span>
     </div>
-
-    {{-- Charts --}}
-    <div class="row">
-        <div class="col-md-7">
-            <div class="chart-card">
-                <div class="chart-card-header">
-                    <i class="fas fa-chart-bar"></i> Jumlah Pasien per Poli
-                </div>
-                <div class="chart-card-body">
-                    <div class="chart-container">
-                        <canvas id="patientChartOverall"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-5">
-            <div class="chart-card">
-                <div class="chart-card-header">
-                    <i class="fas fa-chart-pie"></i> Distribusi Data
-                </div>
-                <div class="chart-card-body">
-                    <div class="chart-container">
-                        <canvas id="patientPieChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="control-bar-right">
+        <a href="{{ route('settings.index') }}" class="btn-filter btn-secondary" style="text-decoration:none;">
+            <i class="fas fa-cogs"></i> Kelola Queue
+        </a>
     </div>
 </div>
 
-{{-- ══════════════════════════════════════════
-     KULON PROGO SECTION
-═════════════════════════════════════════════ --}}
-<div id="kulonprogo" class="region-content hidden">
+@include('partials.dashboard-region', [
+    'regionId' => 'yogyakarta',
+    'hidden' => false,
+    'chartSuffix' => '',
+    'routeKodebooking' => route('data_kodebooking'),
+    'routeRekapKodebooking' => route('rekap_kodebooking'),
+    'routeTaskid' => route('TaskID'),
+    'routeRekapTaskid' => route('rekap_taskid'),
+    'countKodebooking' => $totalKodebooking,
+    'countRekapKodebooking' => $rekapKodebooking,
+    'countTaskid' => $totalTaskId,
+    'countRekapTaskid' => $rekapTaskId,
+    'barId' => 'patientChartOverall',
+    'pieId' => 'patientPieChart',
+])
 
-    {{-- Stat Cards --}}
-    <div class="row mb-3">
-        <div class="col-sm-6 col-lg-3">
-            <a href="{{ route('qlkp_data_kodebooking') }}" class="stat-card card-kode-booking">
-                <div class="stat-card-label"><i class="fas fa-calendar-check me-1"></i>Kode Booking</div>
-                <div class="stat-card-value">{{ $qlkptotalKodebooking ?? '—' }}</div>
-                <div class="stat-card-sub"><i class="fas fa-arrow-right"></i> Lihat Detail</div>
-                <div class="stat-card-icon-bg"><i class="fas fa-calendar-check"></i></div>
-            </a>
-        </div>
-        <div class="col-sm-6 col-lg-3">
-            <a href="{{ route('qlkp_rekap_kodebooking') }}" class="stat-card card-rekap-booking">
-                <div class="stat-card-label"><i class="fas fa-chart-bar me-1"></i>Rekap Kode Booking</div>
-                <div class="stat-card-value">{{ $qlkprekapKodebooking ?? '—' }}</div>
-                <div class="stat-card-sub"><i class="fas fa-arrow-right"></i> Lihat Detail</div>
-                <div class="stat-card-icon-bg"><i class="fas fa-chart-bar"></i></div>
-            </a>
-        </div>
-        <div class="col-sm-6 col-lg-3">
-            <a href="{{ route('qlkp_TaskID') }}" class="stat-card card-task-id">
-                <div class="stat-card-label"><i class="fas fa-tasks me-1"></i>Task ID</div>
-                <div class="stat-card-value">{{ $qlkptotalTaskId ?? '—' }}</div>
-                <div class="stat-card-sub"><i class="fas fa-arrow-right"></i> Lihat Detail</div>
-                <div class="stat-card-icon-bg"><i class="fas fa-tasks"></i></div>
-            </a>
-        </div>
-        <div class="col-sm-6 col-lg-3">
-            <a href="{{ route('qlkp_rekap_taskid') }}" class="stat-card card-rekap-taskid">
-                <div class="stat-card-label"><i class="fas fa-clipboard-list me-1"></i>Rekap Task ID</div>
-                <div class="stat-card-value">{{ $qlkprekapTaskId ?? '—' }}</div>
-                <div class="stat-card-sub"><i class="fas fa-arrow-right"></i> Lihat Detail</div>
-                <div class="stat-card-icon-bg"><i class="fas fa-clipboard-list"></i></div>
-            </a>
-        </div>
-    </div>
+@include('partials.dashboard-region', [
+    'regionId' => 'kulonprogo',
+    'hidden' => true,
+    'chartSuffix' => ' — Kulon Progo',
+    'routeKodebooking' => route('qlkp_data_kodebooking'),
+    'routeRekapKodebooking' => route('qlkp_rekap_kodebooking'),
+    'routeTaskid' => route('qlkp_TaskID'),
+    'routeRekapTaskid' => route('qlkp_rekap_taskid'),
+    'countKodebooking' => $qlkptotalKodebooking ?? '—',
+    'countRekapKodebooking' => $qlkprekapKodebooking ?? '—',
+    'countTaskid' => $qlkptotalTaskId ?? '—',
+    'countRekapTaskid' => $qlkprekapTaskId ?? '—',
+    'barId' => 'patientChartKulonProgoOverall',
+    'pieId' => 'patientPieChartKulonProgo',
+])
 
-
-    {{-- Charts --}}
-    <div class="row">
-        <div class="col-md-7">
-            <div class="chart-card">
-                <div class="chart-card-header">
-                    <i class="fas fa-chart-bar"></i> Jumlah Pasien per Poli — Kulon Progo
-                </div>
-                <div class="chart-card-body">
-                    <div class="chart-container">
-                        <canvas id="patientChartKulonProgoOverall"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-5">
-            <div class="chart-card">
-                <div class="chart-card-header">
-                    <i class="fas fa-chart-pie"></i> Distribusi Data
-                </div>
-                <div class="chart-card-body">
-                    <div class="chart-container">
-                        <canvas id="patientPieChartKulonProgo"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-{{-- ══════════════════════════════════════════
-     TEMANGGUNG SECTION (placeholder)
-═════════════════════════════════════════════ --}}
-<div id="temanggung" class="region-content hidden">
-    <div class="row mb-3">
-        <div class="col-sm-6 col-lg-3">
-            <a href="{{ route('qltmg_data_kodebooking') }}" class="stat-card card-kode-booking">
-                <div class="stat-card-label"><i class="fas fa-calendar-check me-1"></i>Kode Booking</div>
-                <div class="stat-card-value">{{ $qltmgtotalKodebooking ?? '—' }}</div>
-                <div class="stat-card-sub"><i class="fas fa-arrow-right"></i> Lihat Detail</div>
-                <div class="stat-card-icon-bg"><i class="fas fa-calendar-check"></i></div>
-            </a>
-        </div>
-        <div class="col-sm-6 col-lg-3">
-            <a href="{{ route('qltmg_rekap_kodebooking') }}" class="stat-card card-rekap-booking">
-                <div class="stat-card-label"><i class="fas fa-chart-bar me-1"></i>Rekap Kode Booking</div>
-                <div class="stat-card-value">{{ $qltmgrekapKodebooking ?? '—' }}</div>
-                <div class="stat-card-sub"><i class="fas fa-arrow-right"></i> Lihat Detail</div>
-                <div class="stat-card-icon-bg"><i class="fas fa-chart-bar"></i></div>
-            </a>
-        </div>
-        <div class="col-sm-6 col-lg-3">
-            <a href="{{ route('qltmg_TaskID') }}" class="stat-card card-task-id">
-                <div class="stat-card-label"><i class="fas fa-tasks me-1"></i>Task ID</div>
-                <div class="stat-card-value">{{ $qltmgtotalTaskId ?? '—' }}</div>
-                <div class="stat-card-sub"><i class="fas fa-arrow-right"></i> Lihat Detail</div>
-                <div class="stat-card-icon-bg"><i class="fas fa-tasks"></i></div>
-            </a>
-        </div>
-        <div class="col-sm-6 col-lg-3">
-            <a href="{{ route('qltmg_rekap_taskid') }}" class="stat-card card-rekap-taskid">
-                <div class="stat-card-label"><i class="fas fa-clipboard-list me-1"></i>Rekap Task ID</div>
-                <div class="stat-card-value">{{ $qltmgrekapTaskId ?? '—' }}</div>
-                <div class="stat-card-sub"><i class="fas fa-arrow-right"></i> Lihat Detail</div>
-                <div class="stat-card-icon-bg"><i class="fas fa-clipboard-list"></i></div>
-            </a>
-        </div>
-    </div>
-
-
-    {{-- Charts --}}
-    <div class="row">
-        <div class="col-md-7">
-            <div class="chart-card">
-                <div class="chart-card-header">
-                    <i class="fas fa-chart-bar"></i> Jumlah Pasien per Poli — Temanggung
-                </div>
-                <div class="chart-card-body">
-                    <div class="chart-container">
-                        <canvas id="patientChartTemanggungOverall"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-5">
-            <div class="chart-card">
-                <div class="chart-card-header">
-                    <i class="fas fa-chart-pie"></i> Distribusi Data
-                </div>
-                <div class="chart-card-body">
-                    <div class="chart-container">
-                        <canvas id="patientPieChartTemanggung"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
+@include('partials.dashboard-region', [
+    'regionId' => 'temanggung',
+    'hidden' => true,
+    'chartSuffix' => ' — Temanggung',
+    'routeKodebooking' => route('qltmg_data_kodebooking'),
+    'routeRekapKodebooking' => route('qltmg_rekap_kodebooking'),
+    'routeTaskid' => route('qltmg_TaskID'),
+    'routeRekapTaskid' => route('qltmg_rekap_taskid'),
+    'countKodebooking' => $qltmgtotalKodebooking ?? '—',
+    'countRekapKodebooking' => $qltmgrekapKodebooking ?? '—',
+    'countTaskid' => $qltmgtotalTaskId ?? '—',
+    'countRekapTaskid' => $qltmgrekapTaskId ?? '—',
+    'barId' => 'patientChartTemanggungOverall',
+    'pieId' => 'patientPieChartTemanggung',
+])
 @endsection
 
 @push('scripts')
@@ -275,125 +122,28 @@ const CHART_PALETTE = [
     '#E67E22','#2ECC71','#8E44AD','#3498DB'
 ];
 
-// ── PIE CHART: Yogyakarta ──
-const ctxPie = document.getElementById('patientPieChart').getContext('2d');
-new Chart(ctxPie, {
-    type: 'doughnut',
-    data: {
-        labels: ['Kode Booking', 'Task ID'],
-        datasets: [{
-            data: [{{ $totalKodebooking }}, {{ $totalTaskId }}],
-            backgroundColor: ['#0C356A', '#FFC436'],
-            borderWidth: 2,
-            borderColor: '#fff'
-        }]
-    },
-    options: {
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { display: true, position: 'bottom',
-                labels: { font: { family: 'Poppins', size: 12 }, padding: 16 }
-            },
-            tooltip: { backgroundColor: '#1A202C', bodyFont: { family: 'Poppins' } }
-        },
-        cutout: '55%'
-    }
-});
-
-// ── BAR CHART: Yogyakarta ──
-let patientChartOverall;
-
-function fetchDataForDate(selectedDate) {
-    fetch(`{{ url('/get-patient-data') }}?date=${selectedDate}`)
-        .then(r => r.json())
-        .then(data => updateChart(data.labels, data.values));
+// ── Helper tanggal lokal (hindari geser hari karena UTC) ──
+function localToday() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+function fetchJson(url, onOk) {
+    return fetch(url)
+        .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(onOk)
+        .catch(err => {
+            console.error('Gagal memuat data chart:', err);
+            if (window.showGlobalToast) window.showGlobalToast('Gagal memuat data chart. Coba refresh.', 'error');
+        });
 }
 
-function updateChart(labels, values) {
-    if (patientChartOverall) patientChartOverall.destroy();
-    const ctx = document.getElementById('patientChartOverall').getContext('2d');
-    patientChartOverall = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels,
-            datasets: [{
-                label: 'Jumlah Pasien',
-                data: values,
-                backgroundColor: values.map((_, i) => CHART_PALETTE[i % CHART_PALETTE.length]),
-                borderRadius: 5,
-                borderWidth: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: { backgroundColor: '#1A202C', bodyFont: { family: 'Poppins' } }
-            },
-        scales: {
-            y: { 
-                beginAtZero: true, 
-                grid: { color: 'rgba(0,0,0,0.05)' },
-                ticks: { 
-                    font: { family: 'Poppins', size: 11 },
-                    stepSize: 1, // Ensure integer ticks for patient counts
-                    callback: value => Number.isInteger(value) ? value : null 
-                } 
-            },
-            x: { 
-                grid: { display: false },
-                ticks: { font: { family: 'Poppins', size: 11 } } 
-            }
-        }
-        }
-    });
-}
+// ── Chart generik: 1 fungsi untuk 3 wilayah (ganti 3x duplikat) ──
+const barCharts = {};
 
-document.getElementById('filterDateYogyakarta').addEventListener('change', e => {
-    if (e.target.value) fetchDataForDate(e.target.value);
-});
-const today = new Date().toISOString().split('T')[0];
-document.getElementById('filterDateYogyakarta').value = today;
-fetchDataForDate(today);
-
-// ── PIE CHART: Kulon Progo ──
-const ctxPieKP = document.getElementById('patientPieChartKulonProgo').getContext('2d');
-new Chart(ctxPieKP, {
-    type: 'doughnut',
-    data: {
-        labels: ['Kode Booking', 'Task ID'],
-        datasets: [{
-            data: [{{ $qlkptotalKodebooking ?? 0 }}, {{ $qlkptotalTaskId ?? 0 }}],
-            backgroundColor: ['#0C356A', '#FFC436'],
-            borderWidth: 2,
-            borderColor: '#fff'
-        }]
-    },
-    options: {
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { display: true, position: 'bottom',
-                labels: { font: { family: 'Poppins', size: 12 }, padding: 16 }
-            }
-        },
-        cutout: '55%'
-    }
-});
-
-// ── BAR CHART: Kulon Progo ──
-let patientChartKulonProgoOverall;
-
-function fetchDataForDateKulonProgo(selectedDate) {
-    fetch(`{{ url('/get-patient-data-kulonprogo') }}?date=${selectedDate}`)
-        .then(r => r.json())
-        .then(data => updateChartKulonProgo(data.labels, data.values));
-}
-
-function updateChartKulonProgo(labels, values) {
-    if (patientChartKulonProgoOverall) patientChartKulonProgoOverall.destroy();
-    const ctx = document.getElementById('patientChartKulonProgoOverall').getContext('2d');
-    patientChartKulonProgoOverall = new Chart(ctx, {
+function makeBarChart(canvasId, labels, values) {
+    if (barCharts[canvasId]) barCharts[canvasId].destroy();
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    barCharts[canvasId] = new Chart(ctx, {
         type: 'bar',
         data: {
             labels,
@@ -412,131 +162,114 @@ function updateChartKulonProgo(labels, values) {
                 legend: { display: false },
                 tooltip: {
                     backgroundColor: '#1A202C',
-                    callbacks: { label: ctx => `Jumlah: ${ctx.raw}` }
+                    bodyFont: { family: 'Poppins' },
+                    callbacks: { label: c => `Jumlah: ${c.raw}` }
                 }
             },
-        scales: {
-            y: { 
-                beginAtZero: true, 
-                grid: { color: 'rgba(0,0,0,0.05)' },
-                ticks: { 
-                    font: { family: 'Poppins', size: 11 },
-                    stepSize: 1, // Ensure integer ticks for patient counts
-                    callback: value => Number.isInteger(value) ? value : null 
-                } 
-            },
-            x: { 
-                grid: { display: false },
-                ticks: { font: { family: 'Poppins', size: 11 } } 
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(0,0,0,0.05)' },
+                    ticks: {
+                        font: { family: 'Poppins', size: 11 },
+                        stepSize: 1,
+                        callback: value => Number.isInteger(value) ? value : null
+                    }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { font: { family: 'Poppins', size: 11 } }
+                }
             }
-        }
         }
     });
 }
 
-document.getElementById('filterDateKulonProgo').addEventListener('change', e => {
-    if (e.target.value) fetchDataForDateKulonProgo(e.target.value);
-});
-const todayKP = new Date().toISOString().split('T')[0];
-document.getElementById('filterDateKulonProgo').value = todayKP;
-fetchDataForDateKulonProgo(todayKP);
-
-// ── PIE CHART: Temanggung ──
-const ctxPieTMG = document.getElementById('patientPieChartTemanggung').getContext('2d');
-new Chart(ctxPieTMG, {
-    type: 'doughnut',
-    data: {
-        labels: ['Kode Booking', 'Task ID'],
-        datasets: [{
-            data: [{{ $qltmgtotalKodebooking ?? 0 }}, {{ $qltmgtotalTaskId ?? 0 }}],
-            backgroundColor: ['#0C356A', '#FFC436'],
-            borderWidth: 2,
-            borderColor: '#fff'
-        }]
-    },
-    options: {
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { display: true, position: 'bottom',
-                labels: { font: { family: 'Poppins', size: 12 }, padding: 16 }
-            }
-        },
-        cutout: '55%'
-    }
-});
-
-// ── BAR CHART: Temanggung ──
-let patientChartTemanggungOverall;
-
-function fetchDataForDateTemanggung(selectedDate) {
-    fetch(`{{ url('/get-patient-data-temanggung') }}?date=${selectedDate}`)
-        .then(r => r.json())
-        .then(data => updateChartTemanggung(data.labels, data.values));
-}
-
-function updateChartTemanggung(labels, values) {
-    if (patientChartTemanggungOverall) patientChartTemanggungOverall.destroy();
-    const ctx = document.getElementById('patientChartTemanggungOverall').getContext('2d');
-    patientChartTemanggungOverall = new Chart(ctx, {
-        type: 'bar',
+function initPie(canvasId, valBooking, valTask) {
+    new Chart(document.getElementById(canvasId).getContext('2d'), {
+        type: 'doughnut',
         data: {
-            labels,
+            labels: ['Kode Booking', 'Task ID'],
             datasets: [{
-                label: 'Jumlah Pasien',
-                data: values,
-                backgroundColor: values.map((_, i) => CHART_PALETTE[i % CHART_PALETTE.length]),
-                borderRadius: 5,
-                borderWidth: 0
+                data: [valBooking, valTask],
+                backgroundColor: ['#0C356A', '#FFC436'],
+                borderWidth: 2,
+                borderColor: '#fff'
             }]
         },
         options: {
-            responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { display: false },
+                legend: { display: true, position: 'bottom',
+                    labels: { font: { family: 'Poppins', size: 12 }, padding: 16 }
+                },
                 tooltip: { backgroundColor: '#1A202C', bodyFont: { family: 'Poppins' } }
             },
-        scales: {
-            y: { 
-                beginAtZero: true, 
-                grid: { color: 'rgba(0,0,0,0.05)' },
-                ticks: { 
-                    font: { family: 'Poppins', size: 11 },
-                    stepSize: 1, // Ensure integer ticks for patient counts
-                    callback: value => Number.isInteger(value) ? value : null 
-                } 
-            },
-            x: { 
-                grid: { display: false },
-                ticks: { font: { family: 'Poppins', size: 11 } } 
-            }
-        }
+            cutout: '55%'
         }
     });
 }
 
-document.getElementById('filterDateTemanggung').addEventListener('change', e => {
-    if (e.target.value) fetchDataForDateTemanggung(e.target.value);
+// Konfigurasi per wilayah: [pieId, barId, filterInputId, urlFetch, valBooking, valTask]
+const REGIONS = [
+    { pie: 'patientPieChart', bar: 'patientChartOverall', input: 'filterDateYogyakarta',
+      url: `{{ url('/get-patient-data') }}`, booking: {{ $totalKodebooking }}, task: {{ $totalTaskId }} },
+    { pie: 'patientPieChartKulonProgo', bar: 'patientChartKulonProgoOverall', input: 'filterDateKulonProgo',
+      url: `{{ url('/get-patient-data-kulonprogo') }}`, booking: {{ $qlkptotalKodebooking ?? 0 }}, task: {{ $qlkptotalTaskId ?? 0 }} },
+    { pie: 'patientPieChartTemanggung', bar: 'patientChartTemanggungOverall', input: 'filterDateTemanggung',
+      url: `{{ url('/get-patient-data-temanggung') }}`, booking: {{ $qltmgtotalKodebooking ?? 0 }}, task: {{ $qltmgtotalTaskId ?? 0 }} },
+];
+
+REGIONS.forEach(r => {
+    initPie(r.pie, r.booking, r.task);
+    const load = (date) => fetchJson(`${r.url}?date=${date}`, d => makeBarChart(r.bar, d.labels, d.values));
+    const input = document.getElementById(r.input);
+    input.addEventListener('change', e => { if (e.target.value) load(e.target.value); });
+    const t = localToday();
+    input.value = t;
+    input.max = t;
+    load(t);
 });
-const todayTMG = new Date().toISOString().split('T')[0];
-document.getElementById('filterDateTemanggung').value = todayTMG;
-fetchDataForDateTemanggung(todayTMG);
 
-// ── Region Switcher ──
-document.getElementById('regionSelector').addEventListener('change', function() {
-    const selectedRegion = this.value;
 
-    // Show/Hide Content
-    document.querySelectorAll('.region-content').forEach(el => {
-        el.classList.add('hidden');
-    });
+// ── Region Switcher (diingat via localStorage) ──
+const regionSelector = document.getElementById('regionSelector');
+function showRegion(selectedRegion) {
+    document.querySelectorAll('.region-content').forEach(el => el.classList.add('hidden'));
     document.getElementById(selectedRegion)?.classList.remove('hidden');
-
-    // Show/Hide Filter
-    document.querySelectorAll('.region-filter').forEach(el => {
-        el.classList.add('hidden');
-    });
+    document.querySelectorAll('.region-filter').forEach(el => el.classList.add('hidden'));
     document.getElementById(`filter-wrap-${selectedRegion}`)?.classList.remove('hidden');
+}
+regionSelector.addEventListener('change', function() {
+    showRegion(this.value);
+    try { localStorage.setItem('ql_region', this.value); } catch (e) {}
 });
+try {
+    const saved = localStorage.getItem('ql_region');
+    if (saved && document.getElementById(saved)) {
+        regionSelector.value = saved;
+        showRegion(saved);
+    }
+} catch (e) {}
+
+// ── Status queue (ringkas, tanpa timeout dashboard) ──
+(function loadQueueStatus() {
+    const el = document.getElementById('queueStatusText');
+    if (!el) return;
+    fetch(`{{ url('/api/queue-status') }}`)
+        .then(r => r.json())
+        .then(data => {
+            const pending = data?.response?.pending ?? data?.pending ?? null;
+            if (pending === null) {
+                el.textContent = data?.metadata?.message || 'Status queue tidak tersedia.';
+                return;
+            }
+            const n = Number(pending);
+            el.innerHTML = n > 0
+                ? `<strong style="color:var(--color-warning);">${n} job menunggu</strong> di queue — pastikan worker berjalan.`
+                : `<span style="color:var(--color-success);font-weight:600;">Queue kosong</span> — worker siap.`;
+        })
+        .catch(() => { el.textContent = 'Gagal memuat status queue.'; });
+})();
 </script>
 @endpush

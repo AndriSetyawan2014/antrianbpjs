@@ -5,219 +5,7 @@
     Monitoring Kunjungan Rawat Jalan
 @endsection
 
-@push('styles')
-<style>
-    /* ── Filter / Control Bar ───────────────────── */
-    .vclaim-control-bar {
-        background: var(--color-surface);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-md);
-        padding: 14px 20px;
-        margin-bottom: 20px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-items: flex-end;
-        box-shadow: var(--shadow-sm);
-        justify-content: space-between;
-    }
-    .vclaim-control-bar .filter-group {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-items: flex-end;
-    }
-    .vclaim-control-bar .form-label {
-        font-size: .75rem;
-        color: var(--color-text-secondary);
-        margin-bottom: .2rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: .05em;
-    }
-    .vclaim-control-bar .form-control,
-    .vclaim-control-bar .form-select {
-        background: var(--color-bg);
-        border: 1.5px solid var(--color-border);
-        color: var(--color-text-primary);
-        border-radius: var(--radius-sm);
-        font-size: .85rem;
-        transition: border-color .2s, box-shadow .2s;
-    }
-    .vclaim-control-bar .form-control:focus,
-    .vclaim-control-bar .form-select:focus {
-        border-color: var(--color-primary);
-        box-shadow: 0 0 0 3px rgba(12,53,106,.12);
-    }
-
-    /* ── Sync Progress Panel ────────────────────── */
-    #syncProgressPanel {
-        display: none;
-        background: var(--color-surface);
-        border: 1px solid var(--color-border);
-        border-left: 4px solid var(--color-info);
-        border-radius: var(--radius-md);
-        padding: 16px 20px;
-        margin-bottom: 20px;
-        box-shadow: var(--shadow-sm);
-    }
-    #syncProgressPanel .sync-title {
-        font-size: .85rem;
-        font-weight: 600;
-        color: var(--color-text-primary);
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .ql-progress-item {
-        margin-bottom: 10px;
-    }
-    .ql-progress-label {
-        display: flex;
-        justify-content: space-between;
-        font-size: .78rem;
-        margin-bottom: 4px;
-    }
-    .ql-progress-label .ql-name { font-weight: 600; color: var(--color-text-primary); }
-    .ql-progress-label .ql-state { color: var(--color-text-muted); }
-    .progress { height: 8px; border-radius: 6px; background: var(--color-border); }
-    .progress-bar-animated { animation: progress-pulse 1.2s ease-in-out infinite alternate; }
-    @keyframes progress-pulse { from { opacity: .7; } to { opacity: 1; } }
-
-    /* ── Stat Cards ─────────────────────────────── */
-    .stat-cards { display: flex; flex-wrap: wrap; gap: .75rem; margin-bottom: 20px; }
-    .stat-card {
-        flex: 1 1 160px;
-        background: var(--color-surface);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-md);
-        padding: 14px 18px;
-        display: flex; flex-direction: column; gap: .2rem;
-        transition: var(--transition-base);
-        box-shadow: var(--shadow-sm);
-    }
-    .stat-card:hover { border-color: var(--color-primary); box-shadow: var(--shadow-soft); transform: translateY(-3px); }
-    .stat-card .ql-label {
-        font-size: .7rem; font-weight: 700; letter-spacing: .06em;
-        color: var(--color-primary); text-transform: uppercase;
-    }
-    .stat-card .ql-total {
-        font-size: 2rem; font-weight: 700;
-        color: var(--color-text-primary); line-height: 1.1;
-    }
-    .stat-card .ql-total span { font-size: .85rem; color: var(--color-text-secondary); font-weight: 400; }
-    .stat-card .ql-sync { font-size: .7rem; color: var(--color-text-muted); margin-top: 2px; }
-    .stat-card .ql-sync i { margin-right: 3px; }
-
-    /* ── Total Card (dark) ──────────────────────── */
-    .stat-card-total {
-        background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
-        border-color: var(--color-primary);
-    }
-    .stat-card-total .ql-label { color: rgba(255,255,255,.75); }
-    .stat-card-total .ql-total { color: #fff; }
-    .stat-card-total .ql-total span { color: rgba(255,255,255,.65); }
-    .stat-card-total .ql-sync { color: rgba(255,255,255,.55); }
-
-    /* ── Table ──────────────────────────────────── */
-    .vclaim-table-wrap {
-        background: var(--color-surface);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-md);
-        overflow: hidden;
-        box-shadow: var(--shadow-sm);
-    }
-    .vclaim-table-wrap .table { margin-bottom: 0; font-size: .82rem; }
-    .vclaim-table-wrap .table thead th {
-        background: var(--color-primary);
-        color: #fff;
-        border-bottom: none;
-        font-weight: 700; font-size: .72rem; letter-spacing: .05em;
-        text-transform: uppercase;
-        padding: .7rem 1rem;
-        white-space: nowrap;
-        position: sticky; top: 0; z-index: 2;
-    }
-    .vclaim-table-wrap .table tbody tr {
-        border-bottom: 1px solid var(--color-border);
-        transition: background .15s;
-    }
-    .vclaim-table-wrap .table tbody tr:hover { background: var(--color-surface-alt); }
-    .vclaim-table-wrap .table td {
-        padding: .55rem 1rem;
-        vertical-align: middle;
-        color: var(--color-text-primary);
-    }
-
-    /* ── Badges ─────────────────────────────────── */
-    .badge-ql {
-        display: inline-block; padding: .2em .6em;
-        border-radius: var(--radius-sm); font-size: .7rem; font-weight: 700;
-        letter-spacing: .04em; text-transform: uppercase;
-    }
-    .badge-qlj   { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
-    .badge-qlkp  { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
-    .badge-qltmg { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-    .badge-ql-default { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
-    .badge-diagnosa {
-        background: var(--color-warning-light); color: var(--color-warning);
-        border: 1px solid #fde68a; border-radius: var(--radius-sm);
-        padding: .15em .5em; font-size: .75rem; font-weight: 600;
-    }
-
-    /* ── Cell Helpers ───────────────────────────── */
-    .cell-sep   { font-family: monospace; font-size: .78rem; color: var(--color-info); }
-    .cell-kartu { font-family: monospace; font-size: .78rem; color: var(--color-text-secondary); }
-    .cell-nama  { font-weight: 600; }
-    .cell-time  { font-size: .72rem; color: var(--color-text-muted); white-space: nowrap; }
-    .cell-date  { font-size: .78rem; white-space: nowrap; color: var(--color-text-secondary); }
-    .kelas-1 { color: var(--color-success); font-weight: 700; }
-    .kelas-2 { color: var(--color-info);    font-weight: 700; }
-    .kelas-3 { color: var(--color-danger);  font-weight: 700; }
-
-    /* ── Empty State ────────────────────────────── */
-    .empty-state { text-align: center; padding: 4rem 1rem; color: var(--color-text-muted); }
-    .empty-state i { font-size: 3rem; color: var(--color-border); margin-bottom: 1rem; display: block; }
-    .empty-state p { margin: 0; font-size: .9rem; }
-    .btn-sync-trigger {
-        display: inline-flex; align-items: center; gap: 8px;
-        margin-top: 1rem; padding: 8px 24px;
-        background: var(--color-success); color: #fff;
-        border: none; border-radius: var(--radius-sm);
-        font-size: .85rem; font-weight: 600; cursor: pointer;
-        transition: var(--transition-base);
-    }
-    .btn-sync-trigger:hover { background: #155d37; transform: translateY(-2px); }
-
-    /* ── Pagination ─────────────────────────────── */
-    .pagination-bar { border-top: 1px solid var(--color-border); }
-    .pagination-info { font-size: .78rem; color: var(--color-text-muted); }
-    .pagination .page-link {
-        background: var(--color-surface); border-color: var(--color-border);
-        color: var(--color-text-secondary); border-radius: var(--radius-sm);
-    }
-    .pagination .page-link:hover { background: var(--color-surface-alt); color: var(--color-primary); }
-    .pagination .page-item.active .page-link {
-        background: var(--color-primary); border-color: var(--color-primary); color: #fff;
-    }
-
-    /* ── Toast ──────────────────────────────────── */
-    .sync-toast {
-        position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-        display: none; min-width: 300px;
-        background: var(--color-surface);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-md);
-        box-shadow: var(--shadow-lg);
-        padding: 14px 18px;
-        animation: slideUp .3s ease;
-    }
-    @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-    .sync-toast .toast-body { display: flex; align-items: center; gap: 10px; }
-    .sync-toast .toast-body span { font-size: .85rem; font-weight: 500; color: var(--color-text-primary); }
-</style>
-@endpush
+{{-- styles VClaim dimuat global via Vite (resources/css/vclaim.css) --}}
 
 @section('content')
 <div class="row g-3">
@@ -272,7 +60,7 @@
         <div class="stat-cards">
             @forelse($availableQLs as $ql)
                 @php $st = $statistik[$ql] ?? null; @endphp
-                <div class="stat-card" onclick="filterByQL('{{ $ql }}')" style="cursor:pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';" title="Filter data {{ $ql }}">
+                <div class="stat-card" onclick="filterByQL('{{ $ql }}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();filterByQL('{{ $ql }}');}" role="button" tabindex="0" style="cursor:pointer;" title="Filter data {{ $ql }}" aria-label="Filter data cabang {{ $ql }}">
                     <div class="ql-label">{{ $ql }}</div>
                     <div class="ql-total">
                         {{ $st ? number_format($st->total) : 0 }}
@@ -290,7 +78,7 @@
             @empty
                 <div class="stat-card"><div class="ql-label">-</div><div class="ql-total">0 <span>pasien</span></div></div>
             @endforelse
-            <div class="stat-card stat-card-total" onclick="filterByQL('')" style="cursor:pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.2)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';" title="Tampilkan Semua Cabang">
+            <div class="stat-card stat-card-total" onclick="filterByQL('')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();filterByQL('');}" role="button" tabindex="0" style="cursor:pointer;" title="Tampilkan Semua Cabang" aria-label="Tampilkan semua cabang">
                 <div class="ql-label">Total Semua</div>
                 <div class="ql-total">
                     {{ number_format($statistik->sum('total')) }}
@@ -321,7 +109,7 @@
                     </thead>
                     <tbody>
                         @foreach($kunjungan as $i => $row)
-                        <tr class="kunjungan-row" style="cursor: pointer;" data-row="{{ json_encode($row) }}" title="Klik untuk melihat detail">
+                        <tr class="kunjungan-row" style="cursor: pointer;" data-row='@json($row)' title="Klik untuk melihat detail" tabindex="0" aria-label="Lihat detail kunjungan {{ $row->no_sep ?? '' }}">
                             <td style="color:var(--color-text-muted);font-size:.75rem;">
                                 {{ ($kunjungan->currentPage() - 1) * $kunjungan->perPage() + $loop->iteration }}
                             </td>
@@ -506,8 +294,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function startPolling(syncIds) {
         if (pollInterval) clearInterval(pollInterval);
+        let attempts = 0;
+        const maxAttempts = 150; // ~5 menit, cegah polling tak berujung bila worker mati
 
         pollInterval = setInterval(async () => {
+            attempts++;
             try {
                 const qs  = syncIds.map(id => `ids[]=${id}`).join('&');
                 const res = await fetch(`{{ url('/api/vclaim/sync-status') }}?${qs}`);
@@ -527,6 +318,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     // Refresh halaman setelah 1.5 detik
                     setTimeout(() => window.location.reload(), 1500);
+                } else if (attempts >= maxAttempts) {
+                    clearInterval(pollInterval);
+                    pollInterval = null;
+                    setButtonLoading(false);
+                    showToast('Sync belum selesai setelah 5 menit. Pastikan queue worker berjalan, lalu refresh halaman.', 'warning');
                 }
             } catch (e) {
                 console.error('Polling error:', e);
@@ -611,11 +407,12 @@ document.addEventListener('DOMContentLoaded', function () {
         modalInstance = new bootstrap.Modal(modalElement);
     }
 
-    kunjunganRows.forEach(row => {
-        row.addEventListener('click', function() {
-            const dataStr = this.getAttribute('data-row');
+    function escapeHtml(s) {
+        return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+    }
+    function openDetail(dataStr) {
             if (!dataStr) return;
-            
+
             try {
                 const data = JSON.parse(dataStr);
                 
@@ -627,7 +424,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 
                 const diagContainer = document.getElementById('detailDiagnosaContainer');
                 if (data.diagnosa) {
-                    diagContainer.innerHTML = `<span class="badge-diagnosa fs-6 px-2 py-1">${data.diagnosa}</span>`;
+                    diagContainer.innerHTML = `<span class="badge-diagnosa fs-6 px-2 py-1">${escapeHtml(data.diagnosa)}</span>`;
                 } else {
                     diagContainer.innerHTML = '<span style="color:var(--color-text-muted);">-</span>';
                 }
@@ -639,8 +436,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     document.getElementById('detailTglSep').textContent = '-';
                 }
                 
-                let qlLower = (data.kode_ql || '').toLowerCase();
-                document.getElementById('detailCabang').innerHTML = `<span class="badge-ql badge-${qlLower}">${data.kode_ql || '-'}</span>`;
+                const qlLower = String(data.kode_ql || '').toLowerCase().replace(/[^a-z0-9-]/g, '');
+                document.getElementById('detailCabang').innerHTML = `<span class="badge-ql badge-${escapeHtml(qlLower)}">${escapeHtml(data.kode_ql || '-')}</span>`;
                 
                 if (data.synced_at) {
                     let formattedSync = data.synced_at;
@@ -664,6 +461,11 @@ document.addEventListener('DOMContentLoaded', function () {
             } catch (e) {
                 console.error('Error parsing row data:', e);
             }
+    }
+    kunjunganRows.forEach(row => {
+        row.addEventListener('click', function() { openDetail(this.getAttribute('data-row')); });
+        row.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(this.getAttribute('data-row')); }
         });
     });
 
