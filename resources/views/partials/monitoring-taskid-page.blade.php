@@ -57,13 +57,19 @@
             @foreach($kodebookings as $index => $kb)
                 @php
                     $tgl = date('Y-m-d', strtotime($kb->tanggalperiksa));
-                    $noSep = $vclaimMap[$kb->nojkn][$tgl] ?? null;
+                    $noSep = null;
+                    if (!empty($kb->nojkn) && isset($vclaimMap[$kb->nojkn])) {
+                        $noSep = $vclaimMap[$kb->nojkn][$tgl] ?? null;
+                        if (!$noSep) {
+                            $noSep = reset($vclaimMap[$kb->nojkn]); // Fallback ke SEP pertama yang ditemukan untuk kartu tsb
+                        }
+                    }
                 @endphp
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td style="text-align: left;">
                         <strong>{{ $kb->kodebooking }}</strong><br>
-                        <small>RM: {{ $kb->norm }}</small>
+                        <small>RM: {{ $kb->norm }} | JKN: {{ $kb->nojkn ?? '-' }}</small>
                         @if($noSep)
                             <br><small class="text-primary"><i class="fas fa-file-medical"></i> SEP: {{ $noSep }}</small>
                         @endif

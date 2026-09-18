@@ -92,7 +92,7 @@
         <div class="vclaim-table-wrap">
             @if($kunjungan->count())
             <div class="table-responsive" style="max-height:calc(100vh - 320px);">
-                <table class="table">
+                <table class="table" id="tableKunjungan">
                     <thead>
                         <tr>
                             <th style="width:40px;">#</th>
@@ -476,6 +476,22 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('filterForm').submit();
         }
     };
+
+    // Initialize DataTables
+    if ($('#tableKunjungan').length > 0) {
+        $('#tableKunjungan').DataTable({
+            "paging": false, // Disable paging as we use Laravel pagination or we just want to search the current page
+            "lengthChange": false,
+            "searching": true,
+            "ordering": true,
+            "info": false,
+            "autoWidth": false,
+            "responsive": true,
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json"
+            }
+        });
+    }
 });
 </script>
 @endpush
