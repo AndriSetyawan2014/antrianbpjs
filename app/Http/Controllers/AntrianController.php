@@ -105,6 +105,32 @@ class AntrianController extends Controller
     //     return view('data_kodebooking', compact('data_kodebooking'));
     // }
 
+    public function monitoringTaskid(Request $request)
+    {
+        $today = date('Y-m-d');
+        $start_date = $request->input('start_date', $today);
+        $end_date = $request->input('end_date', $today);
+
+        // Ambil data kode booking berdasarkan rentang tanggal
+        $kodebookings = DataKodebooking::whereDate('tanggalperiksa', '>=', $start_date)
+            ->whereDate('tanggalperiksa', '<=', $end_date)
+            ->get();
+
+        // Ambil semua kodebooking sebagai array
+        $kbs = $kodebookings->pluck('kodebooking')->toArray();
+        
+        // Ambil data_taskid untuk kodebooking terkait
+        $taskids = data_taskid::whereIn('kodebooking', $kbs)->get();
+
+        // Grouping berdasarkan kodebooking
+        $groupedTasks = [];
+        foreach ($taskids as $t) {
+            $groupedTasks[$t->kodebooking][$t->taskid] = $t;
+        }
+
+        return view('monitoring_taskid', compact('kodebookings', 'groupedTasks', 'start_date', 'end_date'));
+    }
+
     public function data_kodebooking(Request $request)
     {
     // Mendapatkan tanggal hari ini

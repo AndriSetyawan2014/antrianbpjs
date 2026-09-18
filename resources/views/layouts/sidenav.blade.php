@@ -60,14 +60,20 @@
         {{-- Task ID Yogyakarta --}}
         <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddTaskIDJogja"
-           aria-expanded="{{ Request::is('TaskID*') || Request::is('rekap_taskid*') ? 'true' : 'false' }}">
+           aria-expanded="{{ Request::is('TaskID*') || Request::is('rekap_taskid*') || Request::is('monitoring_taskid*') ? 'true' : 'false' }}">
             <i class="fas fa-tasks nav-icon"></i>
             <span>Task ID</span>
-            <i class="fas fa-angle-down arrow-icon {{ Request::is('TaskID*') || Request::is('rekap_taskid*') ? 'rotated' : '' }}"></i>
+            <i class="fas fa-angle-down arrow-icon {{ Request::is('TaskID*') || Request::is('rekap_taskid*') || Request::is('monitoring_taskid*') ? 'rotated' : '' }}"></i>
         </button>
-        <div class="collapse {{ Request::is('TaskID*') || Request::is('rekap_taskid*') ? 'show' : '' }}"
+        <div class="collapse {{ Request::is('TaskID*') || Request::is('rekap_taskid*') || Request::is('monitoring_taskid*') ? 'show' : '' }}"
              id="ddTaskIDJogja">
             <ul class="nav flex-column ms-3">
+                <li class="nav-item">
+                    <a href="{{ url('/monitoring_taskid') }}"
+                       class="nav-link {{ Request::is('monitoring_taskid') ? 'active' : '' }}">
+                        <i class="fas fa-table nav-icon"></i> Monitoring Task ID
+                    </a>
+                </li>
                 <li class="nav-item">
                     <a href="{{ url('/TaskID') }}"
                        class="nav-link {{ Request::is('TaskID') ? 'active' : '' }}">
