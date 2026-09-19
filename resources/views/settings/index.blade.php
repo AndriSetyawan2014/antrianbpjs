@@ -146,6 +146,8 @@ $(document).ready(function() {
             confirmButtonText: 'Ya, bersihkan',
             cancelButtonText: 'Batal'
         }).then((r) => { if (r.isConfirmed) form.submit(); });
+    });
+
     // Konfirmasi migrate via SweetAlert
     $('#formMigrate').on('submit', function(e) {
         e.preventDefault();
