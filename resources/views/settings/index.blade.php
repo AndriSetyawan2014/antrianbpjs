@@ -59,10 +59,17 @@
                     <div class="card-body">
                         <p class="text-muted">Gunakan fitur ini jika Anda baru saja melakukan perubahan kode (terutama tampilan/View) namun tidak muncul di halaman aplikasi (tersangkut di memori cache server).</p>
 
-                        <form id="formClearCache" action="{{ route('settings.clear-cache') }}" method="POST">
+                        <form id="formClearCache" action="{{ route('settings.clear-cache') }}" method="POST" class="mb-3">
                             @csrf
                             <button type="submit" class="btn btn-danger btn-lg shadow-sm w-100">
                                 <i class="fas fa-trash-alt me-2"></i> Bersihkan Semua Cache
+                            </button>
+                        </form>
+
+                        <form id="formMigrate" action="{{ route('settings.migrate') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn btn-warning btn-lg shadow-sm w-100 text-dark">
+                                <i class="fas fa-database me-2"></i> Jalankan Migrasi Database
                             </button>
                         </form>
                     </div>
@@ -139,6 +146,21 @@ $(document).ready(function() {
             confirmButtonText: 'Ya, bersihkan',
             cancelButtonText: 'Batal'
         }).then((r) => { if (r.isConfirmed) form.submit(); });
+    // Konfirmasi migrate via SweetAlert
+    $('#formMigrate').on('submit', function(e) {
+        e.preventDefault();
+        const form = this;
+        Swal.fire({
+            title: 'Jalankan Migrasi Database?',
+            text: 'Ini akan membuat tabel baru atau mengubah struktur database (aman untuk tabel yang sudah ada).',
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, jalankan',
+            cancelButtonText: 'Batal'
+        }).then((r) => { if (r.isConfirmed) {
+            Swal.fire({ title: 'Memproses Migrasi…', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            form.submit();
+        }});
     });
 
     // ── Queue management (tanpa curl manual) ──

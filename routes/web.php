@@ -205,3 +205,13 @@ Route::post('/settings/clear-cache', function () {
         return back()->with('error', 'Gagal membersihkan cache: ' . $e->getMessage());
     }
 })->name('settings.clear-cache');
+
+Route::post('/settings/migrate', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $output = \Illuminate\Support\Facades\Artisan::output();
+        return back()->with('success', 'Migrasi database berhasil dijalankan! Log: ' . $output);
+    } catch (\Exception $e) {
+        return back()->with('error', 'Gagal menjalankan migrasi: ' . $e->getMessage());
+    }
+})->name('settings.migrate');
