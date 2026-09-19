@@ -7,6 +7,9 @@ use App\Helpers\BpjsHelper;
 use App\Jobs\SyncVclaimKunjunganJob;
 use App\Models\VclaimKunjungan;
 use App\Models\VclaimSyncLog;
+use App\Models\AntreanPerTanggalLog;
+use App\Models\AntreanPerTanggalSyncLog;
+use App\Jobs\SyncAntreanPerTanggalJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -710,9 +713,86 @@ class VclaimController extends Controller
             ]);
         }
 
-        $jsonString = \App\Helpers\BpjsHelper::getRequestDirect($urlQL, "/antrean/pendaftaran/tanggal/{$tanggal}");
-        $result = json_decode($jsonString, true);
+        $logs = AntreanPerTanggalLog::where('tanggal', $tanggal)
+                    ->where('kode_ql', $urlQL)
+                    ->get();
         
-        return response()->json($result);
+        // Format response so it looks exactly like BPJS raw format
+        $responseArray = $logs->map(function($log) {
+            $raw = $log->raw_response;
+            // Sometimes json casts might return array directly
+            if (is_string($raw)) {
+                $raw = json_decode($raw, true);
+            }
+            return $raw;
+        })->toArray();
+
+        return response()->json([
+            'metadata' => ['code' => 200, 'message' => 'OK (Local DB)'],
+            'response' => $responseArray
+        ]);
+    }
+
+    public function syncAntreanPerTanggal(Request $request)
+    {
+        $tanggal      = $request->input('tanggal', Carbon::today()->toDateString());
+        $urlQLParam   = strtoupper($request->input('urlQL', ''));
+        $availableQLs = BpjsHelper::getUrlQLOptions();
+
+        $targetQLs = ($urlQLParam && in_array($urlQLParam, $availableQLs))
+            ? [$urlQLParam]
+            : $availableQLs;
+
+        $syncIds = [];
+
+        foreach ($targetQLs as $urlQL) {
+            $log = AntreanPerTanggalSyncLog::create([
+                'kode_ql' => $urlQL,
+                'tanggal' => $tanggal,
+                'status'  => 'pending',
+            ]);
+
+            SyncAntreanPerTanggalJob::dispatch($urlQL, $tanggal, $log->id);
+            $syncIds[] = $log->id;
+        }
+
+        return response()->json([
+            'status'   => 'success',
+            'message'  => 'Sync job dispatched',
+            'sync_ids' => $syncIds,
+        ]);
+    }
+
+    public function syncAntreanStatus(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (empty($ids)) {
+            return response()->json(['error' => 'No IDs provided'], 400);
+        }
+
+        $logs = AntreanPerTanggalSyncLog::whereIn('id', $ids)->get();
+
+        $allDone = true;
+        $hasError = false;
+        $totalSync = 0;
+
+        foreach ($logs as $log) {
+            if (!$log->isDone()) {
+                $allDone = false;
+            }
+            if ($log->status === 'error') {
+                $hasError = true;
+            }
+            if ($log->status === 'success') {
+                $totalSync += $log->total_data;
+            }
+        }
+
+        return response()->json([
+            'is_done'    => $allDone,
+            'has_error'  => $hasError,
+            'total_sync' => $totalSync,
+            'logs'       => $logs
+        ]);
     }
 }

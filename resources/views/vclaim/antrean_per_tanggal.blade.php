@@ -31,8 +31,29 @@
                         <button type="submit" class="btn btn-primary" id="btnCari">
                             <i class="fas fa-search me-1"></i> Cari Antrean
                         </button>
+                        <button type="button" id="btnSync" class="btn btn-success ms-2">
+                            <i class="fas fa-sync-alt me-1"></i> Sync BPJS
+                        </button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        {{-- ══ Sync Progress Panel ════════════════════════════════════ --}}
+        <div id="syncProgressPanel" style="display:none; margin-bottom:1rem; padding:15px; border-radius:8px; border-left:4px solid var(--color-info); background:var(--color-surface); box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+            <div class="sync-title" style="font-weight:600; margin-bottom:10px;">
+                <span class="spinner-border spinner-border-sm text-info me-2" role="status"></span>
+                <span>Menyinkronisasi data dari API BPJS...</span>
+            </div>
+            <div id="syncProgressItems"></div>
+            <div id="syncProgressSummary" style="font-size:.78rem; color:var(--color-text-muted); margin-top:8px;"></div>
+        </div>
+
+        {{-- ── Toast Notifikasi ── --}}
+        <div id="syncToast" class="sync-toast" style="display:none; position:fixed; top:20px; right:20px; z-index:9999; background:white; padding:15px; border-radius:5px; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+            <div class="toast-body">
+                <i id="syncToastIcon" class="fas fa-check-circle text-success fa-lg me-2"></i>
+                <span id="syncToastMsg"></span>
             </div>
         </div>
 
@@ -311,6 +332,153 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#resBelum').text(sBelum);
 
         $('#resumeStatusContainer').fadeIn();
+    }
+
+    // ── SYNC BPJS LOGIC ──
+    const btnSync = document.getElementById('btnSync');
+    const progressPanel = document.getElementById('syncProgressPanel');
+
+    function triggerSync() {
+        const tanggal = document.getElementById('inputTanggal').value;
+        const urlQL   = document.getElementById('inputUrlQL').value;
+        
+        if(!urlQL) {
+            alert('Silakan pilih Cabang QL terlebih dahulu.');
+            return;
+        }
+
+        setButtonLoading(true);
+        progressPanel.style.display = 'block';
+        progressPanel.style.borderLeftColor = 'var(--color-info)';
+        progressPanel.querySelector('.sync-title .spinner-border').style.display = 'inline-block';
+        document.getElementById('syncProgressItems').innerHTML = '';
+        document.getElementById('syncProgressSummary').textContent = 'Menjadwalkan job ke queue...';
+
+        const params = new URLSearchParams({ tanggal, urlQL });
+
+        fetch(`{{ url('/api/vclaim/sync-antrol-antrean') }}?${params}`, { method: 'GET' })
+            .then(r => r.json())
+            .then(data => {
+                const syncIds = data.sync_ids || [];
+                if (!syncIds.length) {
+                    showToast('Tidak ada job yang dijadwalkan.', 'warning');
+                    setButtonLoading(false);
+                    return;
+                }
+                document.getElementById('syncProgressSummary').textContent =
+                    `${syncIds.length} job dispatched ke queue. Memantau progres...`;
+                startPolling(syncIds);
+            })
+            .catch(() => {
+                showToast('Gagal menghubungi server. Coba lagi.', 'error');
+                setButtonLoading(false);
+                progressPanel.style.display = 'none';
+            });
+    }
+
+    if (btnSync) btnSync.addEventListener('click', triggerSync);
+
+    let pollInterval = null;
+
+    function startPolling(syncIds) {
+        if (pollInterval) clearInterval(pollInterval);
+        let attempts = 0;
+        const maxAttempts = 150; // ~5 menit
+
+        pollInterval = setInterval(async () => {
+            attempts++;
+            try {
+                const qs  = syncIds.map(id => `ids[]=${id}`).join('&');
+                const res = await fetch(`{{ url('/api/vclaim/sync-antrol-status') }}?${qs}`);
+                const data = await res.json();
+
+                updateProgressUI(data);
+
+                if (data.is_done) {
+                    clearInterval(pollInterval);
+                    pollInterval = null;
+                    setButtonLoading(false);
+
+                    const msg = data.has_error
+                        ? `Sync selesai (ada error).`
+                        : `Sync berhasil! ${data.total_sync} data antrean tersimpan.`;
+                    showToast(msg, data.has_error ? 'warning' : 'success');
+
+                    // Refresh table otomatis
+                    $('#filterForm').submit();
+                } else if (attempts >= maxAttempts) {
+                    clearInterval(pollInterval);
+                    pollInterval = null;
+                    setButtonLoading(false);
+                    showToast('Sync belum selesai setelah 5 menit. Pastikan queue worker berjalan.', 'warning');
+                }
+            } catch (e) {
+                console.error('Polling error:', e);
+            }
+        }, 2000);
+    }
+
+    function updateProgressUI(data) {
+        const container = document.getElementById('syncProgressItems');
+        container.innerHTML = '';
+
+        const statusLabel = {
+            pending:    { text: 'Menunggu...',   cls: 'bg-secondary', width: '30%'  },
+            processing: { text: 'Memproses...',  cls: 'bg-info',      width: '65%'  },
+            success:    { text: 'Selesai ✓',   cls: 'bg-success',   width: '100%' },
+            error:      { text: 'Error ✗',     cls: 'bg-danger',    width: '100%' },
+        };
+
+        (data.logs || []).forEach(log => {
+            const s = statusLabel[log.status] || statusLabel.pending;
+            const extra = log.status === 'success'
+                ? ` — ${log.total_data} data`
+                : (log.status === 'error' ? ` — ${log.message || ''}` : '');
+
+            container.insertAdjacentHTML('beforeend', `
+                <div class="mb-2" style="font-size:0.85rem;">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="fw-bold">${log.kode_ql}</span>
+                        <span>${s.text}${extra}</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar ${s.cls} ${log.status !== 'success' && log.status !== 'error' ? 'progress-bar-animated progress-bar-striped' : ''}"
+                             style="width:${s.width}; transition: width .4s ease;"></div>
+                    </div>
+                </div>
+            `);
+        });
+
+        if (data.is_done) {
+            document.getElementById('syncProgressSummary').textContent =
+                `Selesai. Total ${data.total_sync} data berhasil di-sync.`;
+            progressPanel.style.borderLeftColor = data.has_error ? 'var(--color-danger)' : 'var(--color-success)';
+            progressPanel.querySelector('.sync-title .spinner-border').style.display = 'none';
+        }
+    }
+
+    function setButtonLoading(isLoading) {
+        if (btnSync) {
+            btnSync.disabled = isLoading;
+            btnSync.innerHTML = isLoading
+                ? '<span class="spinner-border spinner-border-sm me-1"></span> Syncing...'
+                : '<i class="fas fa-sync-alt me-1"></i> Sync BPJS';
+        }
+    }
+
+    function showToast(msg, type = 'success') {
+        const toast = document.getElementById('syncToast');
+        const icon  = document.getElementById('syncToastIcon');
+        const msgEl = document.getElementById('syncToastMsg');
+        const icons = {
+            success: 'fa-check-circle text-success',
+            warning: 'fa-exclamation-triangle text-warning',
+            error:   'fa-times-circle text-danger',
+        };
+        icon.className  = `fas fa-lg me-2 ${icons[type] || icons.success}`;
+        msgEl.textContent = msg;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 5000);
     }
 });
 </script>

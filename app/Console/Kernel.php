@@ -14,6 +14,9 @@ protected function schedule(Schedule $schedule)
 
     // Sinkronisasi otomatis VClaim kunjungan rawat jalan untuk hari ini (pada jam 23:45)
     $schedule->command('vclaim:sync-kunjungan-daily')->dailyAt('23:45');
+
+    // Sinkronisasi otomatis Antrean Per Tanggal setiap pagi jam 06:00
+    $schedule->command('vclaim:sync-antrean-daily')->dailyAt('06:00');
 }
 
     /**
