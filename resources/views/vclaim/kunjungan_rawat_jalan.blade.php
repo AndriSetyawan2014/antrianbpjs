@@ -91,7 +91,6 @@
         {{-- ══ Tabel Kunjungan ════════════════════════════════════════ --}}
         <div class="vclaim-table-wrap">
             @if($kunjungan->count())
-            <div class="table-responsive" style="max-height:calc(100vh - 320px);">
                 <table class="table" id="tableKunjungan">
                     <thead>
                         <tr>
@@ -149,8 +148,6 @@
                         @endforeach
                     </tbody>
                 </table>
-            </div>
-
             {{-- Pagination --}}
             <div class="d-flex justify-content-between align-items-center px-3 py-2 pagination-bar">
                 <div class="pagination-info">

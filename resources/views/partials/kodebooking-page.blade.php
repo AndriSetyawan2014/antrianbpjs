@@ -38,7 +38,6 @@
 </div>
 
 {{-- Tabel --}}
-<div class="table-responsive">
     <table id="{{ $tableId }}" class="table table-hover table-striped table-bordered">
         <thead>
             <tr>
@@ -81,7 +80,6 @@
             @endforeach
         </tbody>
     </table>
-</div>
 
 @push('scripts')
 <script>

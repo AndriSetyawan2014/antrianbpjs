@@ -222,25 +222,25 @@
                 <li class="nav-item">
                     <a href="{{ route('vclaim.kunjungan.jalan') }}"
                        class="nav-link {{ Request::is('vclaim/kunjungan-rawat-jalan') ? 'active' : '' }}">
-                        <i class="fas fa-list nav-icon" style="color:#86efac;"></i> Detail
+                        <i class="fas fa-list nav-icon" style="color:#86efac;"></i> <span>Detail Kunjungan</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('vclaim.rekap.kunjungan.jalan') }}"
                        class="nav-link {{ Request::is('vclaim/rekap-kunjungan-rawat-jalan') ? 'active' : '' }}">
-                        <i class="fas fa-chart-bar nav-icon" style="color:#86efac;"></i> Rekap
+                        <i class="fas fa-chart-bar nav-icon" style="color:#86efac;"></i> <span>Rekap Kunjungan</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('vclaim.antrol.antrean.per.tanggal') }}"
                        class="nav-link {{ Request::is('vclaim/antrol-antrean-per-tanggal') ? 'active' : '' }}">
-                        <i class="fas fa-list-ol nav-icon" style="color:#86efac;"></i> Antrean Per Tanggal
+                        <i class="fas fa-list-ol nav-icon" style="color:#86efac;"></i> <span>Detail Antrean</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('vclaim.rekap.antrean.per.tanggal') }}"
                        class="nav-link {{ Request::is('vclaim/rekap-antrean-per-tanggal') ? 'active' : '' }}">
-                        <i class="fas fa-table nav-icon" style="color:#86efac;"></i> Rekap Antrean Per Tanggal
+                        <i class="fas fa-table nav-icon" style="color:#86efac;"></i> <span>Rekap Antrean</span>
                     </a>
                 </li>
             </ul>

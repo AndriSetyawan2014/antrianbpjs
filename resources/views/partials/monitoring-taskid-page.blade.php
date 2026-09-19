@@ -33,8 +33,7 @@
 </div>
 
 {{-- Tabel --}}
-<div class="table-responsive">
-    <table id="{{ $tableId }}" class="table table-hover table-striped table-bordered text-center">
+<table id="{{ $tableId }}" class="table table-hover table-striped table-bordered text-center">
         <thead>
             <tr>
                 <th style="width:4%;">No</th>
@@ -114,7 +113,6 @@
             @endforeach
         </tbody>
     </table>
-</div>
 
 {{-- Modal Detail Task ID --}}
 <div class="modal fade" id="modalDetailTask" tabindex="-1" aria-labelledby="modalDetailTaskLabel" aria-hidden="true">
@@ -125,7 +123,6 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <div class="table-responsive">
             <table class="table table-bordered table-striped" id="tableDetailTask">
                 <thead>
                     <tr>
@@ -140,7 +137,6 @@
                     <!-- Data will be populated via AJAX -->
                 </tbody>
             </table>
-        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>

@@ -130,30 +130,28 @@
         {{-- ══ Tabel Antrean ════════════════════════════════════════ --}}
         <div class="card card-outline card-info">
             <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped table-hover" id="tableAntrean" style="width: 100%; font-size: 0.85rem;">
-                        <thead class="bg-light">
-                            <tr>
-                                <th>No</th>
-                                <th>Identitas</th>
-                                <th>Dokter</th>
-                                <th>No. HP</th>
-                                <th>Jns Kunjungan</th>
-                                <th>No. Referensi</th>
-                                <th>Sumber Data</th>
-                                <th>Peserta?</th>
-                                <th>Antrean</th>
-                                <th>Dibuat</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="bodyAntrean">
-                            <tr>
-                                <td colspan="11" class="text-center text-muted py-4">Pilih cabang dan tanggal lalu klik Cari Antrean.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <table class="table table-bordered table-striped table-hover" id="tableAntrean" style="width: 100%; font-size: 0.85rem;">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>No</th>
+                            <th>Identitas</th>
+                            <th>Dokter</th>
+                            <th>No. HP</th>
+                            <th>Jns Kunjungan</th>
+                            <th>No. Referensi</th>
+                            <th>Sumber Data</th>
+                            <th>Peserta?</th>
+                            <th>Antrean</th>
+                            <th>Dibuat</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodyAntrean">
+                        <tr>
+                            <td colspan="11" class="text-center text-muted py-4">Pilih cabang dan tanggal lalu klik Cari Antrean.</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 

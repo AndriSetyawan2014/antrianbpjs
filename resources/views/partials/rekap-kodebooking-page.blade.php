@@ -42,7 +42,6 @@
 </div>
 
 {{-- Tabel --}}
-<div class="table-responsive">
     @if($isDetail ?? false)
     {{-- Detail per message --}}
     <table class="table table-hover table-striped table-bordered">
@@ -127,4 +126,3 @@
         </tfoot>
     </table>
     @endif
-</div>
