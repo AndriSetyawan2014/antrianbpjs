@@ -176,6 +176,12 @@ Route::get('/vclaim/ping-antrol-get-list-task', [VclaimController::class, 'pingA
 Route::get('/vclaim/ping-antrol-antrean-per-tanggal', [VclaimController::class, 'pingAntrolAntreanPerTanggal'])
     ->name('vclaim.ping.antrol.antrean.per.tanggal');
 
+Route::get('/vclaim/antrol-antrean-per-tanggal', [VclaimController::class, 'pageAntrolAntreanPerTanggal'])
+    ->name('vclaim.antrol.antrean.per.tanggal');
+
+Route::get('/api/vclaim/antrol-antrean-per-tanggal-data', [VclaimController::class, 'getAntrolAntreanPerTanggalData'])
+    ->name('api.vclaim.antrol.antrean.per.tanggal.data');
+
 Route::get('/vclaim/ping-antrol-antrean-per-kode-booking', [VclaimController::class, 'pingAntrolAntreanPerKodeBooking'])
     ->name('vclaim.ping.antrol.antrean.per.kode.booking');
 

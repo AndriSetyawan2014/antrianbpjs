@@ -692,4 +692,27 @@ class VclaimController extends Controller
         $result = \App\Helpers\BpjsHelper::getAntrolAntreanPerKodeBooking($urlQL, $kodeBooking);
         return response()->json($result);
     }
+
+    public function pageAntrolAntreanPerTanggal()
+    {
+        $urlQLOptions = BpjsHelper::getUrlQLOptions();
+        return view('vclaim.antrean_per_tanggal', compact('urlQLOptions'));
+    }
+
+    public function getAntrolAntreanPerTanggalData(Request $request)
+    {
+        $urlQL = strtoupper($request->input('urlQL', ''));
+        $tanggal = $request->input('tanggal', date('Y-m-d'));
+        
+        if (empty($urlQL)) {
+            return response()->json([
+                'metadata' => ['code' => 400, 'message' => 'Cabang (urlQL) harus dipilih.']
+            ]);
+        }
+
+        $jsonString = \App\Helpers\BpjsHelper::getRequestDirect($urlQL, "/antrean/pendaftaran/tanggal/{$tanggal}");
+        $result = json_decode($jsonString, true);
+        
+        return response()->json($result);
+    }
 }
