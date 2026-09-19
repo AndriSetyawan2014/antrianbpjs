@@ -240,7 +240,7 @@
                 <li class="nav-item">
                     <a href="{{ route('vclaim.rekap.antrean.per.tanggal') }}"
                        class="nav-link {{ Request::is('vclaim/rekap-antrean-per-tanggal') ? 'active' : '' }}">
-                        <i class="fas fa-table nav-icon" style="color:#86efac;"></i> Rekap Antrean
+                        <i class="fas fa-table nav-icon" style="color:#86efac;"></i> Rekap Antrean Per Tanggal
                     </a>
                 </li>
             </ul>
