@@ -50,8 +50,8 @@
         </div>
 
         {{-- ── Toast Notifikasi ── --}}
-        <div id="syncToast" class="sync-toast" style="display:none; position:fixed; top:20px; right:20px; z-index:9999; background:white; padding:15px; border-radius:5px; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
-            <div class="toast-body">
+        <div id="syncToast" class="sync-toast" style="display:none; position:fixed; top:20px; right:20px; z-index:9999; background:white; padding:15px; border-radius:5px; box-shadow:0 4px 12px rgba(0,0,0,0.15); width: max-content; max-width: 400px; height: fit-content;">
+            <div class="d-flex align-items-center">
                 <i id="syncToastIcon" class="fas fa-check-circle text-success fa-lg me-2"></i>
                 <span id="syncToastMsg"></span>
             </div>
