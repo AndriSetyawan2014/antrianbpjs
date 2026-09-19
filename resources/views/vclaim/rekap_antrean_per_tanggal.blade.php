@@ -66,12 +66,12 @@
             </thead>
             <tbody>
                 @forelse($rekapPaginator as $dateStr => $cols)
-                    <tr style="cursor: pointer;" onclick="window.location='{{ route('vclaim.antrol.antrean.per.tanggal', ['tanggal' => $dateStr]) }}'" title="Lihat detail antrean {{ \Carbon\Carbon::parse($dateStr)->format('d M Y') }}">
-                        <td>
-                            <strong>{{ \Carbon\Carbon::parse($dateStr)->format('d M Y') }}</strong>
+                    <tr>
+                        <td style="cursor: pointer;" onclick="window.location='{{ route('vclaim.antrol.antrean.per.tanggal', ['tanggal' => $dateStr]) }}'" title="Lihat semua antrean {{ \Carbon\Carbon::parse($dateStr)->format('d M Y') }}">
+                            <strong class="text-primary">{{ \Carbon\Carbon::parse($dateStr)->format('d M Y') }}</strong>
                         </td>
                         @foreach($availableQLs as $ql)
-                            <td>
+                            <td style="cursor: pointer;" onclick="window.location='{{ route('vclaim.antrol.antrean.per.tanggal', ['tanggal' => $dateStr, 'urlQL' => $ql]) }}'" title="Lihat detail antrean {{ strtoupper($ql) }}">
                                 @if($cols[$ql] > 0)
                                     <span class="badge bg-success" style="font-size: .8rem; padding: 5px 8px;">{{ number_format($cols[$ql], 0, ',', '.') }}</span>
                                 @else

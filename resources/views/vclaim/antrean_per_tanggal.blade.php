@@ -16,14 +16,14 @@
                     <div>
                         <label class="form-label mb-1">Tanggal Antrean</label>
                         <input type="date" id="inputTanggal" name="tanggal" class="form-control"
-                               value="{{ date('Y-m-d') }}" max="{{ date('Y-m-d') }}" style="width:155px;" required>
+                               value="{{ request('tanggal', date('Y-m-d')) }}" max="{{ date('Y-m-d') }}" style="width:155px;" required>
                     </div>
                     <div>
                         <label class="form-label mb-1">Cabang QL</label>
                         <select id="inputUrlQL" name="urlQL" class="form-select" style="width:170px;" required>
                             <option value="">Pilih Cabang</option>
                             @foreach($urlQLOptions as $ql)
-                                <option value="{{ $ql }}">{{ $ql }}</option>
+                                <option value="{{ $ql }}" {{ request('urlQL') == $ql ? 'selected' : '' }}>{{ $ql }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -165,6 +165,12 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     let table = null;
+
+    // Auto submit if both tanggal and urlQL are provided via URL parameters (or at least tanggal)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('tanggal') && urlParams.has('urlQL')) {
+        setTimeout(() => $('#filterForm').submit(), 100);
+    }
 
     $('#filterForm').on('submit', function(e) {
         e.preventDefault();
