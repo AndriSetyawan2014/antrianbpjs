@@ -763,6 +763,115 @@ class VclaimController extends Controller
         ]);
     }
 
+    public function syncAntreanPerTanggalRange(Request $request)
+    {
+        $bulan = $request->input('bulan', date('m'));
+        $tahun = $request->input('tahun', date('Y'));
+        
+        $startDate = Carbon::createFromDate($tahun, $bulan, 1);
+        $endDate   = $startDate->copy()->endOfMonth();
+        
+        // Batasi maksimal sampai hari ini agar tidak narik data masa depan (meski API BPJS mungkin aman, lebih baik dibatasi)
+        if ($endDate->isFuture()) {
+            $endDate = Carbon::today();
+        }
+
+        $urlQLParam   = strtoupper($request->input('urlQL', ''));
+        $availableQLs = BpjsHelper::getUrlQLOptions();
+
+        $targetQLs = ($urlQLParam && in_array($urlQLParam, $availableQLs))
+            ? [$urlQLParam]
+            : $availableQLs;
+
+        $syncIds = [];
+
+        for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+            $tanggal = $date->toDateString();
+            
+            foreach ($targetQLs as $urlQL) {
+                $log = AntreanPerTanggalSyncLog::create([
+                    'kode_ql' => $urlQL,
+                    'tanggal' => $tanggal,
+                    'status'  => 'pending',
+                ]);
+
+                SyncAntreanPerTanggalJob::dispatch($urlQL, $tanggal, $log->id);
+                $syncIds[] = $log->id;
+            }
+        }
+
+        return response()->json([
+            'status'   => 'success',
+            'message'  => count($syncIds) . ' Sync jobs dispatched for the entire month.',
+            'sync_ids' => $syncIds,
+        ]);
+    }
+
+    public function pageRekapAntreanPerTanggal(Request $request)
+    {
+        $bulan = $request->input('bulan', date('m'));
+        $tahun = $request->input('tahun', date('Y'));
+        
+        $availableQLs = BpjsHelper::getUrlQLOptions();
+
+        $data = AntreanPerTanggalLog::whereMonth('tanggal', $bulan)
+            ->whereYear('tanggal', $tahun)
+            ->selectRaw('tanggal, kode_ql, COUNT(*) as total')
+            ->groupBy('tanggal', 'kode_ql')
+            ->get();
+
+        $grouped = [];
+        foreach ($data as $item) {
+            $dateStr = $item->tanggal->format('Y-m-d');
+            $ql = strtoupper($item->kode_ql);
+            $grouped[$dateStr][$ql] = $item->total;
+        }
+
+        $daysInMonth = Carbon::createFromDate($tahun, $bulan, 1)->daysInMonth;
+        
+        $rekap = [];
+        $totals = array_fill_keys($availableQLs, 0);
+        $grandTotal = 0;
+
+        for ($i = 1; $i <= $daysInMonth; $i++) {
+            $dateStr = sprintf('%04d-%02d-%02d', $tahun, $bulan, $i);
+            $rekap[$dateStr] = [];
+            $rowTotal = 0;
+
+            foreach ($availableQLs as $ql) {
+                $count = $grouped[$dateStr][$ql] ?? 0;
+                $rekap[$dateStr][$ql] = $count;
+                $rowTotal += $count;
+                $totals[$ql] += $count;
+            }
+            $rekap[$dateStr]['total'] = $rowTotal;
+            $grandTotal += $rowTotal;
+        }
+
+        // Pagination untuk $rekap
+        $perPage = 10;
+        $page = \Illuminate\Pagination\Paginator::resolveCurrentPage() ?: 1;
+        $offset = ($page - 1) * $perPage;
+        $pagedData = array_slice($rekap, $offset, $perPage, true);
+        
+        $rekapPaginator = new \Illuminate\Pagination\LengthAwarePaginator(
+            $pagedData,
+            count($rekap),
+            $perPage,
+            $page,
+            ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()]
+        );
+
+        return view('vclaim.rekap_antrean_per_tanggal', compact(
+            'bulan',
+            'tahun',
+            'availableQLs',
+            'rekapPaginator',
+            'totals',
+            'grandTotal'
+        ));
+    }
+
     public function syncAntreanStatus(Request $request)
     {
         $ids = $request->input('ids', []);

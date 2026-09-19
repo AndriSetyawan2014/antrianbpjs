@@ -211,12 +211,12 @@
         {{-- Monitoring Rawat Jalan --}}
         <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddMonitoringRawatJalan"
-           aria-expanded="{{ Request::is('vclaim/kunjungan-rawat-jalan*') || Request::is('vclaim/rekap-kunjungan-rawat-jalan*') || Request::is('vclaim/antrol-antrean-per-tanggal*') ? 'true' : 'false' }}">
+           aria-expanded="{{ Request::is('vclaim/kunjungan-rawat-jalan*') || Request::is('vclaim/rekap-kunjungan-rawat-jalan*') || Request::is('vclaim/antrol-antrean-per-tanggal*') || Request::is('vclaim/rekap-antrean-per-tanggal*') ? 'true' : 'false' }}">
             <i class="fas fa-walking nav-icon" style="color:#86efac;"></i>
             <span>Monitoring Rawat Jalan</span>
-            <i class="fas fa-angle-down arrow-icon {{ Request::is('vclaim/kunjungan-rawat-jalan*') || Request::is('vclaim/rekap-kunjungan-rawat-jalan*') || Request::is('vclaim/antrol-antrean-per-tanggal*') ? 'rotated' : '' }}"></i>
+            <i class="fas fa-angle-down arrow-icon {{ Request::is('vclaim/kunjungan-rawat-jalan*') || Request::is('vclaim/rekap-kunjungan-rawat-jalan*') || Request::is('vclaim/antrol-antrean-per-tanggal*') || Request::is('vclaim/rekap-antrean-per-tanggal*') ? 'rotated' : '' }}"></i>
         </button>
-        <div class="collapse {{ Request::is('vclaim/kunjungan-rawat-jalan*') || Request::is('vclaim/rekap-kunjungan-rawat-jalan*') || Request::is('vclaim/antrol-antrean-per-tanggal*') ? 'show' : '' }}"
+        <div class="collapse {{ Request::is('vclaim/kunjungan-rawat-jalan*') || Request::is('vclaim/rekap-kunjungan-rawat-jalan*') || Request::is('vclaim/antrol-antrean-per-tanggal*') || Request::is('vclaim/rekap-antrean-per-tanggal*') ? 'show' : '' }}"
              id="ddMonitoringRawatJalan">
             <ul class="nav flex-column ms-3">
                 <li class="nav-item">
@@ -235,6 +235,12 @@
                     <a href="{{ route('vclaim.antrol.antrean.per.tanggal') }}"
                        class="nav-link {{ Request::is('vclaim/antrol-antrean-per-tanggal') ? 'active' : '' }}">
                         <i class="fas fa-list-ol nav-icon" style="color:#86efac;"></i> Antrean Per Tanggal
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('vclaim.rekap.antrean.per.tanggal') }}"
+                       class="nav-link {{ Request::is('vclaim/rekap-antrean-per-tanggal') ? 'active' : '' }}">
+                        <i class="fas fa-table nav-icon" style="color:#86efac;"></i> Rekap Antrean
                     </a>
                 </li>
             </ul>

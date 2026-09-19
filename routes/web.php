@@ -182,8 +182,14 @@ Route::get('/vclaim/antrol-antrean-per-tanggal', [VclaimController::class, 'page
 Route::get('/api/vclaim/antrol-antrean-per-tanggal-data', [VclaimController::class, 'getAntrolAntreanPerTanggalData'])
     ->name('api.vclaim.antrol.antrean.per.tanggal.data');
 
+Route::get('/vclaim/rekap-antrean-per-tanggal', [VclaimController::class, 'pageRekapAntreanPerTanggal'])
+    ->name('vclaim.rekap.antrean.per.tanggal');
+
 Route::get('/api/vclaim/sync-antrol-antrean', [VclaimController::class, 'syncAntreanPerTanggal'])
     ->name('api.vclaim.sync.antrol.antrean');
+
+Route::get('/api/vclaim/sync-antrol-antrean-range', [VclaimController::class, 'syncAntreanPerTanggalRange'])
+    ->name('api.vclaim.sync.antrol.antrean.range');
 
 Route::get('/api/vclaim/sync-antrol-status', [VclaimController::class, 'syncAntreanStatus'])
     ->name('api.vclaim.sync.antrol.status');
