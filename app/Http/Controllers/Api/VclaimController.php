@@ -735,59 +735,17 @@ class VclaimController extends Controller
 
     public function syncAntreanPerTanggal(Request $request)
     {
-        $tanggal      = $request->input('tanggal', Carbon::today()->toDateString());
-        $urlQLParam   = strtoupper($request->input('urlQL', ''));
-        $availableQLs = BpjsHelper::getUrlQLOptions();
+        try {
+            $tanggal      = $request->input('tanggal', Carbon::today()->toDateString());
+            $urlQLParam   = strtoupper($request->input('urlQL', ''));
+            $availableQLs = BpjsHelper::getUrlQLOptions();
 
-        $targetQLs = ($urlQLParam && in_array($urlQLParam, $availableQLs))
-            ? [$urlQLParam]
-            : $availableQLs;
+            $targetQLs = ($urlQLParam && in_array($urlQLParam, $availableQLs))
+                ? [$urlQLParam]
+                : $availableQLs;
 
-        $syncIds = [];
+            $syncIds = [];
 
-        foreach ($targetQLs as $urlQL) {
-            $log = AntreanPerTanggalSyncLog::create([
-                'kode_ql' => $urlQL,
-                'tanggal' => $tanggal,
-                'status'  => 'pending',
-            ]);
-
-            SyncAntreanPerTanggalJob::dispatch($urlQL, $tanggal, $log->id);
-            $syncIds[] = $log->id;
-        }
-
-        return response()->json([
-            'status'   => 'success',
-            'message'  => 'Sync job dispatched',
-            'sync_ids' => $syncIds,
-        ]);
-    }
-
-    public function syncAntreanPerTanggalRange(Request $request)
-    {
-        $bulan = $request->input('bulan', date('m'));
-        $tahun = $request->input('tahun', date('Y'));
-        
-        $startDate = Carbon::createFromDate($tahun, $bulan, 1);
-        $endDate   = $startDate->copy()->endOfMonth();
-        
-        // Batasi maksimal sampai hari ini agar tidak narik data masa depan (meski API BPJS mungkin aman, lebih baik dibatasi)
-        if ($endDate->isFuture()) {
-            $endDate = Carbon::today();
-        }
-
-        $urlQLParam   = strtoupper($request->input('urlQL', ''));
-        $availableQLs = BpjsHelper::getUrlQLOptions();
-
-        $targetQLs = ($urlQLParam && in_array($urlQLParam, $availableQLs))
-            ? [$urlQLParam]
-            : $availableQLs;
-
-        $syncIds = [];
-
-        for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
-            $tanggal = $date->toDateString();
-            
             foreach ($targetQLs as $urlQL) {
                 $log = AntreanPerTanggalSyncLog::create([
                     'kode_ql' => $urlQL,
@@ -798,13 +756,83 @@ class VclaimController extends Controller
                 SyncAntreanPerTanggalJob::dispatch($urlQL, $tanggal, $log->id);
                 $syncIds[] = $log->id;
             }
-        }
 
-        return response()->json([
-            'status'   => 'success',
-            'message'  => count($syncIds) . ' Sync jobs dispatched for the entire month.',
-            'sync_ids' => $syncIds,
-        ]);
+            return response()->json([
+                'metadata' => [
+                    'code' => 200,
+                    'message' => 'Sync job dispatched',
+                ],
+                'response' => [
+                    'sync_ids' => $syncIds,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'metadata' => [
+                    'code' => 500,
+                    'message' => $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine()
+                ],
+                'response' => []
+            ], 500);
+        }
+    }
+
+    public function syncAntreanPerTanggalRange(Request $request)
+    {
+        try {
+            $bulan = $request->input('bulan', date('m'));
+            $tahun = $request->input('tahun', date('Y'));
+            
+            $startDate = Carbon::createFromDate($tahun, $bulan, 1);
+            $endDate   = $startDate->copy()->endOfMonth();
+            
+            // Batasi maksimal sampai hari ini agar tidak narik data masa depan (meski API BPJS mungkin aman, lebih baik dibatasi)
+            if ($endDate->isFuture()) {
+                $endDate = Carbon::today();
+            }
+
+            $urlQLParam   = strtoupper($request->input('urlQL', ''));
+            $availableQLs = BpjsHelper::getUrlQLOptions();
+
+            $targetQLs = ($urlQLParam && in_array($urlQLParam, $availableQLs))
+                ? [$urlQLParam]
+                : $availableQLs;
+
+            $syncIds = [];
+
+            for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+                $tanggal = $date->toDateString();
+                
+                foreach ($targetQLs as $urlQL) {
+                    $log = AntreanPerTanggalSyncLog::create([
+                        'kode_ql' => $urlQL,
+                        'tanggal' => $tanggal,
+                        'status'  => 'pending',
+                    ]);
+
+                    SyncAntreanPerTanggalJob::dispatch($urlQL, $tanggal, $log->id);
+                    $syncIds[] = $log->id;
+                }
+            }
+
+            return response()->json([
+                'metadata' => [
+                    'code' => 200,
+                    'message' => count($syncIds) . ' Sync jobs dispatched for the entire month.',
+                ],
+                'response' => [
+                    'sync_ids' => $syncIds,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'metadata' => [
+                    'code' => 500,
+                    'message' => $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine()
+                ],
+                'response' => []
+            ], 500);
+        }
     }
 
     public function pageRekapAntreanPerTanggal(Request $request)

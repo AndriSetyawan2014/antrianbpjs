@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         table = $('#tableAntrean').DataTable({
             "language": {
-                "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json"
+                "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json"
             },
             "pageLength": 25,
             "responsive": true,
@@ -363,7 +363,13 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch(`{{ url('/api/vclaim/sync-antrol-antrean') }}?${params}`, { method: 'GET' })
             .then(r => r.json())
             .then(data => {
-                const syncIds = data.sync_ids || [];
+                if (data.metadata && data.metadata.code !== 200) {
+                    showToast(data.metadata.message || 'Terjadi kesalahan di server.', 'error');
+                    setButtonLoading(false);
+                    progressPanel.style.display = 'none';
+                    return;
+                }
+                const syncIds = (data.response && data.response.sync_ids) ? data.response.sync_ids : [];
                 if (!syncIds.length) {
                     showToast('Tidak ada job yang dijadwalkan.', 'warning');
                     setButtonLoading(false);
@@ -373,7 +379,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     `${syncIds.length} job dispatched ke queue. Memantau progres...`;
                 startPolling(syncIds);
             })
-            .catch(() => {
+            .catch((e) => {
+                console.error(e);
                 showToast('Gagal menghubungi server. Coba lagi.', 'error');
                 setButtonLoading(false);
                 progressPanel.style.display = 'none';
