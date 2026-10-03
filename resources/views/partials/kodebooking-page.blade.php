@@ -13,26 +13,55 @@
 
 <style>
 .filter-box {
-    transition: transform 0.2s, box-shadow 0.2s;
+    background: #fff;
+    border: 1px solid #e3e6f0;
     border-radius: 8px;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
 }
 .filter-box:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 .filter-box.active-filter {
-    border: 3px solid #343a40;
-    transform: scale(1.02);
+    border-color: var(--color-primary, #4e73df);
+    box-shadow: 0 0 0 2px rgba(78, 115, 223, 0.25);
 }
-.filter-box .inner h3 {
-    font-size: 2.2rem;
+.filter-info {
+    display: flex;
+    flex-direction: column;
+}
+.filter-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #858796;
+    margin-bottom: 4px;
+}
+.filter-value {
+    font-size: 1.5rem;
     font-weight: 700;
+    color: #5a5c69;
+    line-height: 1;
 }
-.filter-box .icon i {
-    font-size: 3.5rem;
-    opacity: 0.7;
+.filter-icon {
+    font-size: 2rem;
+    opacity: 0.8;
 }
+/* Warna Ikon & Judul per status */
+.filter-primary .filter-title { color: #4e73df; }
+.filter-primary .filter-icon { color: #4e73df; }
+.filter-success .filter-title { color: #1cc88a; }
+.filter-success .filter-icon { color: #1cc88a; }
+.filter-warning .filter-title { color: #f6c23e; }
+.filter-warning .filter-icon { color: #f6c23e; }
+.filter-danger .filter-title { color: #e74a3b; }
+.filter-danger .filter-icon { color: #e74a3b; }
 </style>
 
 {{-- Filter Card (form GET agar tetap jalan tanpa JS) --}}
@@ -75,59 +104,47 @@
 @endphp
 
 <div class="row mb-3 mt-4">
-    <div class="col-lg-3 col-6 mb-3">
-        <div class="small-box bg-info shadow-sm filter-box active-filter" onclick="filterTableCode(this, '')">
-            <div class="inner">
-                <h3>{{ $totalCount }}</h3>
-                <p>Total Data</p>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="filter-box filter-primary active-filter" onclick="filterTableCode(this, '')">
+            <div class="filter-info">
+                <span class="filter-title">Total Data</span>
+                <span class="filter-value">{{ $totalCount }}</span>
             </div>
-            <div class="icon">
+            <div class="filter-icon">
                 <i class="fas fa-list-alt"></i>
             </div>
-            <div class="small-box-footer">
-                Tampilkan Semua <i class="fas fa-arrow-circle-right"></i>
-            </div>
         </div>
     </div>
-    <div class="col-lg-3 col-6 mb-3">
-        <div class="small-box bg-success shadow-sm filter-box" onclick="filterTableCode(this, '200')">
-            <div class="inner">
-                <h3>{{ $count200 }}</h3>
-                <p>200 (OK)</p>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="filter-box filter-success" onclick="filterTableCode(this, '200')">
+            <div class="filter-info">
+                <span class="filter-title">200 (OK)</span>
+                <span class="filter-value">{{ $count200 }}</span>
             </div>
-            <div class="icon">
+            <div class="filter-icon">
                 <i class="fas fa-check-circle"></i>
             </div>
-            <div class="small-box-footer">
-                Filter 200 OK <i class="fas fa-filter"></i>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="filter-box filter-warning" onclick="filterTableCode(this, '0')">
+            <div class="filter-info">
+                <span class="filter-title">Pending</span>
+                <span class="filter-value">{{ $count0 }}</span>
+            </div>
+            <div class="filter-icon">
+                <i class="fas fa-clock"></i>
             </div>
         </div>
     </div>
-    <div class="col-lg-3 col-6 mb-3">
-        <div class="small-box bg-warning shadow-sm filter-box" onclick="filterTableCode(this, '0')">
-            <div class="inner">
-                <h3 class="text-dark">{{ $count0 }}</h3>
-                <p class="text-dark">Pending (0)</p>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="filter-box filter-danger" onclick="filterTableCode(this, 'error')">
+            <div class="filter-info">
+                <span class="filter-title">Error</span>
+                <span class="filter-value">{{ $countError }}</span>
             </div>
-            <div class="icon">
-                <i class="fas fa-clock text-dark"></i>
-            </div>
-            <div class="small-box-footer" style="color: #333 !important;">
-                Filter Pending <i class="fas fa-filter"></i>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-6 mb-3">
-        <div class="small-box bg-danger shadow-sm filter-box" onclick="filterTableCode(this, 'error')">
-            <div class="inner">
-                <h3>{{ $countError }}</h3>
-                <p>Error</p>
-            </div>
-            <div class="icon">
+            <div class="filter-icon">
                 <i class="fas fa-times-circle"></i>
-            </div>
-            <div class="small-box-footer">
-                Filter Error <i class="fas fa-filter"></i>
             </div>
         </div>
     </div>

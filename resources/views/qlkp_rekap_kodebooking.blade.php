@@ -4,7 +4,7 @@
 @include('partials.rekap-kodebooking-page', [
     'pageTitle' => 'Rekap Kode Booking — Kulon Progo',
     'routeName' => 'qlkp_rekap_kodebooking',
-    'summaryItems' => $data,
+    'summaryItems' => $data ?? [],
     'isDetail' => isset($messageFilter),
     'detailItems' => $detailData ?? [],
     'startDate' => $startDate ?? request('start_date', date('Y-m-d')),
