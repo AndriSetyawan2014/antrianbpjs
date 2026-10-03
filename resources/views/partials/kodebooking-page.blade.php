@@ -11,6 +11,30 @@
     </nav>
 </div>
 
+<style>
+.filter-box {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.filter-box:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
+}
+.filter-box.active-filter {
+    border: 3px solid #343a40;
+    transform: scale(1.02);
+}
+.filter-box .inner h3 {
+    font-size: 2.2rem;
+    font-weight: 700;
+}
+.filter-box .icon i {
+    font-size: 3.5rem;
+    opacity: 0.7;
+}
+</style>
+
 {{-- Filter Card (form GET agar tetap jalan tanpa JS) --}}
 <div class="filter-card">
     <i class="fas fa-filter" style="color:var(--color-primary);"></i>
@@ -19,6 +43,7 @@
         <input type="date" id="start_date" name="start_date" value="{{ $startDate }}" max="{{ date('Y-m-d') }}">
         <label for="end_date">Sampai:</label>
         <input type="date" id="end_date" name="end_date" value="{{ $endDate }}" max="{{ date('Y-m-d') }}">
+
         <button type="submit" class="btn-filter btn-primary">
             <i class="fas fa-search"></i> Filter
         </button>
@@ -35,6 +60,77 @@
     <a href="{{ $exportUrl }}" class="btn-filter btn-success ms-auto">
         <i class="fas fa-file-excel"></i> Download Excel
     </a>
+</div>
+
+@php
+    $count200 = 0;
+    $count0 = 0;
+    $countError = 0;
+    foreach($items as $item) {
+        if ($item->code == 200) $count200++;
+        else if ($item->code == 0) $count0++;
+        else $countError++;
+    }
+    $totalCount = count($items);
+@endphp
+
+<div class="row mb-3 mt-4">
+    <div class="col-lg-3 col-6 mb-3">
+        <div class="small-box bg-info shadow-sm filter-box active-filter" onclick="filterTableCode(this, '')">
+            <div class="inner">
+                <h3>{{ $totalCount }}</h3>
+                <p>Total Data</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-list-alt"></i>
+            </div>
+            <div class="small-box-footer">
+                Tampilkan Semua <i class="fas fa-arrow-circle-right"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6 mb-3">
+        <div class="small-box bg-success shadow-sm filter-box" onclick="filterTableCode(this, '200')">
+            <div class="inner">
+                <h3>{{ $count200 }}</h3>
+                <p>200 (OK)</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="small-box-footer">
+                Filter 200 OK <i class="fas fa-filter"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6 mb-3">
+        <div class="small-box bg-warning shadow-sm filter-box" onclick="filterTableCode(this, '0')">
+            <div class="inner">
+                <h3 class="text-dark">{{ $count0 }}</h3>
+                <p class="text-dark">Pending (0)</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-clock text-dark"></i>
+            </div>
+            <div class="small-box-footer" style="color: #333 !important;">
+                Filter Pending <i class="fas fa-filter"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6 mb-3">
+        <div class="small-box bg-danger shadow-sm filter-box" onclick="filterTableCode(this, 'error')">
+            <div class="inner">
+                <h3>{{ $countError }}</h3>
+                <p>Error</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <div class="small-box-footer">
+                Filter Error <i class="fas fa-filter"></i>
+            </div>
+        </div>
+    </div>
 </div>
 
 {{-- Tabel --}}
@@ -83,6 +179,26 @@
 
 @push('scripts')
 <script>
+function filterTableCode(element, type) {
+    // Styling active box
+    $('.filter-box').removeClass('active-filter');
+    $(element).addClass('active-filter');
+
+    // DataTables filter on column index 3 (Code column)
+    var table = $('#{{ $tableId }}').DataTable();
+    
+    // Custom filter using DataTables search
+    if (type === '') {
+        table.column(3).search('').draw();
+    } else if (type === '200') {
+        table.column(3).search('200 OK').draw();
+    } else if (type === '0') {
+        table.column(3).search('Pending').draw();
+    } else if (type === 'error') {
+        table.column(3).search('Err').draw();
+    }
+}
+
 $(document).ready(function () {
     $('#{{ $tableId }}').DataTable({
         responsive: true,

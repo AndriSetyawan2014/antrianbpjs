@@ -170,11 +170,22 @@ class AntrianController extends Controller
     // Mendapatkan parameter tanggal dari request atau gunakan tanggal hari ini sebagai default
     $start_date = $request->input('start_date', $today);
     $end_date = $request->input('end_date', $today);
+    $codeFilter = $request->input('code');
 
     // Query untuk mengambil data kode booking berdasarkan rentang tanggal
-    $data_kodebooking = DataKodebooking::whereDate('tanggalperiksa', '>=', $start_date)
-        ->whereDate('tanggalperiksa', '<=', $end_date)
-        ->get();
+    $query = DataKodebooking::whereDate('tanggalperiksa', '>=', $start_date)
+        ->whereDate('tanggalperiksa', '<=', $end_date);
+
+    if ($codeFilter !== null && $codeFilter !== '') {
+        if ($codeFilter === 'error') {
+            $query->whereNotIn('code', [200, 0])
+                  ->whereNotNull('code'); // ensure it doesn't count nulls as errors if any
+        } else {
+            $query->where('code', $codeFilter);
+        }
+    }
+
+    $data_kodebooking = $query->get();
 
     // Mengirim data ke view
     return view('data_kodebooking', compact('data_kodebooking', 'start_date', 'end_date'));
@@ -322,15 +333,26 @@ public function qlkp_datakodebooking(Request $request)
     $startDate = Carbon::parse($request->input('start_date', date('Y-m-d')))->format('Y-m-d');
     $endDate = Carbon::parse($request->input('end_date', date('Y-m-d')))->format('Y-m-d');
     $messageFilter = $request->input('message');
+    $codeFilter = $request->input('code');
 
     // Ambil data dari database dengan filter tanggal yang tepat
-    $qlkp_data_kodebooking = DB::table('qlkp_data_kodebooking')
+    $query = DB::table('qlkp_data_kodebooking')
         ->when($messageFilter, function ($query, $messageFilter) {
             $query->where('message', 'like', "%{$messageFilter}%");
         })
         ->whereDate('tanggalperiksa', '>=', $startDate) // Gunakan tanggalperiksa untuk filter
-        ->whereDate('tanggalperiksa', '<=', $endDate)
-        ->get();
+        ->whereDate('tanggalperiksa', '<=', $endDate);
+
+    if ($codeFilter !== null && $codeFilter !== '') {
+        if ($codeFilter === 'error') {
+            $query->whereNotIn('code', [200, 0])
+                  ->whereNotNull('code');
+        } else {
+            $query->where('code', $codeFilter);
+        }
+    }
+
+    $qlkp_data_kodebooking = $query->get();
 
     // Kembalikan data ke view
     return view('qlkp_data_kodebooking', compact('qlkp_data_kodebooking', 'startDate', 'endDate'));
@@ -482,14 +504,25 @@ public function qlkp_datakodebooking(Request $request)
         $startDate = Carbon::parse($request->input('start_date', date('Y-m-d')))->format('Y-m-d');
         $endDate = Carbon::parse($request->input('end_date', date('Y-m-d')))->format('Y-m-d');
         $messageFilter = $request->input('message');
+        $codeFilter = $request->input('code');
 
-        $qltmg_data_kodebooking = DB::table('qltmg_data_kodebooking')
+        $query = DB::table('qltmg_data_kodebooking')
             ->when($messageFilter, function ($query, $messageFilter) {
                 $query->where('message', 'like', "%{$messageFilter}%");
             })
             ->whereDate('tanggalperiksa', '>=', $startDate)
-            ->whereDate('tanggalperiksa', '<=', $endDate)
-            ->get();
+            ->whereDate('tanggalperiksa', '<=', $endDate);
+
+        if ($codeFilter !== null && $codeFilter !== '') {
+            if ($codeFilter === 'error') {
+                $query->whereNotIn('code', [200, 0])
+                      ->whereNotNull('code');
+            } else {
+                $query->where('code', $codeFilter);
+            }
+        }
+
+        $qltmg_data_kodebooking = $query->get();
 
         return view('qltmg_data_kodebooking', compact('qltmg_data_kodebooking', 'startDate', 'endDate'));
     }
