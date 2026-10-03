@@ -16,7 +16,7 @@
                     <div>
                         <label class="form-label mb-1">Tanggal Antrean</label>
                         <input type="date" id="inputTanggal" name="tanggal" class="form-control"
-                               value="{{ request('tanggal', date('Y-m-d')) }}" max="{{ date('Y-m-d') }}" style="width:155px;" required>
+                               value="{{ request('tanggal', date('Y-m-d')) }}" style="width:155px;" required>
                     </div>
                     <div>
                         <label class="form-label mb-1">Cabang QL</label>
