@@ -51,18 +51,21 @@
     <table id="{{ $tableId }}" class="table table-hover table-striped table-bordered">
         <thead>
             <tr>
-                <th style="width:4%;">No</th>
-                <th style="width:10%;">Kode Booking</th>
-                <th style="width:10%;">Waktu</th>
-                <th style="width:8%;">Task ID</th>
-                <th style="width:8%;">ID Pendaftaran</th>
-                <th style="width:7%;">Code</th>
-                <th style="width:13%;">Message</th>
-                <th style="width:8%;">Tanggal</th>
-                <th style="width:6%;">Jam</th>
-                <th style="width:8%;" class="text-center">Request</th>
-                <th style="width:8%;" class="text-center">Response</th>
-                <th style="width:5%;">Reupload</th>
+                <th style="width:3%;">No</th>
+                <th style="width:9%;">Kode Booking</th>
+                <th style="width:8%;">Waktu</th>
+                <th style="width:5%;">Task ID</th>
+                <th style="width:7%;">ID Pendaftaran</th>
+                <th style="width:10%;">Dokter</th>
+                <th style="width:7%;">Poli</th>
+                <th style="width:7%;">Jadwal RS</th>
+                <th style="width:6%;">Code</th>
+                <th style="width:10%;">Message</th>
+                <th style="width:7%;">Tanggal</th>
+                <th style="width:5%;">Jam</th>
+                <th style="width:6%;" class="text-center">Request</th>
+                <th style="width:6%;" class="text-center">Response</th>
+                <th style="width:4%;">Reupload</th>
                 <th style="width:5%;">Aksi</th>
             </tr>
         </thead>
@@ -80,6 +83,13 @@
                 <td>{{ $item->waktu }}</td>
                 <td><strong>{{ $item->taskid }}</strong></td>
                 <td>{{ $item->idpendaftaran }}</td>
+                <td><small class="font-weight-bold">{{ $item->namadokter ?? '-' }}</small></td>
+                <td><span class="badge bg-secondary">{{ $item->namapoli ?? '-' }}</span></td>
+                <td>
+                    <small class="text-nowrap font-weight-bold">
+                        {{ (isset($item->jammulai) && $item->jammulai) ? substr($item->jammulai, 0, 5) . '-' . substr($item->jamakhir, 0, 5) : '-' }}
+                    </small>
+                </td>
                 <td class="text-center">
                     <span class="status-badge {{ $badgeClass }}">{{ $badgeLabel }}</span>
                 </td>
@@ -225,7 +235,7 @@ $(document).ready(function () {
         pageLength: 25,
         language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json' },
         columnDefs: [
-            { orderable: false, targets: [0, 9, 10, 12] },
+            { orderable: false, targets: [0, 12, 13, 15] },
             { render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, targets: 0 }
         ]
     });
@@ -334,7 +344,7 @@ $(document).ready(function () {
 
     // Export bersih: teks saja, tanpa tombol HTML (kolom Request/Response/Aksi dikecualikan)
     $('#download_excel_' + tableId).on('click', function () {
-        var skip = [9, 10, 12];
+        var skip = [12, 13, 15];
         var headers = [];
         $table.find('thead th').each(function (i) { if (!skip.includes(i)) headers.push($(this).text().trim()); });
         var rows = [headers];

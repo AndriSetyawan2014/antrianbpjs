@@ -80,6 +80,8 @@ Route::get('/qlkp_TaskID', [AntrianController::class, 'qlkp_TaskID'])->name('qlk
 Route::get('/qlkp_taskid/filter', [AntrianController::class, 'qlkp_TaskID'])->name('qlkp_taskid.filter');
 Route::get('/qlkp_taskid/reset', [AntrianController::class, 'qlkp_TaskID'])->name('qlkp_taskid.reset');
 Route::get('/qlkp_rekap_taskid', [AntrianController::class, 'qlkp_rekap_taskid'])->name('qlkp_rekap_taskid');
+Route::get('/qlkp_kesesuaian_jadwal', [AntrianController::class, 'qlkp_kesesuaian_jadwal'])->name('qlkp_kesesuaian_jadwal');
+Route::get('/qlkp_sync_jadwal_bpjs', [AntrianController::class, 'qlkp_sync_jadwal_bpjs'])->name('qlkp_sync_jadwal_bpjs');
 
 // Export Excel - QL Kulon Progo
 Route::get('/export-qlkp-kodebooking', function () {

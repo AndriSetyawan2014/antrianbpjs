@@ -6,9 +6,11 @@ use Carbon\Carbon;
 use App\Models\data_taskid;
 use Illuminate\Http\Request;
 use App\Models\DataKodebooking;
+use App\Helpers\BpjsHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Database\Schema\Blueprint;
 
 class AntrianController extends Controller
 {
@@ -273,24 +275,32 @@ public function rekapKodeBooking(Request $request)
     $startDate = $request->input('start_date', date('Y-m-d')); // Default to today
     $endDate = $request->input('end_date', date('Y-m-d')); // Default to today
 
-    $TaskID = data_taskid::query();
+    $TaskID = DB::table('data_taskids')
+        ->leftJoin('data_kodebooking', 'data_taskids.kodebooking', '=', 'data_kodebooking.kodebooking')
+        ->select(
+            'data_taskids.*',
+            'data_kodebooking.namadokter',
+            'data_kodebooking.namaunit as namapoli',
+            'data_kodebooking.jammulai',
+            'data_kodebooking.jamakhir'
+        );
 
     if ($messageFilter) {
-        $TaskID->where('message', 'like', '%' . $messageFilter . '%');
+        $TaskID->where('data_taskids.message', 'like', '%' . $messageFilter . '%');
     }
 
     if ($startDate && $endDate) {
-        $TaskID->whereBetween('tanggal', [$startDate, $endDate]);
+        $TaskID->whereBetween('data_taskids.tanggal', [$startDate, $endDate]);
     } elseif ($startDate) {
-        $TaskID->where('tanggal', '>=', $startDate);
+        $TaskID->where('data_taskids.tanggal', '>=', $startDate);
     } elseif ($endDate) {
-        $TaskID->where('tanggal', '<=', $endDate);
+        $TaskID->where('data_taskids.tanggal', '<=', $endDate);
     } else {
         // Default to show data for today if no date is selected
-        $TaskID->whereDate('tanggal', '=', date('Y-m-d'));
+        $TaskID->whereDate('data_taskids.tanggal', '=', date('Y-m-d'));
     }
 
-    $TaskID->orderBy('kodebooking', 'asc')->orderBy('taskid', 'asc');
+    $TaskID->orderBy('data_taskids.kodebooking', 'asc')->orderBy('data_taskids.taskid', 'asc');
     $TaskID = $TaskID->get();
 
     return view('TaskID', compact('TaskID', 'startDate', 'endDate'));
@@ -422,35 +432,468 @@ public function qlkp_datakodebooking(Request $request)
     $startDate = $request->input('start_date', date('Y-m-d')); // Default ke tanggal hari ini jika tidak ada
     $endDate = $request->input('end_date', date('Y-m-d')); // Default ke tanggal hari ini jika tidak ada
 
-    // Query untuk mengambil data taskid berdasarkan filter message dan tanggal
-    $qlkp_TaskID = DB::table('qlkp_data_taskids');
+    // Query untuk mengambil data taskid berdasarkan filter message dan tanggal, join dengan kodebooking untuk dokter & poli & jadwal
+    $qlkp_TaskID = DB::table('qlkp_data_taskids')
+        ->leftJoin('qlkp_data_kodebooking', 'qlkp_data_taskids.kodebooking', '=', 'qlkp_data_kodebooking.kodebooking')
+        ->select(
+            'qlkp_data_taskids.*',
+            'qlkp_data_kodebooking.namadokter',
+            'qlkp_data_kodebooking.namaunit as namapoli',
+            'qlkp_data_kodebooking.jammulai',
+            'qlkp_data_kodebooking.jamakhir'
+        );
 
     // Filter berdasarkan message yang sesuai
     if ($messageFilter) {
-        $qlkp_TaskID->where('message', 'like', "%{$messageFilter}%");
+        $qlkp_TaskID->where('qlkp_data_taskids.message', 'like', "%{$messageFilter}%");
     }
 
     // Filter berdasarkan filter_date yang dipilih di halaman Rekap Task ID
     if ($filterDate) {
-        $qlkp_TaskID->whereDate('tanggal', '=', $filterDate); // Sesuaikan dengan kolom tanggal
+        $qlkp_TaskID->whereDate('qlkp_data_taskids.tanggal', '=', $filterDate); // Sesuaikan dengan kolom tanggal
     } else {
     // Jika tidak ada filter tanggal, filter berdasarkan rentang tanggal
     if ($startDate && $endDate) {
-        $qlkp_TaskID->whereBetween('tanggal', [$startDate, $endDate]);
+        $qlkp_TaskID->whereBetween('qlkp_data_taskids.tanggal', [$startDate, $endDate]);
     } elseif ($startDate) {
-        $qlkp_TaskID->where('tanggal', '>=', $startDate);
+        $qlkp_TaskID->where('qlkp_data_taskids.tanggal', '>=', $startDate);
     } elseif ($endDate) {
-        $qlkp_TaskID->where('tanggal', '<=', $endDate);
+        $qlkp_TaskID->where('qlkp_data_taskids.tanggal', '<=', $endDate);
     }
     }
     // Urutkan berdasarkan kodebooking lalu taskid
-    $qlkp_TaskID->orderBy('kodebooking', 'asc')->orderBy('taskid', 'asc');
+    $qlkp_TaskID->orderBy('qlkp_data_taskids.kodebooking', 'asc')->orderBy('qlkp_data_taskids.taskid', 'asc');
 
     // Ambil data sesuai filter
     $qlkp_TaskID = $qlkp_TaskID->get();
     // Kirimkan data ke view qlkp_TaskID
     return view('qlkp_TaskID', compact
     ('qlkp_TaskID', 'startDate', 'endDate', 'filterDate'));
+    }
+
+    private function ensureBpjsJadwalTableExists()
+    {
+        if (!Schema::hasTable('bpjs_jadwal_dokter')) {
+            Schema::create('bpjs_jadwal_dokter', function (Blueprint $table) {
+                $table->id();
+                $table->string('kode_ql', 10)->index();
+                $table->date('tanggal')->index();
+                $table->string('kodepoli', 20)->nullable();
+                $table->string('namapoli', 100)->nullable();
+                $table->string('kodedokter', 50)->nullable();
+                $table->string('namadokter', 150)->nullable();
+                $table->string('jadwal', 50)->nullable();
+                $table->string('buka', 10)->nullable();
+                $table->string('tutup', 10)->nullable();
+                $table->integer('kapasitaspasien')->nullable();
+                $table->tinyInteger('libur')->default(0);
+                $table->timestamps();
+                $table->unique(['kode_ql', 'tanggal', 'kodedokter', 'kodepoli', 'jadwal'], 'bpjs_jadwal_unique');
+            });
+        }
+    }
+
+    public function qlkp_sync_jadwal_bpjs(Request $request)
+    {
+        $startDate = $request->input('start_date', Carbon::now()->toDateString());
+        $endDate = $request->input('end_date', Carbon::now()->toDateString());
+        $urlQL = 'QLKP';
+
+        $this->ensureBpjsJadwalTableExists();
+
+        $poliList = DB::table('qlkp_data_kodebooking')
+            ->whereBetween('tanggalperiksa', [$startDate, $endDate])
+            ->whereNotNull('kodeunit')
+            ->where('kodeunit', '!=', '')
+            ->distinct()
+            ->pluck('kodeunit')
+            ->toArray();
+
+        if (empty($poliList)) {
+            $poliList = ['BED', 'OBG', 'ANA', 'INT', 'MAT', 'JIW', 'SAR', 'GIG', 'THT', 'KUL', 'PAR'];
+        }
+
+        $start = Carbon::parse($startDate);
+        $end = Carbon::parse($endDate);
+        $totalSynced = 0;
+
+        for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+            $tglStr = $date->toDateString();
+            foreach ($poliList as $kodepoli) {
+                $schedules = BpjsHelper::getAntrolJadwalDokterData($urlQL, $kodepoli, $tglStr);
+                if (!empty($schedules) && is_array($schedules)) {
+                    foreach ($schedules as $sch) {
+                        $jadwal = $sch['jadwal'] ?? '';
+                        $buka = null;
+                        $tutup = null;
+                        if (!empty($jadwal) && strpos($jadwal, '-') !== false) {
+                            $parts = explode('-', $jadwal);
+                            $buka = trim($parts[0] ?? '');
+                            $tutup = trim($parts[1] ?? '');
+                        }
+
+                        DB::table('bpjs_jadwal_dokter')->updateOrInsert(
+                            [
+                                'kode_ql'    => $urlQL,
+                                'tanggal'    => $tglStr,
+                                'kodedokter' => (string)($sch['kodedokter'] ?? ''),
+                                'kodepoli'   => (string)($sch['kodepoli'] ?? $kodepoli),
+                                'jadwal'     => $jadwal,
+                            ],
+                            [
+                                'namadokter'      => $sch['namadokter'] ?? null,
+                                'namapoli'        => $sch['namapoli'] ?? null,
+                                'buka'            => $buka,
+                                'tutup'           => $tutup,
+                                'kapasitaspasien' => $sch['kapasitaspasien'] ?? null,
+                                'libur'           => $sch['libur'] ?? 0,
+                                'updated_at'      => now(),
+                                'created_at'      => now(),
+                            ]
+                        );
+                        $totalSynced++;
+                    }
+                }
+            }
+        }
+
+        return response()->json([
+            'metadata' => [
+                'code' => 200,
+                'message' => "Berhasil menyinkronkan {$totalSynced} data jadwal dokter dari BPJS Bridging."
+            ],
+            'total_synced' => $totalSynced
+        ]);
+    }
+
+    public function qlkp_kesesuaian_jadwal(Request $request)
+    {
+        $today = Carbon::now();
+        $startDate = $request->input('start_date', $today->copy()->startOfMonth()->toDateString());
+        $endDate = $request->input('end_date', $today->toDateString());
+        $statusFilter = $request->input('status');
+        $dokterFilter = $request->input('namadokter');
+        $poliFilter = $request->input('nmpoli');
+
+        if (!Schema::hasTable('qlkp_data_kodebooking') || !Schema::hasTable('qlkp_data_taskids')) {
+            return redirect()->back()->with('error', 'Tabel qlkp_data_kodebooking atau qlkp_data_taskids tidak ditemukan.');
+        }
+
+        $this->ensureBpjsJadwalTableExists();
+
+        // Ambil jadwal resmi HFIS BPJS yang sudah disinkronkan
+        $bpjsJadwalRecords = DB::table('bpjs_jadwal_dokter')
+            ->where('kode_ql', 'QLKP')
+            ->whereBetween('tanggal', [$startDate, $endDate])
+            ->get();
+
+        $bpjsJadwalMap = [];
+        foreach ($bpjsJadwalRecords as $bj) {
+            $keyDokter = $bj->tanggal . '|' . trim($bj->kodedokter);
+            $keyNama = $bj->tanggal . '|' . strtoupper(trim($bj->namadokter));
+            $bpjsJadwalMap[$keyDokter] = $bj;
+            $bpjsJadwalMap[$keyNama] = $bj;
+        }
+
+        // Ambil data jampraktek dari antrean_per_tanggal_logs (data antrean BPJS)
+        $antrolLogMap = [];
+        if (Schema::hasTable('antrean_per_tanggal_logs')) {
+            $antrolLogs = DB::table('antrean_per_tanggal_logs')
+                ->where('kode_ql', 'QLKP')
+                ->whereBetween('tanggal', [$startDate, $endDate])
+                ->whereNotNull('jampraktek')
+                ->where('jampraktek', '!=', '')
+                ->select('tanggal', 'kodedokter', 'kodepoli', 'jampraktek')
+                ->distinct()
+                ->get();
+
+            foreach ($antrolLogs as $al) {
+                $key = $al->tanggal . '|' . trim($al->kodedokter);
+                if (!isset($antrolLogMap[$key])) {
+                    $antrolLogMap[$key] = $al->jampraktek;
+                }
+            }
+        }
+
+        $listDokter = DB::table('qlkp_data_kodebooking')
+            ->whereNotNull('namadokter')
+            ->where('namadokter', '!=', '')
+            ->distinct()
+            ->orderBy('namadokter')
+            ->pluck('namadokter');
+
+        $listPoli = DB::table('qlkp_data_kodebooking')
+            ->whereNotNull('namaunit')
+            ->where('namaunit', '!=', '')
+            ->distinct()
+            ->orderBy('namaunit')
+            ->pluck('namaunit');
+
+        $query = DB::table('qlkp_data_kodebooking')
+            ->select(
+                'tanggalperiksa',
+                'bpjs_kodedokter',
+                'kodeunit as kodepoli',
+                'namadokter',
+                'namaunit as nmpoli',
+                'jammulai',
+                'jamakhir'
+            )
+            ->whereBetween('tanggalperiksa', [$startDate, $endDate])
+            ->whereNotNull('namadokter')
+            ->where('namadokter', '!=', '')
+            ->groupBy('tanggalperiksa', 'bpjs_kodedokter', 'kodeunit', 'namadokter', 'namaunit', 'jammulai', 'jamakhir');
+
+        if ($dokterFilter) {
+            $query->where('namadokter', $dokterFilter);
+        }
+        if ($poliFilter) {
+            $query->where('namaunit', $poliFilter);
+        }
+
+        $schedules = $query->orderBy('tanggalperiksa', 'asc')
+            ->orderBy('namadokter', 'asc')
+            ->get();
+
+        $task4Records = DB::table('qlkp_data_taskids as t')
+            ->join('qlkp_data_kodebooking as kb', 't.kodebooking', '=', 'kb.kodebooking')
+            ->where('t.taskid', 4)
+            ->whereBetween('kb.tanggalperiksa', [$startDate, $endDate])
+            ->select(
+                'kb.kodebooking',
+                'kb.nojkn',
+                'kb.norm',
+                'kb.tanggalperiksa',
+                'kb.namadokter',
+                'kb.namaunit',
+                'kb.jammulai',
+                'kb.jamakhir',
+                't.tanggal',
+                't.jam',
+                't.waktu'
+            )
+            ->orderBy('t.waktu', 'asc')
+            ->get();
+
+        $firstTask4Map = [];
+        foreach ($task4Records as $t4) {
+            $jm = $t4->jammulai ? substr($t4->jammulai, 0, 5) : '';
+            $ja = $t4->jamakhir ? substr($t4->jamakhir, 0, 5) : '';
+            // Kunci spesifik per tanggal + dokter + poli + jadwal yang dipilih pasien
+            $key = $t4->tanggalperiksa . '|' . trim($t4->namadokter) . '|' . trim($t4->namaunit) . '|' . $jm . '|' . $ja;
+            if (!isset($firstTask4Map[$key])) {
+                $firstTask4Map[$key] = $t4;
+            }
+        }
+
+        $firstBookingRecords = DB::table('qlkp_data_kodebooking')
+            ->whereBetween('tanggalperiksa', [$startDate, $endDate])
+            ->whereNotNull('namadokter')
+            ->where('namadokter', '!=', '')
+            ->select(
+                'kodebooking',
+                'nojkn',
+                'norm',
+                'tanggalperiksa',
+                'namadokter',
+                'namaunit',
+                'jammulai',
+                'jamakhir'
+            )
+            ->orderBy('noantrian', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+
+        $firstBookingMap = [];
+        foreach ($firstBookingRecords as $fb) {
+            $jm = $fb->jammulai ? substr($fb->jammulai, 0, 5) : '';
+            $ja = $fb->jamakhir ? substr($fb->jamakhir, 0, 5) : '';
+            $key = $fb->tanggalperiksa . '|' . trim($fb->namadokter) . '|' . trim($fb->namaunit) . '|' . $jm . '|' . $ja;
+            if (!isset($firstBookingMap[$key])) {
+                $firstBookingMap[$key] = $fb;
+            }
+        }
+
+        $allNojkn = $task4Records->pluck('nojkn')
+            ->merge($firstBookingRecords->pluck('nojkn'))
+            ->filter()
+            ->unique()
+            ->toArray();
+
+        $vclaimNames = [];
+        if (!empty($allNojkn) && Schema::hasTable('vclaim_kunjungan')) {
+            $vclaimNames = DB::table('vclaim_kunjungan')
+                ->whereIn('no_kartu', $allNojkn)
+                ->whereNotNull('nama')
+                ->where('nama', '!=', '')
+                ->pluck('nama', 'no_kartu')
+                ->toArray();
+        }
+
+        $daysMap = [
+            'Sunday' => 'MINGGU',
+            'Monday' => 'SENIN',
+            'Tuesday' => 'SELASA',
+            'Wednesday' => 'RABU',
+            'Thursday' => 'KAMIS',
+            'Friday' => 'JUMAT',
+            'Saturday' => 'SABTU',
+        ];
+
+        $results = [];
+        $totalSesuai = 0;
+        $totalTidakSesuai = 0;
+
+        foreach ($schedules as $sch) {
+            $schJm = $sch->jammulai ? substr($sch->jammulai, 0, 5) : '';
+            $schJa = $sch->jamakhir ? substr($sch->jamakhir, 0, 5) : '';
+            $key = $sch->tanggalperiksa . '|' . trim($sch->namadokter) . '|' . trim($sch->nmpoli) . '|' . $schJm . '|' . $schJa;
+            $t4 = $firstTask4Map[$key] ?? null;
+
+            // Fallback: jika tidak ada match slot jam persis, cari yang tanggal + dokter + poli sama
+            if (!$t4) {
+                $fallbackKey = $sch->tanggalperiksa . '|' . trim($sch->namadokter) . '|' . trim($sch->nmpoli);
+                foreach ($firstTask4Map as $k => $val) {
+                    if (str_starts_with($k, $fallbackKey)) {
+                        $t4 = $val;
+                        break;
+                    }
+                }
+            }
+
+            // Cari data pasien (utamakan dari task 4 pertama, jika tidak ada fallback ke booking pertama)
+            $kodebooking = '-';
+            $noBpjs = '-';
+            $namaPasien = '-';
+
+            $targetPatient = $t4 ?? ($firstBookingMap[$key] ?? null);
+            if ($targetPatient) {
+                $kodebooking = $targetPatient->kodebooking ?? '-';
+                $noBpjs = $targetPatient->nojkn ?? '-';
+                $namaPasien = $vclaimNames[$targetPatient->nojkn] ?? ($targetPatient->norm ? 'No RM: ' . $targetPatient->norm : '-');
+            }
+
+            $dt = Carbon::parse($sch->tanggalperiksa);
+            $bulanUpd = (int)$dt->format('m');
+            $namaHari = $daysMap[$dt->englishDayOfWeek] ?? strtoupper($dt->isoFormat('dddd'));
+            $monthPeriod = $dt->format('M-y');
+            $dayMonthYear = $dt->format('d-M-y');
+
+            // Menentukan jam BUKA dan TUTUP sesuai Bridging Jadwal BPJS
+            $buka = null;
+            $tutup = null;
+            $sumberJadwal = 'BPJS HFIS';
+
+            $keyDokter = $sch->tanggalperiksa . '|' . trim($sch->bpjs_kodedokter ?? '');
+            $keyNama = $sch->tanggalperiksa . '|' . strtoupper(trim($sch->namadokter));
+            $bj = $bpjsJadwalMap[$keyDokter] ?? ($bpjsJadwalMap[$keyNama] ?? null);
+
+            if ($bj && !empty($bj->buka) && !empty($bj->tutup)) {
+                $buka = $bj->buka;
+                $tutup = $bj->tutup;
+                $sumberJadwal = 'BPJS HFIS';
+            } elseif (isset($antrolLogMap[$keyDokter])) {
+                $jp = $antrolLogMap[$keyDokter];
+                if (strpos($jp, '-') !== false) {
+                    $parts = explode('-', $jp);
+                    $buka = trim($parts[0] ?? '');
+                    $tutup = trim($parts[1] ?? '');
+                    $sumberJadwal = 'Antrol BPJS';
+                }
+            }
+
+            // Fallback jika belum tersinkronisasi dari BPJS
+            if (!$buka || !$tutup) {
+                $buka = $sch->jammulai ? substr($sch->jammulai, 0, 5) : '-';
+                $tutup = $sch->jamakhir ? substr($sch->jamakhir, 0, 5) : '-';
+                $sumberJadwal = 'Bridging RS';
+            }
+
+            $wakturs = 'Tidak Ada';
+            $kesesuaian = 'TIDAK SESUAI';
+            $keterangan = 'Tidak Ada Pelayanan Task 4';
+
+            if ($t4 && $t4->jam) {
+                $jamT4 = substr($t4->jam, 0, 5);
+                $waktursDate = Carbon::parse($t4->tanggal ?? $sch->tanggalperiksa);
+                $wakturs = $waktursDate->format('n/j/y') . ' ' . ltrim($jamT4, '0');
+                if (empty(ltrim($jamT4, '0'))) {
+                    $wakturs = $waktursDate->format('n/j/y') . ' 0:00';
+                }
+
+                if ($buka !== '-' && $tutup !== '-') {
+                    try {
+                        $bukaTime = Carbon::createFromTimeString($buka);
+                        $bukaToleransi = (clone $bukaTime)->subMinutes(60);
+                        $tutupTime = Carbon::createFromTimeString($tutup);
+                        $pelayananTime = Carbon::createFromTimeString($t4->jam);
+
+                        if ($pelayananTime->betweenIncluded($bukaToleransi, $tutupTime)) {
+                            $kesesuaian = 'SESUAI';
+                            $keterangan = 'Sesuai Jadwal BPJS';
+                        } elseif ($pelayananTime->lt($bukaToleransi)) {
+                            $kesesuaian = 'TIDAK SESUAI';
+                            $keterangan = 'Mulai >60 menit sebelum buka BPJS (' . $jamT4 . ' vs ' . $buka . ')';
+                        } else {
+                            $kesesuaian = 'TIDAK SESUAI';
+                            $keterangan = 'Mulai lewat jam tutup BPJS (' . $jamT4 . ' vs ' . $tutup . ')';
+                        }
+                    } catch (\Exception $e) {
+                        $kesesuaian = 'SESUAI';
+                        $keterangan = 'Format jam tidak standar';
+                    }
+                }
+            }
+
+            if ($kesesuaian === 'SESUAI') {
+                $totalSesuai++;
+            } else {
+                $totalTidakSesuai++;
+            }
+
+            if ($statusFilter && $kesesuaian !== $statusFilter) {
+                continue;
+            }
+
+            $results[] = (object)[
+                'bulan_upd' => $bulanUpd,
+                'nmkc' => 'SLEMAN',
+                'nmppk' => 'RSU QUEEN LATIFA KULON PROGO',
+                'namadokter' => $sch->namadokter,
+                'nmpoli' => $sch->nmpoli,
+                'month_periode' => $monthPeriod,
+                'day_month_year' => $dayMonthYear,
+                'tanggalperiksa' => $sch->tanggalperiksa,
+                'nama_hari' => $namaHari,
+                'buka' => $buka,
+                'tutup' => $tutup,
+                'sumber_jadwal' => $sumberJadwal,
+                'kodebooking' => $kodebooking,
+                'no_bpjs' => $noBpjs,
+                'nama_pasien' => $namaPasien,
+                'wakturs' => $wakturs,
+                'kesesuaian' => $kesesuaian,
+                'keterangan' => $keterangan,
+            ];
+        }
+
+        $totalJadwal = count($schedules);
+        $persenSesuai = $totalJadwal > 0 ? round(($totalSesuai / $totalJadwal) * 100, 1) : 0;
+
+        return view('qlkp_kesesuaian_jadwal', compact(
+            'results',
+            'startDate',
+            'endDate',
+            'statusFilter',
+            'dokterFilter',
+            'poliFilter',
+            'listDokter',
+            'listPoli',
+            'totalJadwal',
+            'totalSesuai',
+            'totalTidakSesuai',
+            'persenSesuai'
+        ));
     }
 
     public function qlkp_rekap_taskid(Request $request)
@@ -584,25 +1027,33 @@ public function qlkp_datakodebooking(Request $request)
         $startDate = $request->input('start_date', date('Y-m-d'));
         $endDate = $request->input('end_date', date('Y-m-d'));
 
-        $qltmg_TaskID = DB::table('qltmg_data_taskids');
+        $qltmg_TaskID = DB::table('qltmg_data_taskids')
+            ->leftJoin('qltmg_data_kodebooking', 'qltmg_data_taskids.kodebooking', '=', 'qltmg_data_kodebooking.kodebooking')
+            ->select(
+                'qltmg_data_taskids.*',
+                'qltmg_data_kodebooking.namadokter',
+                'qltmg_data_kodebooking.namaunit as namapoli',
+                'qltmg_data_kodebooking.jammulai',
+                'qltmg_data_kodebooking.jamakhir'
+            );
 
         if ($messageFilter) {
-            $qltmg_TaskID->where('message', 'like', "%{$messageFilter}%");
+            $qltmg_TaskID->where('qltmg_data_taskids.message', 'like', "%{$messageFilter}%");
         }
 
         if ($filterDate) {
-            $qltmg_TaskID->whereDate('tanggal', '=', $filterDate);
+            $qltmg_TaskID->whereDate('qltmg_data_taskids.tanggal', '=', $filterDate);
         } else {
             if ($startDate && $endDate) {
-                $qltmg_TaskID->whereBetween('tanggal', [$startDate, $endDate]);
+                $qltmg_TaskID->whereBetween('qltmg_data_taskids.tanggal', [$startDate, $endDate]);
             } elseif ($startDate) {
-                $qltmg_TaskID->where('tanggal', '>=', $startDate);
+                $qltmg_TaskID->where('qltmg_data_taskids.tanggal', '>=', $startDate);
             } elseif ($endDate) {
-                $qltmg_TaskID->where('tanggal', '<=', $endDate);
+                $qltmg_TaskID->where('qltmg_data_taskids.tanggal', '<=', $endDate);
             }
         }
 
-        $qltmg_TaskID->orderBy('kodebooking', 'asc')->orderBy('taskid', 'asc');
+        $qltmg_TaskID->orderBy('qltmg_data_taskids.kodebooking', 'asc')->orderBy('qltmg_data_taskids.taskid', 'asc');
         $qltmg_TaskID = $qltmg_TaskID->get();
         return view('qltmg_TaskID', compact('qltmg_TaskID', 'startDate', 'endDate', 'filterDate'));
     }

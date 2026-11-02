@@ -123,12 +123,12 @@
         {{-- Task ID Kulon Progo --}}
         <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddTaskIDKP"
-           aria-expanded="{{ Request::is('qlkp_TaskID*') || Request::is('qlkp_rekap_taskid*') ? 'true' : 'false' }}">
+           aria-expanded="{{ Request::is('qlkp_TaskID*') || Request::is('qlkp_rekap_taskid*') || Request::is('qlkp_kesesuaian_jadwal*') ? 'true' : 'false' }}">
             <i class="fas fa-tasks nav-icon"></i>
             <span>Task ID</span>
-            <i class="fas fa-angle-down arrow-icon {{ Request::is('qlkp_TaskID*') || Request::is('qlkp_rekap_taskid*') ? 'rotated' : '' }}"></i>
+            <i class="fas fa-angle-down arrow-icon {{ Request::is('qlkp_TaskID*') || Request::is('qlkp_rekap_taskid*') || Request::is('qlkp_kesesuaian_jadwal*') ? 'rotated' : '' }}"></i>
         </button>
-        <div class="collapse {{ Request::is('qlkp_TaskID*') || Request::is('qlkp_rekap_taskid*') ? 'show' : '' }}"
+        <div class="collapse {{ Request::is('qlkp_TaskID*') || Request::is('qlkp_rekap_taskid*') || Request::is('qlkp_kesesuaian_jadwal*') ? 'show' : '' }}"
              id="ddTaskIDKP">
             <ul class="nav flex-column ms-3">
                 <li class="nav-item">
@@ -141,6 +141,12 @@
                     <a href="{{ url('/qlkp_rekap_taskid') }}"
                        class="nav-link {{ Request::is('qlkp_rekap_taskid') ? 'active' : '' }}">
                         <i class="fas fa-clipboard-list nav-icon"></i> Rekap Task ID
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url('/qlkp_kesesuaian_jadwal') }}"
+                       class="nav-link {{ Request::is('qlkp_kesesuaian_jadwal*') ? 'active' : '' }}">
+                        <i class="fas fa-user-clock nav-icon"></i> Kesesuaian Jadwal Dokter
                     </a>
                 </li>
             </ul>

@@ -588,6 +588,23 @@ class BpjsHelper
         return self::pingAntrolGetEndpoint($urlQL, "/jadwaldokter/kodepoli/{$kodePoli}/tanggal/{$tanggal}");
     }
 
+    public static function getAntrolJadwalDokterData($urlQL, $kodePoli, $tanggal)
+    {
+        try {
+            $jsonString = self::getRequestDirect($urlQL, "/jadwaldokter/kodepoli/{$kodePoli}/tanggal/{$tanggal}");
+            if (!$jsonString) {
+                return [];
+            }
+            $data = json_decode($jsonString, true);
+            if (!empty($data['response']) && is_array($data['response'])) {
+                return $data['response'];
+            }
+        } catch (\Exception $e) {
+            Log::warning("[BpjsHelper::getAntrolJadwalDokterData] Error: " . $e->getMessage());
+        }
+        return [];
+    }
+
     public static function postAntrolAntreanAdd($urlQL, $data)
     {
         return self::pingAntrolPostEndpoint($urlQL, "/antrean/add", $data);
