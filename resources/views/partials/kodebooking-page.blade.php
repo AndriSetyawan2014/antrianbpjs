@@ -82,6 +82,22 @@
     padding: 10px; border: 1px solid #d1d3e2; border-radius: 8px; resize: vertical;
 }
 .resend-editor:focus { outline: none; border-color: var(--color-primary, #4e73df); }
+/* Header tabel tetap (DataTables scrollY) — tidak menimpa baris saat scroll */
+.kb-table-wrap { border: 1px solid var(--color-border, #e3e6f0); border-radius: 8px; overflow: hidden; }
+.kb-table-wrap .dataTables_wrapper { padding: 8px 10px; }
+.kb-table-wrap .dataTables_scrollHead { overflow: hidden; }
+.kb-table-wrap .dataTables_scrollHead table { margin-bottom: 0 !important; }
+.kb-table-wrap .dataTables_scrollHead thead th {
+    position: static !important; box-shadow: none !important;
+}
+.kb-table-wrap .dataTables_scrollBody thead th,
+.kb-table-wrap .dataTables_scrollBody thead td {
+    position: static !important; box-shadow: none !important;
+    padding-top: 0 !important; padding-bottom: 0 !important; border-top: 0 !important;
+    height: 0 !important; line-height: 0 !important; background: transparent !important; color: transparent !important;
+}
+.kb-table-wrap .dataTables_scrollBody thead th::before,
+.kb-table-wrap .dataTables_scrollBody thead th::after { display: none !important; }
 .resend-prev {
     display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
     padding: 6px 12px; border-radius: 8px; font-size: .8rem; text-align: left;
@@ -201,7 +217,7 @@
 </div>
 
 {{-- Tabel --}}
-<div class="table-responsive">
+<div class="kb-table-wrap">
     <table id="{{ $tableId }}" class="table table-hover table-striped table-bordered">
         <thead>
             <tr>
@@ -287,7 +303,10 @@ $(document).ready(function () {
     var $table = $('#' + tableId);
 
     var dtMain = $table.DataTable({
-        responsive: true,
+        responsive: false,
+        scrollY: '55vh',
+        scrollCollapse: true,
+        autoWidth: false,
         pageLength: 25,
         columnDefs: [
             { orderable: false, targets: [0, 6, 7, 8] },
