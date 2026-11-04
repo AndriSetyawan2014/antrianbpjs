@@ -9,5 +9,6 @@
     'startDate' => $start_date ?? request('start_date', date('Y-m-d')),
     'endDate' => $end_date ?? request('end_date', date('Y-m-d')),
     'tableId' => 'data_kodebooking',
+    'urlQL' => 'QLJ',
 ])
 @endsection

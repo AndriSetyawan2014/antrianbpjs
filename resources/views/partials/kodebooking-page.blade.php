@@ -86,7 +86,10 @@
         <button type="button" class="btn-preset" data-preset="week">7 hari</button>
         <button type="button" class="btn-preset" data-preset="month">Bulan ini</button>
     </div>
-    <a href="{{ $exportUrl }}" class="btn-filter btn-success ms-auto">
+    <button type="button" class="btn-filter btn-warning ms-auto" id="btnResendBatch" title="Kirim Ulang Semua Kode Booking Pending/Error pada rentang tanggal ini">
+        <i class="fas fa-sync-alt me-1"></i> Kirim Ulang Pending/Error
+    </button>
+    <a href="{{ $exportUrl }}" class="btn-filter btn-success ms-2">
         <i class="fas fa-file-excel"></i> Download Excel
     </a>
 </div>
@@ -151,16 +154,19 @@
 </div>
 
 {{-- Tabel --}}
+<div class="table-responsive">
     <table id="{{ $tableId }}" class="table table-hover table-striped table-bordered">
         <thead>
             <tr>
-                <th style="width:4%;">No</th>
+                <th style="width:3%;">No</th>
+                <th style="width:13%;">Kode Booking</th>
                 <th style="width:8%;">No RM</th>
-                <th style="width:10%;">Tgl Periksa</th>
-                <th style="width:7%;">Code</th>
-                <th style="width:16%;">Message</th>
-                <th style="width:27%;" class="text-center">Request</th>
-                <th style="width:28%;" class="text-center">Response</th>
+                <th style="width:9%;">Tgl Periksa</th>
+                <th style="width:8%;">Code</th>
+                <th style="width:18%;">Message</th>
+                <th style="width:9%;" class="text-center">Request</th>
+                <th style="width:9%;" class="text-center">Response</th>
+                <th style="width:10%;" class="text-center">Aksi</th>
             </tr>
         </thead>
         <tbody>
@@ -169,10 +175,11 @@
                 $code = $item->code;
                 $badgeClass = $code == 200 ? 'badge-success' : ($code == 0 ? 'badge-warning' : 'badge-danger');
                 $badgeLabel = $code == 200 ? '✓ 200 OK' : ($code == 0 ? '⏳ Pending' : '✗ Err '.$code);
-                $msg = json_decode($item->response)->metadata->message ?? '';
+                $msg = json_decode($item->response)->metadata->message ?? ($item->message ?? '');
             @endphp
             <tr>
                 <td></td>
+                <td><strong>{{ $item->kodebooking }}</strong></td>
                 <td>{{ $item->norm }}</td>
                 <td>{{ $item->tanggalperiksa }}</td>
                 <td class="text-center">
@@ -180,51 +187,181 @@
                 </td>
                 <td>{{ $msg }}</td>
                 <td class="text-center">
-                    <button class="btn-json-view" data-json="{{ htmlspecialchars($item->request, ENT_QUOTES, 'UTF-8') }}" data-title="Request — No RM {{ $item->norm }}">
+                    <button class="btn-json-view" data-json="{{ htmlspecialchars($item->request, ENT_QUOTES, 'UTF-8') }}" data-title="Request — {{ $item->kodebooking }}">
                         <i class="fas fa-eye"></i> Lihat
                     </button>
                 </td>
                 <td class="text-center">
-                    <button class="btn-json-view" data-json="{{ htmlspecialchars($item->response, ENT_QUOTES, 'UTF-8') }}" data-title="Response — No RM {{ $item->norm }}">
+                    <button class="btn-json-view" data-json="{{ htmlspecialchars($item->response, ENT_QUOTES, 'UTF-8') }}" data-title="Response — {{ $item->kodebooking }}">
                         <i class="fas fa-eye"></i> Lihat
+                    </button>
+                </td>
+                <td class="text-center text-nowrap">
+                    <button type="button" class="btn btn-sm btn-primary btn-resend-kb"
+                        data-kodebooking="{{ $item->kodebooking }}"
+                        data-norm="{{ $item->norm }}"
+                        title="Kirim Ulang Kode Booking {{ $item->kodebooking }} ke BPJS">
+                        <i class="fas fa-paper-plane me-1"></i> Kirim Ulang
                     </button>
                 </td>
             </tr>
             @endforeach
         </tbody>
     </table>
+</div>
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 function filterTableCode(element, type) {
     // Styling active box
     $('.filter-box').removeClass('active-filter');
     $(element).addClass('active-filter');
 
-    // DataTables filter on column index 3 (Code column)
+    // DataTables filter on column index 4 (Code column)
     var table = $('#{{ $tableId }}').DataTable();
     
     // Custom filter using DataTables search
     if (type === '') {
-        table.column(3).search('').draw();
+        table.column(4).search('').draw();
     } else if (type === '200') {
-        table.column(3).search('200 OK').draw();
+        table.column(4).search('200 OK').draw();
     } else if (type === '0') {
-        table.column(3).search('Pending').draw();
+        table.column(4).search('Pending').draw();
     } else if (type === 'error') {
-        table.column(3).search('Err').draw();
+        table.column(4).search('Err').draw();
     }
 }
 
 $(document).ready(function () {
-    $('#{{ $tableId }}').DataTable({
+    var tableId = '{{ $tableId }}';
+    var urlQL = '{{ $urlQL ?? (str_contains($tableId, "qlkp") ? "QLKP" : (str_contains($tableId, "qltmg") ? "QLTMG" : "QLJ")) }}';
+    var $table = $('#' + tableId);
+
+    $table.DataTable({
         responsive: true,
         pageLength: 25,
         columnDefs: [
-            { orderable: false, targets: [0, 5, 6] },
+            { orderable: false, targets: [0, 6, 7, 8] },
             { render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, targets: 0 }
         ],
         language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json' }
+    });
+
+    // Kirim Ulang Per Kode Booking
+    $table.on('click', '.btn-resend-kb', function() {
+        var kb = $(this).data('kodebooking');
+        var norm = $(this).data('norm');
+
+        Swal.fire({
+            title: 'Kirim Ulang Kode Booking?',
+            html: "Kirim ulang data ke BPJS Antrol untuk kode booking:<br><strong>" + kb + "</strong> (No RM: " + norm + ")",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: '<i class="fas fa-paper-plane me-1"></i> Ya, Kirim!',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#4e73df',
+            cancelButtonColor: '#858796',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Memproses ke BPJS...',
+                    html: 'Sedang menghubungi BPJS Antrol...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                $.ajax({
+                    url: '{{ url("api/run-kodebooking-by-kodebooking") }}',
+                    type: 'GET',
+                    data: {
+                        urlQL: urlQL,
+                        kodebooking: kb
+                    },
+                    success: function(res) {
+                        var meta = res.metadata || {};
+                        var code = meta.code || 200;
+                        var msg = meta.message || 'Proses selesai.';
+
+                        if (code == 200 || code == 208) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil (Code ' + code + ')',
+                                text: msg
+                            }).then(() => location.reload());
+                        } else {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Respon BPJS (Code ' + code + ')',
+                                text: msg
+                            }).then(() => location.reload());
+                        }
+                    },
+                    error: function(xhr) {
+                        var errMeta = (xhr.responseJSON && xhr.responseJSON.metadata) ? xhr.responseJSON.metadata : {};
+                        var errMsg = errMeta.message || (xhr.responseJSON ? JSON.stringify(xhr.responseJSON) : 'Gagal mengirim ulang data.');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal Mengirim',
+                            text: errMsg
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+    // Kirim Ulang Batch Pending / Error
+    $('#btnResendBatch').on('click', function() {
+        var startDate = $('#start_date').val();
+        var endDate = $('#end_date').val();
+
+        Swal.fire({
+            title: 'Kirim Ulang Batch?',
+            html: "Kirim ulang semua Kode Booking yang <b>Pending atau Error</b> pada tanggal:<br><strong>" + startDate + "</strong> s/d <strong>" + endDate + "</strong>?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: '<i class="fas fa-sync-alt me-1"></i> Ya, Proses Antrean!',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#f6c23e',
+            cancelButtonColor: '#858796',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Menyiapkan antrean...',
+                    html: 'Memasukkan data ke background queue...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                $.ajax({
+                    url: '{{ url("api/run-kodebooking-batch") }}',
+                    type: 'GET',
+                    data: {
+                        urlQL: urlQL,
+                        start_date: startDate,
+                        end_date: endDate
+                    },
+                    success: function(res) {
+                        var meta = res.metadata || {};
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Antrean Dibuat',
+                            text: meta.message || 'Data berhasil dimasukkan ke antrean pengiriman.'
+                        }).then(() => location.reload());
+                    },
+                    error: function(xhr) {
+                        var errMeta = (xhr.responseJSON && xhr.responseJSON.metadata) ? xhr.responseJSON.metadata : {};
+                        var errMsg = errMeta.message || 'Gagal memproses antrean.';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: errMsg
+                        });
+                    }
+                });
+            }
+        });
     });
 });
 </script>

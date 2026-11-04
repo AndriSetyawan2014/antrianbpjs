@@ -1035,4 +1035,216 @@ class TambahAntrianOnlineController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Kirim Ulang satu Kode Booking ke BPJS Antrol secara langsung
+     */
+    public function run_kodebooking_by_kodebooking(Request $request)
+    {
+        set_time_limit(99999);
+
+        $allowedQL = BpjsHelper::getUrlQLOptions();
+        $urlQL = strtoupper($request->query('urlQL', $request->input('urlQL', 'QLJ')));
+        $kodebooking = $request->input('kodebooking', $request->query('kodebooking'));
+
+        if (!in_array($urlQL, $allowedQL)) {
+            return response()->json([
+                'metadata' => [
+                    'code'    => 422,
+                    'message' => 'Parameter urlQL tidak valid. Gunakan: ' . implode(', ', $allowedQL),
+                ],
+                'response' => null,
+            ], 422);
+        }
+
+        if (empty($kodebooking)) {
+            return response()->json([
+                'metadata' => [
+                    'code'    => 422,
+                    'message' => 'Parameter kodebooking wajib diisi.',
+                ],
+                'response' => null,
+            ], 422);
+        }
+
+        $model = (new DataKodebooking())->setTableByQL($urlQL);
+        $record = $model->where('kodebooking', $kodebooking)->first();
+
+        if (!$record) {
+            return response()->json([
+                'metadata' => [
+                    'code'    => 404,
+                    'message' => "Data Kode Booking {$kodebooking} tidak ditemukan pada cabang {$urlQL}.",
+                ],
+                'response' => null,
+            ], 404);
+        }
+
+        $arr = $record->toArray();
+
+        // Fallback jika ada data dari request payload sebelumnya
+        if (!empty($arr['request'])) {
+            $prevReq = json_decode($arr['request'], true);
+            if (is_array($prevReq)) {
+                if (empty($arr['bpjs_kodedokter']) && !empty($prevReq['kodedokter'])) {
+                    $arr['bpjs_kodedokter'] = $prevReq['kodedokter'];
+                }
+                if (empty($arr['kodeunit']) && !empty($prevReq['kodepoli'])) {
+                    $arr['kodeunit'] = $prevReq['kodepoli'];
+                }
+                if (empty($arr['namaunit']) && !empty($prevReq['namapoli'])) {
+                    $arr['namaunit'] = $prevReq['namapoli'];
+                }
+                if (empty($arr['namadokter']) && !empty($prevReq['namadokter'])) {
+                    $arr['namadokter'] = $prevReq['namadokter'];
+                }
+                if (empty($arr['nojkn']) && !empty($prevReq['nomorkartu'])) {
+                    $arr['nojkn'] = $prevReq['nomorkartu'];
+                }
+                if (empty($arr['nik']) && !empty($prevReq['nik'])) {
+                    $arr['nik'] = $prevReq['nik'];
+                }
+                if (empty($arr['notelpon']) && !empty($prevReq['nohp'])) {
+                    $arr['notelpon'] = $prevReq['nohp'];
+                }
+                if (empty($arr['noantrian']) && !empty($prevReq['nomorantrean'])) {
+                    $arr['noantrian'] = $prevReq['nomorantrean'];
+                }
+                if (empty($arr['estimasidilayani']) && !empty($prevReq['estimasidilayani'])) {
+                    $arr['estimasidilayani'] = $prevReq['estimasidilayani'];
+                }
+                if (empty($arr['nomorreferensi']) && !empty($prevReq['nomorreferensi'])) {
+                    $arr['nomorreferensi'] = $prevReq['nomorreferensi'];
+                }
+                if (!isset($arr['quota_jkn']) && isset($prevReq['kuotajkn'])) {
+                    $arr['quota_jkn'] = $prevReq['kuotajkn'];
+                }
+                if (!isset($arr['quota_jkn_sisa']) && isset($prevReq['sisakuotajkn'])) {
+                    $arr['quota_jkn_sisa'] = $prevReq['sisakuotajkn'];
+                }
+                if (!isset($arr['quota_nonjkn']) && isset($prevReq['kuotanonjkn'])) {
+                    $arr['quota_nonjkn'] = $prevReq['kuotanonjkn'];
+                }
+                if (!isset($arr['quota_nonjkn_sisa']) && isset($prevReq['sisakuotanonjkn'])) {
+                    $arr['quota_nonjkn_sisa'] = $prevReq['sisakuotanonjkn'];
+                }
+                if (empty($arr['idjeniskunjungan']) && isset($prevReq['jeniskunjungan'])) {
+                    $arr['idjeniskunjungan'] = $prevReq['jeniskunjungan'];
+                }
+                if (empty($arr['carabayar']) && !empty($prevReq['jenispasien'])) {
+                    $arr['carabayar'] = (strtoupper($prevReq['jenispasien']) === 'JKN') ? 'jknpbi' : 'umum';
+                }
+                if (!isset($arr['ispasienlama']) && isset($prevReq['pasienbaru'])) {
+                    $arr['ispasienlama'] = ($prevReq['pasienbaru'] == 1) ? 0 : 1;
+                }
+                if ((empty($arr['jammulai']) || empty($arr['jamakhir'])) && !empty($prevReq['jampraktek'])) {
+                    $parts = explode('-', $prevReq['jampraktek']);
+                    $arr['jammulai'] = $arr['jammulai'] ?: ($parts[0] ?? '08:00');
+                    $arr['jamakhir'] = $arr['jamakhir'] ?: ($parts[1] ?? '12:00');
+                }
+            }
+        }
+
+        // Default fallbacks untuk field mandatory
+        if (empty($arr['estimasidilayani'])) {
+            $tgl = $arr['tanggalperiksa'] ?? date('Y-m-d');
+            $jam = !empty($arr['jammulai']) ? $arr['jammulai'] : '08:00:00';
+            $arr['estimasidilayani'] = (int) (strtotime($tgl . ' ' . $jam) * 1000);
+        }
+        if (!isset($arr['quota_jkn'])) $arr['quota_jkn'] = 30;
+        if (!isset($arr['quota_jkn_sisa'])) $arr['quota_jkn_sisa'] = 10;
+        if (!isset($arr['quota_nonjkn'])) $arr['quota_nonjkn'] = 30;
+        if (!isset($arr['quota_nonjkn_sisa'])) $arr['quota_nonjkn_sisa'] = 10;
+        if (!isset($arr['ispasienlama'])) $arr['ispasienlama'] = 1;
+        if (empty($arr['noantrian'])) $arr['noantrian'] = 1;
+        if (empty($arr['jammulai'])) $arr['jammulai'] = '08:00';
+        if (empty($arr['jamakhir'])) $arr['jamakhir'] = '12:00';
+
+        // Panggil pengiriman single
+        $resp = $this->addAntrians_single_arr($urlQL, $arr);
+        $respData = $resp->getData(true);
+
+        $code = $respData['metadata']['code'] ?? ($respData['code'] ?? $resp->getStatusCode());
+        $message = $respData['metadata']['message'] ?? ($respData['message'] ?? 'Proses pengiriman selesai.');
+
+        return response()->json([
+            'metadata' => [
+                'code'    => (int) $code,
+                'message' => "Kode Booking {$kodebooking}: " . $message,
+            ],
+            'response' => $respData['response'] ?? $respData,
+        ], 200);
+    }
+
+    /**
+     * Kirim Ulang Massal (Batch) Kode Booking yang Pending atau Error ke Background Queue
+     */
+    public function run_kodebooking_batch(Request $request)
+    {
+        set_time_limit(99999);
+
+        $allowedQL = BpjsHelper::getUrlQLOptions();
+        $urlQL = strtoupper($request->query('urlQL', $request->input('urlQL', 'QLJ')));
+        $startDate = $request->input('start_date', $request->query('start_date'));
+        $endDate = $request->input('end_date', $request->query('end_date', $startDate));
+
+        if (!in_array($urlQL, $allowedQL)) {
+            return response()->json([
+                'metadata' => [
+                    'code'    => 422,
+                    'message' => 'Parameter urlQL tidak valid. Gunakan: ' . implode(', ', $allowedQL),
+                ],
+                'response' => null,
+            ], 422);
+        }
+
+        $query = (new DataKodebooking())->setTableByQL($urlQL);
+
+        if ($startDate && $endDate) {
+            $query->whereDate('tanggalperiksa', '>=', $startDate)
+                  ->whereDate('tanggalperiksa', '<=', $endDate);
+        }
+
+        // Ambil data yang pending (code == 0) atau error (code != 200) atau reupload == 1
+        $records = $query->where(function ($q) {
+            $q->where('code', '!=', 200)
+              ->orWhereNull('code')
+              ->orWhere('reupload', 1);
+        })->get();
+
+        $count = $records->count();
+
+        if ($count === 0) {
+            return response()->json([
+                'metadata' => [
+                    'code'    => 200,
+                    'message' => 'Tidak ada data Kode Booking pending/error yang perlu dikirim ulang pada rentang tanggal tersebut.',
+                ],
+                'response' => ['count' => 0],
+            ], 200);
+        }
+
+        $recordsArray = $records->toArray();
+        $kodebookings = collect($recordsArray)->pluck('kodebooking')->filter()->unique();
+
+        (new DataKodebooking())->setTableByQL($urlQL)
+            ->whereIn('kodebooking', $kodebookings)
+            ->update(['reupload' => 1]);
+
+        $chunks = array_chunk($recordsArray, 30);
+        foreach ($chunks as $chunk) {
+            SendKodeBookingBatchJob::dispatch($urlQL, $chunk);
+        }
+
+        return response()->json([
+            'metadata' => [
+                'code'    => 200,
+                'message' => "Sebanyak {$count} data Kode Booking berhasil dimasukkan ke antrean background untuk dikirim ulang.",
+            ],
+            'response' => [
+                'count' => $count,
+                'jobs'  => count($chunks),
+            ],
+        ], 200);
+    }
 }
