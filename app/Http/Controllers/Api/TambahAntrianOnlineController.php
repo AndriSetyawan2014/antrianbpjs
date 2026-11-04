@@ -1276,9 +1276,14 @@ class TambahAntrianOnlineController extends Controller
         }
         $arr = $this->prepareKodebookingArr($record->toArray());
 
+        $prev = json_decode($record->response ?? '', true);
         return response()->json([
             'metadata' => ['code' => 200, 'message' => 'OK'],
             'response' => $this->buildKodebookingPayload($arr),
+            'previous' => [
+                'code'    => $prev['metadata']['code'] ?? $record->code,
+                'message' => $prev['metadata']['message'] ?? $record->message,
+            ],
         ]);
     }
 
