@@ -130,6 +130,15 @@
 </div>
 
 @php
+    // Satu Kode Booking hanya tampil 1 baris (prioritas: sukses 200 > punya response > lainnya)
+    $items = collect($items)
+        ->sortByDesc(function ($r) {
+            $hasResp = !empty($r->response);
+            return ($r->code == 200 ? 4 : ($hasResp ? 2 : 0)) * 1000000000 + (int) ($r->id ?? 0);
+        })
+        ->unique(fn ($r) => !empty($r->kodebooking) ? $r->kodebooking : spl_object_id($r))
+        ->sortBy('id')
+        ->values();
     $count200 = 0;
     $count0 = 0;
     $countError = 0;
