@@ -235,6 +235,7 @@
                     <button type="button" class="btn-resend-soft btn-resend-kb"
                         data-kodebooking="{{ $item->kodebooking }}"
                         data-norm="{{ $item->norm }}"
+                        data-response="{{ $item->response }}"
                         title="Kirim Ulang Kode Booking {{ $item->kodebooking }} ke BPJS">
                         <i class="fas fa-paper-plane"></i> Kirim Ulang
                     </button>
@@ -285,8 +286,10 @@ $(document).ready(function () {
 
     // Kirim Ulang Per Kode Booking
     $table.on('click', '.btn-resend-kb', function() {
+        var $btnRow = $(this);
         var kb = $(this).data('kodebooking');
         var norm = $(this).data('norm');
+
 
         Swal.fire({ title: 'Memuat request...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
@@ -296,12 +299,20 @@ $(document).ready(function () {
             Swal.fire({ icon: 'error', title: 'Gagal', text: m });
         })
         .done(function(res) {
-            var pv = res.previous || {};
-            var pc = (pv.code === null || pv.code === undefined || pv.code === '') ? '-' : pv.code;
+            var rowResp = String($btnRow.attr('data-response') || '').trim();
+            var pc = '-', pMsg = 'Belum ada response';
+            if (rowResp) {
+                pMsg = rowResp;
+                try {
+                    var pj = JSON.parse(rowResp);
+                    if (pj && pj.metadata && pj.metadata.code !== undefined) pc = pj.metadata.code;
+                    pMsg = JSON.stringify(pj);
+                } catch (e) {}
+            }
             var pOk = (pc == 200 || pc == 208);
-            var pMsg = $('<div>').text(pv.message || 'Belum ada response').html();
-            var prevBar = '<div class="resend-prev ' + (pOk ? 'ok' : 'err') + '" title="' + pMsg + '">' +
-                '<span class="resend-prev-label">Response sebelumnya</span>' +
+            pMsg = $('<div>').text(pMsg).html();
+            var prevBar = '<div class="resend-prev ' + (pOk ? 'ok' : 'err') + '" title="' + pMsg.replace(/"/g, '&quot;') + '">' +
+                '<span class="resend-prev-label">Response</span>' +
                 '<span class="resend-prev-code">' + pc + '</span>' +
                 '<span class="resend-prev-msg">' + pMsg + '</span></div>';
             Swal.fire({
