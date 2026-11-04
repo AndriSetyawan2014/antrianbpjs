@@ -121,7 +121,10 @@
         <button type="button" class="btn-preset" data-preset="week">7 hari</button>
         <button type="button" class="btn-preset" data-preset="month">Bulan ini</button>
     </div>
-    <button type="button" class="btn-filter btn-warning ms-auto" id="btnResendBatch" title="Kirim Ulang Semua Kode Booking Pending/Error pada rentang tanggal ini">
+    <button type="button" class="btn-filter btn-secondary ms-auto" id="btnHideDup" title="Sembunyikan baris berpesan 'Terdapat duplikasi Kode Booking' (dianggap sudah berhasil)">
+        <i class="fas fa-eye-slash me-1"></i> <span>Sembunyikan Duplikasi</span>
+    </button>
+    <button type="button" class="btn-filter btn-warning ms-2" id="btnResendBatch" title="Kirim Ulang Semua Kode Booking Pending/Error pada rentang tanggal ini">
         <i class="fas fa-sync-alt me-1"></i> Kirim Ulang Pending/Error
     </button>
     <a href="{{ $exportUrl }}" class="btn-filter btn-success ms-2">
@@ -283,7 +286,7 @@ $(document).ready(function () {
     var urlQL = '{{ $urlQL ?? (str_contains($tableId, "qlkp") ? "QLKP" : (str_contains($tableId, "qltmg") ? "QLTMG" : "QLJ")) }}';
     var $table = $('#' + tableId);
 
-    $table.DataTable({
+    var dtMain = $table.DataTable({
         responsive: true,
         pageLength: 25,
         columnDefs: [
@@ -292,6 +295,28 @@ $(document).ready(function () {
         ],
         language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json' }
     });
+
+    // Sembunyikan baris "Terdapat duplikasi Kode Booking" (setara sukses)
+    var hideKey = 'hideDupKb_' + tableId;
+    var hideDup = localStorage.getItem(hideKey) === '1';
+    $.fn.dataTable.ext.search.push(function (settings, data) {
+        if (settings.nTable.id !== tableId || !hideDup) return true;
+        return !/duplikasi/i.test(data[5] || '');
+    });
+    function refreshHideBtn() {
+        var $b = $('#btnHideDup');
+        $b.toggleClass('btn-primary', hideDup).toggleClass('btn-secondary', !hideDup);
+        $b.find('i').attr('class', 'fas me-1 ' + (hideDup ? 'fa-eye' : 'fa-eye-slash'));
+        $b.find('span').text(hideDup ? 'Tampilkan Duplikasi' : 'Sembunyikan Duplikasi');
+    }
+    $('#btnHideDup').on('click', function () {
+        hideDup = !hideDup;
+        localStorage.setItem(hideKey, hideDup ? '1' : '0');
+        refreshHideBtn();
+        dtMain.draw();
+    });
+    refreshHideBtn();
+    dtMain.draw();
 
     // Kirim Ulang Per Kode Booking
     $table.on('click', '.btn-resend-kb', function() {
