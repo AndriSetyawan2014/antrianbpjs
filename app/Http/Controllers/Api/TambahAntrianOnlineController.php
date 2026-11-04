@@ -1317,8 +1317,8 @@ class TambahAntrianOnlineController extends Controller
 
         $allowedQL = BpjsHelper::getUrlQLOptions();
         $urlQL = strtoupper($request->query('urlQL', $request->input('urlQL', 'QLJ')));
-        $startDate = $request->input('start_date', $request->query('start_date'));
-        $endDate = $request->input('end_date', $request->query('end_date', $startDate));
+        $startDate = $request->input('start_date', $request->query('start_date')) ?: date('Y-m-d');
+        $endDate = $request->input('end_date', $request->query('end_date', $startDate)) ?: $startDate;
 
         if (!in_array($urlQL, $allowedQL)) {
             return response()->json([
@@ -1330,19 +1330,26 @@ class TambahAntrianOnlineController extends Controller
             ], 422);
         }
 
-        $query = (new DataKodebooking())->setTableByQL($urlQL);
+        $query = (new DataKodebooking())->setTableByQL($urlQL)->newQuery();
 
-        if ($startDate && $endDate) {
-            $query->whereDate('tanggalperiksa', '>=', $startDate)
-                  ->whereDate('tanggalperiksa', '<=', $endDate);
-        }
+        $query->whereDate('tanggalperiksa', '>=', $startDate)
+              ->whereDate('tanggalperiksa', '<=', $endDate);
 
-        // Ambil data yang pending (code == 0) atau error (code != 200) atau reupload == 1
+        // Ambil data yang pending (code == 0) atau error (code != 200 & 208) dan bukan duplikasi / sudah terbit SEP
         $records = $query->where(function ($q) {
-            $q->where('code', '!=', 200)
+            $q->whereNotIn('code', [200, 208])
               ->orWhereNull('code')
               ->orWhere('reupload', 1);
-        })->get();
+        })->where(function ($q) {
+            $q->whereNull('message')
+              ->orWhere(function ($sub) {
+                  $sub->where('message', 'not like', '%duplikasi%')
+                      ->where('message', 'not like', '%sudah terbit SEP%');
+              });
+        })->orderByDesc('id')->get();
+
+        // Deduplikasi berdasarkan kodebooking (ambil baris terbaik yang sudah diurutkan)
+        $records = $records->unique('kodebooking')->values();
 
         $count = $records->count();
 
@@ -1356,12 +1363,17 @@ class TambahAntrianOnlineController extends Controller
             ], 200);
         }
 
-        $recordsArray = $records->toArray();
-        $kodebookings = collect($recordsArray)->pluck('kodebooking')->filter()->unique();
+        $recordsArray = array_map(function ($rec) use ($urlQL) {
+            return $this->prepareKodebookingArr($rec, $urlQL);
+        }, $records->toArray());
 
-        (new DataKodebooking())->setTableByQL($urlQL)
-            ->whereIn('kodebooking', $kodebookings)
-            ->update(['reupload' => 1]);
+        $kodebookings = collect($recordsArray)->pluck('kodebooking')->filter()->unique()->values();
+
+        foreach ($kodebookings->chunk(500) as $kbChunk) {
+            (new DataKodebooking())->setTableByQL($urlQL)->newQuery()
+                ->whereIn('kodebooking', $kbChunk)
+                ->update(['reupload' => 1]);
+        }
 
         $chunks = array_chunk($recordsArray, 30);
         foreach ($chunks as $chunk) {
