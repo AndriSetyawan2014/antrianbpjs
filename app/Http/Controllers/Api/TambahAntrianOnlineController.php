@@ -1080,8 +1080,36 @@ class TambahAntrianOnlineController extends Controller
             ], 404);
         }
 
-        $arr = $record->toArray();
+        $arr = $this->prepareKodebookingArr($record->toArray());
 
+        // Payload hasil edit user (opsional)
+        $payload = $request->input('payload');
+        if (is_string($payload)) $payload = json_decode($payload, true);
+        if (is_array($payload)) {
+            $arr = $this->applyKodebookingPayload($arr, $payload);
+        }
+
+        // Panggil pengiriman single
+        $resp = $this->addAntrians_single_arr($urlQL, $arr);
+        $respData = $resp->getData(true);
+
+        $code = $respData['metadata']['code'] ?? ($respData['code'] ?? $resp->getStatusCode());
+        $message = $respData['metadata']['message'] ?? ($respData['message'] ?? 'Proses pengiriman selesai.');
+
+        return response()->json([
+            'metadata' => [
+                'code'    => (int) $code,
+                'message' => "Kode Booking {$kodebooking}: " . $message,
+            ],
+            'response' => $respData['response'] ?? $respData,
+        ], 200);
+    }
+
+    /**
+     * Lengkapi field record dengan fallback dari request sebelumnya & default.
+     */
+    private function prepareKodebookingArr(array $arr): array
+    {
         // Fallback jika ada data dari request payload sebelumnya
         if (!empty($arr['request'])) {
             $prevReq = json_decode($arr['request'], true);
@@ -1160,20 +1188,98 @@ class TambahAntrianOnlineController extends Controller
         if (empty($arr['jammulai'])) $arr['jammulai'] = '08:00';
         if (empty($arr['jamakhir'])) $arr['jamakhir'] = '12:00';
 
-        // Panggil pengiriman single
-        $resp = $this->addAntrians_single_arr($urlQL, $arr);
-        $respData = $resp->getData(true);
+        return $arr;
+    }
 
-        $code = $respData['metadata']['code'] ?? ($respData['code'] ?? $resp->getStatusCode());
-        $message = $respData['metadata']['message'] ?? ($respData['message'] ?? 'Proses pengiriman selesai.');
+    /**
+     * Susun payload BPJS /antrean/add dari array record (untuk preview & edit user).
+     */
+    private function buildKodebookingPayload(array $arr): array
+    {
+        $notelpon = preg_replace('/[^\d]/', '', $arr['notelpon'] ?? '');
+        if (substr($notelpon, 0, 2) === '62') $notelpon = '0' . substr($notelpon, 2);
+        if (substr($notelpon, 0, 1) === '8') $notelpon = '0' . $notelpon;
+        $notelpon = substr($notelpon, 0, 13);
+
+        return [
+            'kodebooking'      => $arr['kodebooking'] ?? null,
+            'jenispasien'      => (in_array($arr['carabayar'] ?? '', ['jknpbi', 'jknnonpbi'])) ? 'JKN' : 'NON JKN',
+            'nomorkartu'       => $arr['nojkn'] ?? null,
+            'nik'              => $arr['nik'] ?? null,
+            'nohp'             => $notelpon,
+            'kodepoli'         => $arr['kodeunit'] ?? null,
+            'namapoli'         => $arr['namaunit'] ?? null,
+            'pasienbaru'       => (($arr['ispasienlama'] ?? 1) == 0) ? 1 : 0,
+            'norm'             => $arr['norm'] ?? null,
+            'tanggalperiksa'   => $arr['tanggalperiksa'] ?? null,
+            'kodedokter'       => $arr['bpjs_kodedokter'] ?? null,
+            'namadokter'       => $arr['namadokter'] ?? null,
+            'jampraktek'       => date('H:i', strtotime($arr['jammulai'])) . '-' . date('H:i', strtotime($arr['jamakhir'])),
+            'jeniskunjungan'   => (($arr['idjeniskunjungan'] ?? 0) == 5) ? 3 : ($arr['idjeniskunjungan'] ?? null),
+            'nomorreferensi'   => $arr['nomorreferensi'] ?? null,
+            'nomorantrean'     => $arr['noantrian'] ?? null,
+            'angkaantrean'     => $arr['noantrian'] ?? null,
+            'estimasidilayani' => $arr['estimasidilayani'] ?? null,
+            'sisakuotajkn'     => $arr['quota_jkn_sisa'] ?? null,
+            'kuotajkn'         => $arr['quota_jkn'] ?? null,
+            'sisakuotanonjkn'  => $arr['quota_nonjkn_sisa'] ?? null,
+            'kuotanonjkn'      => $arr['quota_nonjkn'] ?? null,
+            'keterangan'       => 'Peserta harap 30 menit lebih awal guna pencatatan administrasi.',
+        ];
+    }
+
+    /**
+     * Terapkan payload hasil edit user kembali ke array record.
+     */
+    private function applyKodebookingPayload(array $arr, array $p): array
+    {
+        $map = [
+            'bpjs_kodedokter' => 'kodedokter', 'namadokter' => 'namadokter',
+            'kodeunit' => 'kodepoli', 'namaunit' => 'namapoli',
+            'nojkn' => 'nomorkartu', 'nik' => 'nik', 'notelpon' => 'nohp',
+            'norm' => 'norm', 'tanggalperiksa' => 'tanggalperiksa',
+            'idjeniskunjungan' => 'jeniskunjungan', 'nomorreferensi' => 'nomorreferensi',
+            'noantrian' => 'nomorantrean', 'estimasidilayani' => 'estimasidilayani',
+            'quota_jkn_sisa' => 'sisakuotajkn', 'quota_jkn' => 'kuotajkn',
+            'quota_nonjkn_sisa' => 'sisakuotanonjkn', 'quota_nonjkn' => 'kuotanonjkn',
+        ];
+        foreach ($map as $field => $key) {
+            if (array_key_exists($key, $p)) $arr[$field] = $p[$key];
+        }
+        if (isset($p['jenispasien'])) {
+            $arr['carabayar'] = (strtoupper($p['jenispasien']) === 'JKN') ? 'jknpbi' : 'umum';
+        }
+        if (isset($p['pasienbaru'])) {
+            $arr['ispasienlama'] = ($p['pasienbaru'] == 1) ? 0 : 1;
+        }
+        if (!empty($p['jampraktek']) && str_contains($p['jampraktek'], '-')) {
+            [$arr['jammulai'], $arr['jamakhir']] = array_map('trim', explode('-', $p['jampraktek'], 2));
+        }
+        return $arr;
+    }
+
+    /**
+     * Preview payload Kode Booking sebelum dikirim ulang.
+     */
+    public function preview_kodebooking(Request $request)
+    {
+        $allowedQL = BpjsHelper::getUrlQLOptions();
+        $urlQL = strtoupper($request->input('urlQL', 'QLJ'));
+        $kodebooking = $request->input('kodebooking');
+
+        if (!in_array($urlQL, $allowedQL) || empty($kodebooking)) {
+            return response()->json(['metadata' => ['code' => 422, 'message' => 'Parameter urlQL / kodebooking tidak valid.'], 'response' => null], 422);
+        }
+        $record = (new DataKodebooking())->setTableByQL($urlQL)->where('kodebooking', $kodebooking)->first();
+        if (!$record) {
+            return response()->json(['metadata' => ['code' => 404, 'message' => 'Data tidak ditemukan.'], 'response' => null], 404);
+        }
+        $arr = $this->prepareKodebookingArr($record->toArray());
 
         return response()->json([
-            'metadata' => [
-                'code'    => (int) $code,
-                'message' => "Kode Booking {$kodebooking}: " . $message,
-            ],
-            'response' => $respData['response'] ?? $respData,
-        ], 200);
+            'metadata' => ['code' => 200, 'message' => 'OK'],
+            'response' => $this->buildKodebookingPayload($arr),
+        ]);
     }
 
     /**

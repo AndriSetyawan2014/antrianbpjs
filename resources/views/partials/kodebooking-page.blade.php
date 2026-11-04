@@ -62,6 +62,26 @@
 .filter-warning .filter-icon { color: #f6c23e; }
 .filter-danger .filter-title { color: #e74a3b; }
 .filter-danger .filter-icon { color: #e74a3b; }
+/* Tombol Kirim Ulang — soft, mengikuti warna tema */
+.btn-resend-soft {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 12px; font-size: 0.78rem; font-weight: 600;
+    color: var(--color-primary, #4e73df);
+    background: color-mix(in srgb, var(--color-primary, #4e73df) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-primary, #4e73df) 25%, transparent);
+    border-radius: 999px; cursor: pointer;
+    transition: all .15s ease;
+}
+.btn-resend-soft:hover {
+    color: #fff; background: var(--color-primary, #4e73df);
+    border-color: var(--color-primary, #4e73df);
+    box-shadow: 0 2px 6px color-mix(in srgb, var(--color-primary, #4e73df) 35%, transparent);
+}
+.resend-editor {
+    width: 100%; min-height: 320px; font-family: monospace; font-size: 0.8rem;
+    padding: 10px; border: 1px solid #d1d3e2; border-radius: 8px; resize: vertical;
+}
+.resend-editor:focus { outline: none; border-color: var(--color-primary, #4e73df); }
 </style>
 
 {{-- Filter Card (form GET agar tetap jalan tanpa JS) --}}
@@ -197,11 +217,11 @@
                     </button>
                 </td>
                 <td class="text-center text-nowrap">
-                    <button type="button" class="btn btn-sm btn-primary btn-resend-kb"
+                    <button type="button" class="btn-resend-soft btn-resend-kb"
                         data-kodebooking="{{ $item->kodebooking }}"
                         data-norm="{{ $item->norm }}"
                         title="Kirim Ulang Kode Booking {{ $item->kodebooking }} ke BPJS">
-                        <i class="fas fa-paper-plane me-1"></i> Kirim Ulang
+                        <i class="fas fa-paper-plane"></i> Kirim Ulang
                     </button>
                 </td>
             </tr>
@@ -253,16 +273,30 @@ $(document).ready(function () {
         var kb = $(this).data('kodebooking');
         var norm = $(this).data('norm');
 
-        Swal.fire({
-            title: 'Kirim Ulang Kode Booking?',
-            html: "Kirim ulang data ke BPJS Antrol untuk kode booking:<br><strong>" + kb + "</strong> (No RM: " + norm + ")",
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: '<i class="fas fa-paper-plane me-1"></i> Ya, Kirim!',
-            cancelButtonText: 'Batal',
-            confirmButtonColor: '#4e73df',
-            cancelButtonColor: '#858796',
-        }).then((result) => {
+        Swal.fire({ title: 'Memuat request...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+        $.getJSON('{{ url("api/preview-kodebooking") }}', { urlQL: urlQL, kodebooking: kb })
+        .fail(function(xhr) {
+            var m = (xhr.responseJSON && xhr.responseJSON.metadata) ? xhr.responseJSON.metadata.message : 'Gagal memuat data.';
+            Swal.fire({ icon: 'error', title: 'Gagal', text: m });
+        })
+        .done(function(res) {
+            Swal.fire({
+                title: 'Kirim Ulang Kode Booking',
+                width: 720,
+                html: '<div class="text-start mb-2" style="font-size:.85rem;">Kode Booking: <strong>' + kb + '</strong> (No RM: ' + norm + ')<br>Periksa &amp; edit isi request (JSON) sebelum dikirim ke BPJS:</div>' +
+                      '<textarea id="resendPayload" class="resend-editor" spellcheck="false"></textarea>',
+                didOpen: () => { document.getElementById('resendPayload').value = JSON.stringify(res.response, null, 2); },
+                showCancelButton: true,
+                confirmButtonText: 'Kirim ke BPJS',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#4e73df',
+                cancelButtonColor: '#858796',
+                preConfirm: () => {
+                    try { return JSON.parse(document.getElementById('resendPayload').value); }
+                    catch (e) { Swal.showValidationMessage('Format JSON tidak valid: ' + e.message); return false; }
+                }
+            }).then((result) => {
             if (result.isConfirmed) {
                 Swal.fire({
                     title: 'Memproses ke BPJS...',
@@ -273,10 +307,11 @@ $(document).ready(function () {
 
                 $.ajax({
                     url: '{{ url("api/run-kodebooking-by-kodebooking") }}',
-                    type: 'GET',
+                    type: 'POST',
                     data: {
                         urlQL: urlQL,
-                        kodebooking: kb
+                        kodebooking: kb,
+                        payload: JSON.stringify(result.value)
                     },
                     success: function(res) {
                         var meta = res.metadata || {};
@@ -308,6 +343,7 @@ $(document).ready(function () {
                     }
                 });
             }
+            });
         });
     });
 

@@ -97,6 +97,7 @@ Route::match(['get', 'post'], '/run-taskid-by-kodebooking', [PengirimanTaskIDCon
 // Akses endpoint data pending kode booking berdasarkan urlQL tertentu (misal: ?urlQL=QLTMG)
 Route::match(['get', 'post'], '/kodebooking-by-ql', [TambahAntrianOnlineController::class, 'kodebooking_get_by_ql']);
 Route::match(['get', 'post'], '/run-kodebooking-by-kodebooking', [TambahAntrianOnlineController::class, 'run_kodebooking_by_kodebooking']);
+Route::match(['get', 'post'], '/preview-kodebooking', [TambahAntrianOnlineController::class, 'preview_kodebooking']);
 Route::match(['get', 'post'], '/run-kodebooking-batch', [TambahAntrianOnlineController::class, 'run_kodebooking_batch']);
 
 // Route::get('/wablast/send', [WABlastController::class, 'index'])->name('wablast.send');
