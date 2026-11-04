@@ -82,6 +82,21 @@
     padding: 10px; border: 1px solid #d1d3e2; border-radius: 8px; resize: vertical;
 }
 .resend-editor:focus { outline: none; border-color: var(--color-primary, #4e73df); }
+.resend-prev {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+    padding: 6px 12px; border-radius: 8px; font-size: .8rem; text-align: left;
+    white-space: nowrap; overflow: hidden;
+    background: color-mix(in srgb, #e74a3b 8%, transparent);
+    border: 1px solid color-mix(in srgb, #e74a3b 25%, transparent);
+}
+.resend-prev.ok {
+    background: color-mix(in srgb, #1cc88a 8%, transparent);
+    border-color: color-mix(in srgb, #1cc88a 25%, transparent);
+}
+.resend-prev-label { font-weight: 600; color: #858796; flex-shrink: 0; }
+.resend-prev-code { font-weight: 700; padding: 0 8px; border-radius: 999px; color: #fff; background: #e74a3b; flex-shrink: 0; }
+.resend-prev.ok .resend-prev-code { background: #1cc88a; }
+.resend-prev-msg { overflow: hidden; text-overflow: ellipsis; color: #5a5c69; }
 </style>
 
 {{-- Filter Card (form GET agar tetap jalan tanpa JS) --}}
@@ -281,10 +296,19 @@ $(document).ready(function () {
             Swal.fire({ icon: 'error', title: 'Gagal', text: m });
         })
         .done(function(res) {
+            var pv = res.previous || {};
+            var pc = (pv.code === null || pv.code === undefined || pv.code === '') ? '-' : pv.code;
+            var pOk = (pc == 200 || pc == 208);
+            var pMsg = $('<div>').text(pv.message || 'Belum ada response').html();
+            var prevBar = '<div class="resend-prev ' + (pOk ? 'ok' : 'err') + '" title="' + pMsg + '">' +
+                '<span class="resend-prev-label">Response sebelumnya</span>' +
+                '<span class="resend-prev-code">' + pc + '</span>' +
+                '<span class="resend-prev-msg">' + pMsg + '</span></div>';
             Swal.fire({
                 title: 'Kirim Ulang Kode Booking',
                 width: 720,
-                html: '<div class="text-start mb-2" style="font-size:.85rem;">Kode Booking: <strong>' + kb + '</strong> (No RM: ' + norm + ')<br>Periksa &amp; edit isi request (JSON) sebelum dikirim ke BPJS:</div>' +
+                html: '<div class="text-start mb-2" style="font-size:.85rem;">Kode Booking: <strong>' + kb + '</strong> (No RM: ' + norm + ')</div>' + prevBar +
+                      '<div class="text-start mb-1" style="font-size:.8rem;color:#858796;">Periksa &amp; edit isi request (JSON) sebelum dikirim:</div>' +
                       '<textarea id="resendPayload" class="resend-editor" spellcheck="false"></textarea>',
                 didOpen: () => { document.getElementById('resendPayload').value = JSON.stringify(res.response, null, 2); },
                 showCancelButton: true,
