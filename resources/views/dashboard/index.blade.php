@@ -254,7 +254,6 @@ REGIONS.forEach(r => {
     input.addEventListener('change', e => { if (e.target.value) load(e.target.value); });
     const t = localToday();
     input.value = t;
-    input.max = t;
     load(t);
 });
 

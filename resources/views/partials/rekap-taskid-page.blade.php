@@ -15,9 +15,9 @@
     <i class="fas fa-filter" style="color:var(--color-primary);"></i>
     <form method="GET" action="{{ $filterAction }}" style="display:contents;">
         <label for="start_date">Dari:</label>
-        <input type="date" id="start_date" name="start_date" value="{{ request('start_date', date('Y-m-d')) }}" max="{{ date('Y-m-d') }}">
+        <input type="date" id="start_date" name="start_date" value="{{ request('start_date', date('Y-m-d')) }}">
         <label for="end_date">Sampai:</label>
-        <input type="date" id="end_date" name="end_date" value="{{ request('end_date', date('Y-m-d')) }}" max="{{ date('Y-m-d') }}">
+        <input type="date" id="end_date" name="end_date" value="{{ request('end_date', date('Y-m-d')) }}">
         <button type="submit" class="btn-filter btn-primary">
             <i class="fas fa-search"></i> Filter
         </button>
