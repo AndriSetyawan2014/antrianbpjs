@@ -787,3 +787,32 @@ pre {
     width: 100%;
   }
 }
+
+/* ─── DataTables: header tetap (scrollY) untuk semua tabel ─── */
+.dataTables_wrapper .dataTables_scrollHead { overflow: hidden; }
+.dataTables_wrapper .dataTables_scrollHead table { margin-bottom: 0 !important; }
+.dataTables_scrollHead thead th,
+.dataTables_scrollHead thead td {
+  position: static !important;
+  box-shadow: none !important;
+}
+.dataTables_scrollBody thead th,
+.dataTables_scrollBody thead td {
+  position: static !important;
+  box-shadow: none !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-top: 0 !important;
+  height: 0 !important;
+  line-height: 0 !important;
+  background: transparent !important;
+  color: transparent !important;
+}
+.dataTables_scrollBody thead th::before,
+.dataTables_scrollBody thead th::after { display: none !important; }
+/* Hindari scroll ganda: pembungkus .table-responsive berisi DataTables tidak perlu scroll sendiri */
+.table-responsive:has(.dataTables_wrapper) {
+  max-height: none;
+  overflow: visible;
+  border: none;
+}

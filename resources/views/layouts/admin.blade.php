@@ -91,6 +91,14 @@
 
     <!-- DataTables JS -->
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script>
+        // Default global semua DataTables: header tetap, hanya isi tabel yang scroll
+        $.extend(true, $.fn.dataTable.defaults, {
+            scrollY: '55vh',
+            scrollCollapse: true,
+            autoWidth: false
+        });
+    </script>
 
     <!-- Live Clock -->
     <script>
