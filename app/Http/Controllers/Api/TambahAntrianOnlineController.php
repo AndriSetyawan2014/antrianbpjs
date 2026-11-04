@@ -330,7 +330,7 @@ class TambahAntrianOnlineController extends Controller
             'kodebooking' => 'required|string',
             'jenispasien' => 'required|string',
             'nomorkartu' => 'nullable|string',
-            'nik' => 'required|string',
+            'nik' => 'nullable|string',
             'nohp' => 'required|string',
             'kodepoli' => 'required|string',
             'namapoli' => 'required|string',
@@ -1080,7 +1080,7 @@ class TambahAntrianOnlineController extends Controller
             ], 404);
         }
 
-        $arr = $this->prepareKodebookingArr($record->toArray());
+        $arr = $this->prepareKodebookingArr($record->toArray(), $urlQL);
 
         // Payload hasil edit user (opsional)
         $payload = $request->input('payload');
@@ -1095,6 +1095,13 @@ class TambahAntrianOnlineController extends Controller
 
         $code = $respData['metadata']['code'] ?? ($respData['code'] ?? $resp->getStatusCode());
         $message = $respData['metadata']['message'] ?? ($respData['message'] ?? 'Proses pengiriman selesai.');
+        if (!empty($respData['errors']) && is_array($respData['errors'])) {
+            $detail = [];
+            foreach ($respData['errors'] as $field => $msgs) {
+                $detail[] = $field . ': ' . implode(', ', (array) $msgs);
+            }
+            $message .= ' (' . implode('; ', $detail) . ')';
+        }
 
         return response()->json([
             'metadata' => [
@@ -1108,8 +1115,22 @@ class TambahAntrianOnlineController extends Controller
     /**
      * Lengkapi field record dengan fallback dari request sebelumnya & default.
      */
-    private function prepareKodebookingArr(array $arr): array
+    private function prepareKodebookingArr(array $arr, string $urlQL = 'QLJ'): array
     {
+        // NIK / No JKN kosong: ambil dari data lain milik No RM yang sama
+        if (!empty($arr['norm']) && (empty($arr['nik']) || empty($arr['nojkn']))) {
+            $other = (new DataKodebooking())->setTableByQL($urlQL)
+                ->where('norm', $arr['norm'])
+                ->where(function ($q) {
+                    $q->whereNotNull('nik')->where('nik', '!=', '');
+                })
+                ->orderByDesc('id')->first();
+            if ($other) {
+                if (empty($arr['nik'])) $arr['nik'] = $other->nik;
+                if (empty($arr['nojkn']) && !empty($other->nojkn)) $arr['nojkn'] = $other->nojkn;
+            }
+        }
+
         // Fallback jika ada data dari request payload sebelumnya
         if (!empty($arr['request'])) {
             $prevReq = json_decode($arr['request'], true);
@@ -1274,7 +1295,7 @@ class TambahAntrianOnlineController extends Controller
         if (!$record) {
             return response()->json(['metadata' => ['code' => 404, 'message' => 'Data tidak ditemukan.'], 'response' => null], 404);
         }
-        $arr = $this->prepareKodebookingArr($record->toArray());
+        $arr = $this->prepareKodebookingArr($record->toArray(), $urlQL);
 
         $prev = json_decode($record->response ?? '', true);
         return response()->json([
