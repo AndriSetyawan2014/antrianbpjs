@@ -226,3 +226,41 @@ Route::post('/settings/migrate', function () {
         return back()->with('error', 'Gagal menjalankan migrasi: ' . $e->getMessage());
     }
 })->name('settings.migrate');
+
+// TEMPORARY: Clear view cache via browser (hapus setelah digunakan)
+Route::get('/clear-view-cache', function () {
+    try {
+        // Hapus semua file view cache menggunakan PHP (berjalan sebagai www-data)
+        $viewsDir = storage_path('framework/views');
+        $files = glob($viewsDir . '/*');
+        $deleted = 0;
+        foreach ($files as $file) {
+            if (is_file($file)) {
+                unlink($file);
+                $deleted++;
+            }
+        }
+        
+        // Hapus bootstrap/cache/views.php
+        $viewCacheFile = bootstrap_path('cache/views.php');
+        if (file_exists($viewCacheFile)) {
+            unlink($viewCacheFile);
+        }
+        
+        // Clear Laravel cache
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        \Illuminate\Support\Facades\Artisan::call('route:clear');
+        
+        return response()->json([
+            'success' => true,
+            'message' => "View cache berhasil dibersihkan. $deleted file dihapus.",
+            'files_deleted' => $deleted
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal: ' . $e->getMessage()
+        ], 500);
+    }
+})->name('temp.clear-view-cache');
