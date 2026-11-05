@@ -233,35 +233,65 @@ Route::post('/settings/migrate', function () {
 // ============================================
 Route::get('/clear-view-cache', function () {
     try {
-        $viewsDir = storage_path('framework/views');
-        $files = glob($viewsDir . '/*');
         $deleted = 0;
-        
-        foreach ($files as $file) {
-            if (is_file($file)) {
-                unlink($file);
-                $deleted++;
+        $errors = [];
+
+        // 1. Hapus semua file di storage/framework/views/
+        $viewsDir = storage_path('framework/views');
+        if (is_dir($viewsDir)) {
+            $files = glob($viewsDir . '/*');
+            foreach ($files as $file) {
+                if (is_file($file)) {
+                    if (@unlink($file)) {
+                        $deleted++;
+                    } else {
+                        $errors[] = "Tidak dapat menghapus: $file";
+                    }
+                }
             }
         }
-        
-        // Hapus view cache file di bootstrap/cache (tanpa bootstrap_path)
-        $viewCacheFile = base_path('bootstrap/cache/views.php');
-        if (file_exists($viewCacheFile)) {
-            unlink($viewCacheFile);
+
+        // 2. Hapus semua file .php di bootstrap/cache/
+        $cacheDir = base_path('bootstrap/cache');
+        if (is_dir($cacheDir)) {
+            $cacheFiles = glob($cacheDir . '/*.php');
+            foreach ($cacheFiles as $file) {
+                if (is_file($file)) {
+                    if (@unlink($file)) {
+                        $deleted++;
+                    } else {
+                        $errors[] = "Tidak dapat menghapus: $file";
+                    }
+                }
+            }
         }
-        $viewCacheFile2 = base_path('bootstrap/cache/views.php');
-        if (file_exists($viewCacheFile2)) {
-            unlink($viewCacheFile2);
-        }
-        
+
+        // 3. Cek manifest.json
+        $manifestPath = base_path('public/build/manifest.json');
+        $manifestExists = file_exists($manifestPath);
+        $manifestReadable = $manifestExists && is_readable($manifestPath);
+
+        // 4. Clear artisan cache
         \Illuminate\Support\Facades\Artisan::call('view:clear');
         \Illuminate\Support\Facades\Artisan::call('config:clear');
         \Illuminate\Support\Facades\Artisan::call('route:clear');
-        
+
+        // 5. Coba reset OPcache jika tersedia
+        $opcacheReset = function_exists('opcache_reset') ? @opcache_reset() : false;
+
         return response()->json([
             'success' => true,
-            'message' => "View cache berhasil dibersihkan. {$deleted} file dihapus.",
-            'files_deleted' => $deleted
+            'message' => "Cache dibersihkan. {$deleted} file dihapus.",
+            'files_deleted' => $deleted,
+            'errors' => $errors,
+            'debug' => [
+                'manifest_exists' => $manifestExists,
+                'manifest_readable' => $manifestReadable,
+                'manifest_path' => $manifestPath,
+                'opcache_reset' => $opcacheReset,
+                'views_dir' => $viewsDir,
+                'cache_dir' => $cacheDir
+            ]
         ]);
     } catch (\Exception $e) {
         return response()->json([
