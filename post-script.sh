@@ -17,8 +17,8 @@ sudo -u wa-blast-user composer install --no-dev --optimize-autoloader
 
 echo "NODE.JS.."
 pwd
-sudo -u wa-blast-user npm install
-sudo -u wa-blast-user npm run build
+sudo -u wa-blast-user env PATH="/usr/local/bin:/usr/bin:/bin:/home/wa-blast-user/.nvm/versions/node/v22.14.0/bin" npm install
+sudo -u wa-blast-user env PATH="/usr/local/bin:/usr/bin:/bin:/home/wa-blast-user/.nvm/versions/node/v22.14.0/bin" npm run build
 
 echo "CLEAR CACHE"
 pwd
