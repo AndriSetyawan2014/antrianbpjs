@@ -36,11 +36,9 @@ echo ""
 echo "[5/8] CLEAR LARAVEL CACHE"
 sudo -u wa-blast-user php artisan optimize:clear 2>&1 || true
 
-echo "  Menghapus view cache secara paksa (root)..."
-# Paksa hapus semua file di views/ menggunakan root (sudo find -delete)
+echo "  Menghapus view cache secara paksa..."
 sudo find $APP_PATH/storage/framework/views/ -type f -delete 2>/dev/null || true
 sudo rm -rf $APP_PATH/bootstrap/cache/views.php 2>/dev/null || true
-sudo rm -rf $APP_PATH/bootstrap/cache/*.php 2>/dev/null || true
 sudo -u wa-blast-user php artisan view:clear 2>&1 || true
 
 echo ""
@@ -48,9 +46,8 @@ echo "[6/8] CACHE CONFIG & ROUTE (VIEW TIDAK FATAL)"
 sudo -u wa-blast-user php artisan config:cache 2>&1 || true
 sudo -u wa-blast-user php artisan route:cache 2>&1 || true
 
-# View cache — TIDAK FATAL
 echo "  Mencoba view:cache (jika gagal, tidak masalah)..."
-sudo -u wa-blast-user php artisan view:cache 2>&1 || echo "⚠ view cache skip — akan di-regenerate otomatis oleh Laravel"
+sudo -u wa-blast-user php artisan view:cache 2>&1 || echo "⚠ view cache skip — akan di-regenerate otomatis"
 
 echo ""
 echo "[7/8] RESTART QUEUE"
