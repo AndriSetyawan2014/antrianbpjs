@@ -25,7 +25,6 @@ echo ""
 echo "[4/8] BUILD VITE ASSETS (CSS + JS)"
 sudo -u wa-blast-user bash -c 'export PATH="/usr/local/bin:/usr/bin:/bin:/home/wa-blast-user/.nvm/versions/node/v22.14.0/bin" && cd /var/www/html/antrianonline && npm run build'
 
-# Verifikasi manifest.json ada (mencegah error Vite manifest not found)
 if [ ! -f "$APP_PATH/public/build/manifest.json" ]; then
     echo "ERROR: manifest.json tidak ditemukan setelah npm run build!"
     exit 1
@@ -36,9 +35,9 @@ echo ""
 echo "[5/8] CLEAR LARAVEL CACHE (PAKSA)"
 sudo -u wa-blast-user php artisan optimize:clear
 
-# Paksa hapus semua file view cache secara manual
 echo "  Menghapus semua file view cache secara manual..."
 sudo rm -rf $APP_PATH/storage/framework/views/*
+sudo rm -rf $APP_PATH/bootstrap/cache/views.php 2>/dev/null || true
 sudo -u wa-blast-user php artisan view:clear
 
 echo ""
@@ -46,6 +45,13 @@ echo "[6/8] CACHE CONFIG & ROUTE & VIEW"
 sudo -u wa-blast-user php artisan config:cache
 sudo -u wa-blast-user php artisan route:cache
 sudo -u wa-blast-user php artisan view:cache
+
+# Verifikasi view cache berhasil dibuat
+if [ ! -f "$APP_PATH/bootstrap/cache/views.php" ]; then
+    echo "ERROR: view cache tidak berhasil dibuat!"
+    exit 1
+fi
+echo "✓ view cache berhasil dibuat"
 
 echo ""
 echo "[7/8] RESTART QUEUE"
