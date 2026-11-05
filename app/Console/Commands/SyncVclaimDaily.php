@@ -36,7 +36,12 @@ class SyncVclaimDaily extends Command
         
         foreach ($availableQLs as $ql) {
             $this->info("Mendaftarkan job sinkronisasi untuk cabang: $ql");
-            \App\Jobs\SyncVclaimKunjunganJob::dispatch($tanggal, $ql);
+            $log = \App\Models\VclaimSyncLog::create([
+                'kode_ql' => $ql,
+                'tanggal' => $tanggal,
+                'status'  => 'pending',
+            ]);
+            \App\Jobs\SyncVclaimKunjunganJob::dispatch($ql, $tanggal, $log->id);
         }
 
         $this->info("Seluruh job sinkronisasi telah didaftarkan/dijalankan.");

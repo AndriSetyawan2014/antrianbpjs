@@ -18,38 +18,73 @@ class AntrianController extends Controller
     {
         // Cache seluruh data dashboard selama 5 menit (300 detik) untuk mengatasi loading lama
         $dashboardData = Cache::remember('dashboard_data_v1', 300, function () {
-        // Group data for QLJ
+        $recentStart = Carbon::now()->subDays(90)->toDateString();
+
+        // Group data for QLJ (bounded to recent 90 days for graph)
         $data_kodebooking = DataKodebooking::select('tanggalperiksa', 'message', DB::raw('count(*) as total'))
+            ->where('tanggalperiksa', '>=', $recentStart)
             ->groupBy('tanggalperiksa', 'message')
             ->get();
 
         $TaskID = data_taskid::select('tanggal', 'message', DB::raw('count(*) as total'))
+            ->where('tanggal', '>=', $recentStart)
             ->groupBy('tanggal', 'message')
             ->get();
 
-        // Summary data
-        $totalKodebooking = DataKodebooking::count();
-        $rekapKodebooking = DataKodebooking::where('message', '!=', 'ok')->count();
-        $totalTaskId = data_taskid::count();
-        $rekapTaskId = data_taskid::where('message', '!=', 'success')->count();
+        // Summary data (single pass per table instead of 2 queries per table)
+        $qljKbStat = DB::table('data_kodebooking')
+            ->selectRaw("COUNT(*) as total, SUM(CASE WHEN message IS NULL OR message != 'ok' THEN 1 ELSE 0 END) as rekap")
+            ->first();
+        $totalKodebooking = (int) ($qljKbStat->total ?? 0);
+        $rekapKodebooking = (int) ($qljKbStat->rekap ?? 0);
 
-        // QLKP data
-        $qlkptotalKodebooking = DB::table('qlkp_data_kodebooking')->count();
-        $qlkprekapKodebooking = DB::table('qlkp_data_kodebooking')->where('message', '!=', 'ok')->count();
-        $qlkptotalTaskId = DB::table('qlkp_data_taskids')->count();
-        $qlkprekapTaskId = DB::table('qlkp_data_taskids')->where('message', '!=', 'success')->count();
+        $qljTaskStat = DB::table('data_taskids')
+            ->selectRaw("COUNT(*) as total, SUM(CASE WHEN message IS NULL OR message != 'success' THEN 1 ELSE 0 END) as rekap")
+            ->first();
+        $totalTaskId = (int) ($qljTaskStat->total ?? 0);
+        $rekapTaskId = (int) ($qljTaskStat->rekap ?? 0);
+
+        // QLKP data (single pass per table)
+        $qlkpKbStat = DB::table('qlkp_data_kodebooking')
+            ->selectRaw("COUNT(*) as total, SUM(CASE WHEN message IS NULL OR message != 'ok' THEN 1 ELSE 0 END) as rekap")
+            ->first();
+        $qlkptotalKodebooking = (int) ($qlkpKbStat->total ?? 0);
+        $qlkprekapKodebooking = (int) ($qlkpKbStat->rekap ?? 0);
+
+        $qlkpTaskStat = DB::table('qlkp_data_taskids')
+            ->selectRaw("COUNT(*) as total, SUM(CASE WHEN message IS NULL OR message != 'success' THEN 1 ELSE 0 END) as rekap")
+            ->first();
+        $qlkptotalTaskId = (int) ($qlkpTaskStat->total ?? 0);
+        $qlkprekapTaskId = (int) ($qlkpTaskStat->rekap ?? 0);
 
         // QLTMG data
-        $qltmgtotalKodebooking = Schema::hasTable('qltmg_data_kodebooking') ? DB::table('qltmg_data_kodebooking')->count() : 0;
-        $qltmgrekapKodebooking = Schema::hasTable('qltmg_data_kodebooking') ? DB::table('qltmg_data_kodebooking')->where('message', '!=', 'ok')->count() : 0;
-        $qltmgtotalTaskId = Schema::hasTable('qltmg_data_taskids') ? DB::table('qltmg_data_taskids')->count() : 0;
-        $qltmgrekapTaskId = Schema::hasTable('qltmg_data_taskids') ? DB::table('qltmg_data_taskids')->where('message', '!=', 'success')->count() : 0;
+        $qltmgtotalKodebooking = 0;
+        $qltmgrekapKodebooking = 0;
+        if (Schema::hasTable('qltmg_data_kodebooking')) {
+            $qltmgKbStat = DB::table('qltmg_data_kodebooking')
+                ->selectRaw("COUNT(*) as total, SUM(CASE WHEN message IS NULL OR message != 'ok' THEN 1 ELSE 0 END) as rekap")
+                ->first();
+            $qltmgtotalKodebooking = (int) ($qltmgKbStat->total ?? 0);
+            $qltmgrekapKodebooking = (int) ($qltmgKbStat->rekap ?? 0);
+        }
+
+        $qltmgtotalTaskId = 0;
+        $qltmgrekapTaskId = 0;
+        if (Schema::hasTable('qltmg_data_taskids')) {
+            $qltmgTaskStat = DB::table('qltmg_data_taskids')
+                ->selectRaw("COUNT(*) as total, SUM(CASE WHEN message IS NULL OR message != 'success' THEN 1 ELSE 0 END) as rekap")
+                ->first();
+            $qltmgtotalTaskId = (int) ($qltmgTaskStat->total ?? 0);
+            $qltmgrekapTaskId = (int) ($qltmgTaskStat->rekap ?? 0);
+        }
 
         $qlkp_data_kodebooking = DB::table('qlkp_data_kodebooking')->select('message', DB::raw('COUNT(*) as total'))
+            ->where('tanggalperiksa', '>=', $recentStart)
             ->groupBy('message')
             ->get();
 
         $qlkp_TaskID = DB::table('qlkp_data_taskids')->select('message', DB::raw('COUNT(*) as total'))
+            ->where('tanggal', '>=', $recentStart)
             ->groupBy('message')
             ->get();
 
@@ -113,24 +148,23 @@ class AntrianController extends Controller
         $start_date = $request->input('start_date', $today);
         $end_date = $request->input('end_date', $today);
 
-        // Ambil data kode booking berdasarkan rentang tanggal
-        $kodebookings = DataKodebooking::whereDate('tanggalperiksa', '>=', $start_date)
-            ->whereDate('tanggalperiksa', '<=', $end_date)
+        // Ambil data kode booking berdasarkan rentang tanggal (menggunakan whereBetween agar index B-Tree aktif)
+        $kodebookings = DataKodebooking::whereBetween('tanggalperiksa', [$start_date, $end_date])
             ->get();
 
         // Ambil semua kodebooking sebagai array
         $kbs = $kodebookings->pluck('kodebooking')->toArray();
-        $nojkns = $kodebookings->pluck('nojkn')->filter()->toArray();
+        $nojkns = $kodebookings->pluck('nojkn')->filter()->unique()->values()->toArray();
         
         // Ambil data_taskid untuk kodebooking terkait
-        $taskids = data_taskid::whereIn('kodebooking', $kbs)->get();
+        $taskids = !empty($kbs) ? data_taskid::whereIn('kodebooking', $kbs)->get() : collect();
 
         // Ambil data SEP dari VclaimKunjungan
         $vclaimMap = [];
         if (count($nojkns) > 0) {
-            $vclaims = \App\Models\VclaimKunjungan::whereIn('no_kartu', $nojkns)
-                ->whereDate('tgl_kunjungan', '>=', $start_date)
-                ->whereDate('tgl_kunjungan', '<=', $end_date)
+            $vclaims = \App\Models\VclaimKunjungan::select('no_kartu', 'tgl_kunjungan', 'no_sep')
+                ->whereIn('no_kartu', $nojkns)
+                ->whereBetween('tgl_kunjungan', [$start_date, $end_date])
                 ->get();
 
             foreach ($vclaims as $v) {
@@ -175,8 +209,7 @@ class AntrianController extends Controller
     $codeFilter = $request->input('code');
 
     // Query untuk mengambil data kode booking berdasarkan rentang tanggal
-    $query = DataKodebooking::whereDate('tanggalperiksa', '>=', $start_date)
-        ->whereDate('tanggalperiksa', '<=', $end_date);
+    $query = DataKodebooking::whereBetween('tanggalperiksa', [$start_date, $end_date]);
 
     if ($codeFilter !== null && $codeFilter !== '') {
         if ($codeFilter === 'error') {
@@ -297,7 +330,7 @@ public function rekapKodeBooking(Request $request)
         $TaskID->where('data_taskids.tanggal', '<=', $endDate);
     } else {
         // Default to show data for today if no date is selected
-        $TaskID->whereDate('data_taskids.tanggal', '=', date('Y-m-d'));
+        $TaskID->where('data_taskids.tanggal', '=', date('Y-m-d'));
     }
 
     $TaskID->orderBy('data_taskids.kodebooking', 'asc')->orderBy('data_taskids.taskid', 'asc');
@@ -350,8 +383,7 @@ public function qlkp_datakodebooking(Request $request)
         ->when($messageFilter, function ($query, $messageFilter) {
             $query->where('message', 'like', "%{$messageFilter}%");
         })
-        ->whereDate('tanggalperiksa', '>=', $startDate) // Gunakan tanggalperiksa untuk filter
-        ->whereDate('tanggalperiksa', '<=', $endDate);
+        ->whereBetween('tanggalperiksa', [$startDate, $endDate]);
 
     if ($codeFilter !== null && $codeFilter !== '') {
         if ($codeFilter === 'error') {
@@ -450,7 +482,7 @@ public function qlkp_datakodebooking(Request $request)
 
     // Filter berdasarkan filter_date yang dipilih di halaman Rekap Task ID
     if ($filterDate) {
-        $qlkp_TaskID->whereDate('qlkp_data_taskids.tanggal', '=', $filterDate); // Sesuaikan dengan kolom tanggal
+        $qlkp_TaskID->where('qlkp_data_taskids.tanggal', '=', $filterDate); // Sesuaikan dengan kolom tanggal
     } else {
     // Jika tidak ada filter tanggal, filter berdasarkan rentang tanggal
     if ($startDate && $endDate) {
@@ -516,6 +548,8 @@ public function qlkp_datakodebooking(Request $request)
         $start = Carbon::parse($startDate);
         $end = Carbon::parse($endDate);
         $totalSynced = 0;
+        $upsertRows = [];
+        $nowTs = now();
 
         for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
             $tglStr = $date->toDateString();
@@ -532,29 +566,33 @@ public function qlkp_datakodebooking(Request $request)
                             $tutup = trim($parts[1] ?? '');
                         }
 
-                        DB::table('bpjs_jadwal_dokter')->updateOrInsert(
-                            [
-                                'kode_ql'    => $urlQL,
-                                'tanggal'    => $tglStr,
-                                'kodedokter' => (string)($sch['kodedokter'] ?? ''),
-                                'kodepoli'   => (string)($sch['kodepoli'] ?? $kodepoli),
-                                'jadwal'     => $jadwal,
-                            ],
-                            [
-                                'namadokter'      => $sch['namadokter'] ?? null,
-                                'namapoli'        => $sch['namapoli'] ?? null,
-                                'buka'            => $buka,
-                                'tutup'           => $tutup,
-                                'kapasitaspasien' => $sch['kapasitaspasien'] ?? null,
-                                'libur'           => $sch['libur'] ?? 0,
-                                'updated_at'      => now(),
-                                'created_at'      => now(),
-                            ]
-                        );
+                        $upsertRows[] = [
+                            'kode_ql'         => $urlQL,
+                            'tanggal'         => $tglStr,
+                            'kodedokter'      => (string)($sch['kodedokter'] ?? ''),
+                            'kodepoli'        => (string)($sch['kodepoli'] ?? $kodepoli),
+                            'jadwal'          => $jadwal,
+                            'namadokter'      => $sch['namadokter'] ?? null,
+                            'namapoli'        => $sch['namapoli'] ?? null,
+                            'buka'            => $buka,
+                            'tutup'           => $tutup,
+                            'kapasitaspasien' => $sch['kapasitaspasien'] ?? null,
+                            'libur'           => $sch['libur'] ?? 0,
+                            'updated_at'      => $nowTs,
+                            'created_at'      => $nowTs,
+                        ];
                         $totalSynced++;
                     }
                 }
             }
+        }
+
+        foreach (array_chunk($upsertRows, 500) as $chunk) {
+            DB::table('bpjs_jadwal_dokter')->upsert(
+                $chunk,
+                ['kode_ql', 'tanggal', 'kodedokter', 'kodepoli', 'jadwal'],
+                ['namadokter', 'namapoli', 'buka', 'tutup', 'kapasitaspasien', 'libur', 'updated_at']
+            );
         }
 
         return response()->json([
@@ -615,19 +653,23 @@ public function qlkp_datakodebooking(Request $request)
             }
         }
 
-        $listDokter = DB::table('qlkp_data_kodebooking')
-            ->whereNotNull('namadokter')
-            ->where('namadokter', '!=', '')
-            ->distinct()
-            ->orderBy('namadokter')
-            ->pluck('namadokter');
+        $listDokter = Cache::remember('qlkp_list_dokter_v1', 600, function () {
+            return DB::table('qlkp_data_kodebooking')
+                ->whereNotNull('namadokter')
+                ->where('namadokter', '!=', '')
+                ->distinct()
+                ->orderBy('namadokter')
+                ->pluck('namadokter');
+        });
 
-        $listPoli = DB::table('qlkp_data_kodebooking')
-            ->whereNotNull('namaunit')
-            ->where('namaunit', '!=', '')
-            ->distinct()
-            ->orderBy('namaunit')
-            ->pluck('namaunit');
+        $listPoli = Cache::remember('qlkp_list_poli_v1', 600, function () {
+            return DB::table('qlkp_data_kodebooking')
+                ->whereNotNull('namaunit')
+                ->where('namaunit', '!=', '')
+                ->distinct()
+                ->orderBy('namaunit')
+                ->pluck('namaunit');
+        });
 
         $query = DB::table('qlkp_data_kodebooking')
             ->select(
@@ -918,8 +960,9 @@ public function qlkp_datakodebooking(Request $request)
         $endDate = Carbon::now()->toDateString();
     }
 
-    // Query untuk rekap data berdasarkan rentang tanggal
-    $qlkp_TaskID = data_taskid::select(DB::raw('tanggal, message, COUNT(*) as total'))
+    // Query untuk rekap data berdasarkan rentang tanggal (menggunakan tabel qlkp_data_taskids)
+    $qlkp_TaskID = DB::table('qlkp_data_taskids')
+        ->select(DB::raw('tanggal, message, COUNT(*) as total'))
         ->whereBetween('tanggal', [$startDate, $endDate]) // Filter rentang tanggal
         ->groupBy('tanggal', 'message')
         ->get();
@@ -928,15 +971,21 @@ public function qlkp_datakodebooking(Request $request)
     return view('qlkp_rekap_taskid', compact('qlkp_TaskID', 'startDate', 'endDate'));
 }
 
-    public function showJson()
+    public function showJson(Request $request)
     {
-        $data_kodebooking = DataKodebooking::all();
+        $startDate = $request->input('start_date', date('Y-m-d'));
+        $endDate = $request->input('end_date', $startDate);
+        $data_kodebooking = DataKodebooking::whereBetween('tanggalperiksa', [$startDate, $endDate])->get();
         return response()->json($data_kodebooking);
     }
 
-    public function qlkp_showJson()
+    public function qlkp_showJson(Request $request)
     {
-        $qlkp_data_kodebooking = DB::table('qlkp_data_kodebooking')->get();
+        $startDate = $request->input('start_date', date('Y-m-d'));
+        $endDate = $request->input('end_date', $startDate);
+        $qlkp_data_kodebooking = DB::table('qlkp_data_kodebooking')
+            ->whereBetween('tanggalperiksa', [$startDate, $endDate])
+            ->get();
         return response()->json($qlkp_data_kodebooking);
     }
 
@@ -953,8 +1002,7 @@ public function qlkp_datakodebooking(Request $request)
             ->when($messageFilter, function ($query, $messageFilter) {
                 $query->where('message', 'like', "%{$messageFilter}%");
             })
-            ->whereDate('tanggalperiksa', '>=', $startDate)
-            ->whereDate('tanggalperiksa', '<=', $endDate);
+            ->whereBetween('tanggalperiksa', [$startDate, $endDate]);
 
         if ($codeFilter !== null && $codeFilter !== '') {
             if ($codeFilter === 'error') {
@@ -1042,7 +1090,7 @@ public function qlkp_datakodebooking(Request $request)
         }
 
         if ($filterDate) {
-            $qltmg_TaskID->whereDate('qltmg_data_taskids.tanggal', '=', $filterDate);
+            $qltmg_TaskID->where('qltmg_data_taskids.tanggal', '=', $filterDate);
         } else {
             if ($startDate && $endDate) {
                 $qltmg_TaskID->whereBetween('qltmg_data_taskids.tanggal', [$startDate, $endDate]);
@@ -1099,13 +1147,13 @@ public function qlkp_datakodebooking(Request $request)
 
         // Ambil data berdasarkan tanggal untuk Kodebooking
         $data_kodebooking = DataKodebooking::select(DB::raw('message, count(*) as total'))
-            ->whereDate('tanggalperiksa', $date)
+            ->where('tanggalperiksa', $date)
             ->groupBy('message')
             ->get();
 
         // Ambil data berdasarkan tanggal untuk TaskID
         $task_id_data = data_taskid::select(DB::raw('message, count(*) as total'))
-            ->whereDate('tanggal', $date)
+            ->where('tanggal', $date)
             ->groupBy('message')
             ->get();
 
@@ -1134,13 +1182,13 @@ public function qlkp_datakodebooking(Request $request)
 
         $data_kodebooking = DB::table('qlkp_data_kodebooking')
             ->select(DB::raw('message, count(*) as total'))
-            ->whereDate('tanggalperiksa', $date)
+            ->where('tanggalperiksa', $date)
             ->groupBy('message')
             ->get();
 
         $task_id_data = DB::table('qlkp_data_taskids')
             ->select(DB::raw('message, count(*) as total'))
-            ->whereDate('tanggal', $date)
+            ->where('tanggal', $date)
             ->groupBy('message')
             ->get();
 
@@ -1165,13 +1213,13 @@ public function qlkp_datakodebooking(Request $request)
 
         $data_kodebooking = DB::table('qltmg_data_kodebooking')
             ->select(DB::raw('message, count(*) as total'))
-            ->whereDate('tanggalperiksa', $date)
+            ->where('tanggalperiksa', $date)
             ->groupBy('message')
             ->get();
 
         $task_id_data = DB::table('qltmg_data_taskids')
             ->select(DB::raw('message, count(*) as total'))
-            ->whereDate('tanggal', $date)
+            ->where('tanggal', $date)
             ->groupBy('message')
             ->get();
 

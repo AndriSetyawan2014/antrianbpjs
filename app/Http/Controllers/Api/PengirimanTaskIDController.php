@@ -268,13 +268,13 @@ class PengirimanTaskIDController extends Controller
                 $totalUpserted = 0;
 
                 foreach ($dataChunks as $index => $chunk) {
-                    // Collect identifiers for this chunk only
-                    $chunkIdentifiers = collect($chunk)->map(function($item) {
-                        return ($item['kodebooking'] ?? '') . '_' . ($item['taskid'] ?? '');
-                    })->filter()->toArray();
+                    // Collect unique kodebookings for this chunk to leverage uq_kodebooking_taskid leading column index
+                    $chunkKodebookings = collect($chunk)->pluck('kodebooking')->filter()->unique()->values()->toArray();
 
-                    // Fetch existing records for this chunk only
-                    $existingSuccess = $data_taskID_model->whereIn(\DB::raw("CONCAT(kodebooking, '_', taskid)"), $chunkIdentifiers)
+                    // Fetch existing records for this chunk only (using indexed kodebooking column)
+                    $existingSuccess = $data_taskID_model->newQuery()
+                        ->select('kodebooking', 'taskid')
+                        ->whereIn('kodebooking', $chunkKodebookings)
                         ->where('reupload', 0)
                         ->get()
                         ->keyBy(function($item) {
@@ -364,6 +364,8 @@ class PengirimanTaskIDController extends Controller
             $missingTask5 = $data_taskID_gen->getTaskid4withNullTaskid5($urlQL)->toArray();
             if (!empty($missingTask5)) {
                 Log::info('[' . $urlQL . '] Found ' . count($missingTask5) . ' bookings missing Task ID 5. Generating...');
+                $upsertTask5 = [];
+                $nowTs = now();
                 foreach ($missingTask5 as $dataTaskID4) {
                     $waktuTask4 = $dataTaskID4->waktu;
                     $randomSecond = rand(60, 240);
@@ -372,21 +374,22 @@ class PengirimanTaskIDController extends Controller
                     $timestamp = $newWaktursMilliseconds / 1000;
                     $datetime_jakarta = Carbon::createFromTimestamp($timestamp, 'Asia/Jakarta');
                     
-                    $dataTaskID5 = [
+                    $upsertTask5[] = [
                         'kodebooking'   => $dataTaskID4->kodebooking,
                         'waktu'         => $newWaktursMilliseconds,
                         'taskid'        => 5,
                         'idpendaftaran' => $dataTaskID4->idpendaftaran,
                         'tanggal'       => $datetime_jakarta->format('Y-m-d'),
                         'jam'           => $datetime_jakarta->format('H:i:s'),
-                        'reupload'      => 1
+                        'reupload'      => 1,
+                        'updated_at'    => $nowTs,
+                        'created_at'    => $nowTs,
                     ];
-
-                    $data_taskID_gen->updateOrCreate(
-                        ['kodebooking' => $dataTaskID5['kodebooking'], 'taskid' => 5],
-                        $dataTaskID5
-                    );
-                    Log::info('[' . $urlQL . '] Generated Task ID 5 for ' . $dataTaskID5['kodebooking']);
+                }
+                foreach (array_chunk($upsertTask5, 500) as $t5Chunk) {
+                    $data_taskID_gen->newQuery()->upsert($t5Chunk, ['kodebooking', 'taskid'], [
+                        'waktu', 'idpendaftaran', 'tanggal', 'jam', 'reupload', 'updated_at'
+                    ]);
                 }
             }
 
@@ -407,41 +410,45 @@ class PengirimanTaskIDController extends Controller
             };
             $data_taskID_model = (new data_taskid())->setTableByQL($urlQL);
 
-            // PROAKTIF: Batalkan Task 99 sebelum masuk queue jika sudah ada Task 3-7
-            $task99Pending = $data_taskID_model->where('taskid', 99)->where('reupload', 1)->get();
+            // PROAKTIF: Batalkan Task 99 sebelum masuk queue jika sudah ada Task 3-7 (Batch Query tanpa N+1)
+            $task99Pending = $data_taskID_model->newQuery()
+                ->select('id', 'kodebooking')
+                ->where('taskid', 99)
+                ->where('reupload', 1)
+                ->get();
             if ($task99Pending->isNotEmpty()) {
                 Log::info("[$urlQL] Melakukan pengecekan proaktif untuk " . $task99Pending->count() . " Task 99.");
-                foreach ($task99Pending as $t99) {
-                    $hasActiveTasks = $data_taskID_model->where('kodebooking', $t99->kodebooking)
-                                                        ->whereIn('taskid', [3, 4, 5, 6, 7])
-                                                        ->exists();
-                    if ($hasActiveTasks) {
-                        $data_taskID_model->where('id', $t99->id)->update([
-                            'reupload' => 0,
-                            'message' => 'Skipped: Sudah ada Task Aktif (3-7) di lokal'
-                        ]);
-                        Log::info("[$urlQL] Proaktif membatalkan Task 99 untuk {$t99->kodebooking} karena DB lokal memiliki task aktif (3-7)");
-                    }
+                $t99Kbs = $task99Pending->pluck('kodebooking')->filter()->unique()->values();
+                $activeKbs = collect();
+                foreach ($t99Kbs->chunk(500) as $kbChunk) {
+                    $found = $data_taskID_model->newQuery()
+                        ->whereIn('kodebooking', $kbChunk)
+                        ->whereIn('taskid', [3, 4, 5, 6, 7])
+                        ->distinct()
+                        ->pluck('kodebooking');
+                    $activeKbs = $activeKbs->merge($found);
                 }
-            }
-
-            $terminalTasks = $data_taskID_model->where('reupload', 1)
-                ->where(function ($q) {
-                    $q->where('message', 'like', '%TaskId terakhir 7%')
-                      ->orWhere('message', 'like', '%TaskId terakhir 5%');
-                })->get();
-                
-            if ($terminalTasks->isNotEmpty()) {
-                Log::info("[$urlQL] Melakukan pembersihan proaktif untuk " . $terminalTasks->count() . " Task berstatus error permanen.");
-                foreach ($terminalTasks as $tt) {
-                    $data_taskID_model->where('id', $tt->id)->update([
+                $activeKbMap = array_flip($activeKbs->toArray());
+                $cancelIds = $task99Pending->filter(fn($t) => isset($activeKbMap[$t->kodebooking]))->pluck('id');
+                foreach ($cancelIds->chunk(500) as $idChunk) {
+                    $data_taskID_model->newQuery()->whereIn('id', $idChunk)->update([
                         'reupload' => 0,
+                        'message' => 'Skipped: Sudah ada Task Aktif (3-7) di lokal'
                     ]);
                 }
             }
 
+            // Pembersihan proaktif untuk Task berstatus error permanen (1 Single Query tanpa N+1 loop)
+            $data_taskID_model->newQuery()
+                ->where('reupload', 1)
+                ->where(function ($q) {
+                    $q->where('message', 'like', '%TaskId terakhir 7%')
+                      ->orWhere('message', 'like', '%TaskId terakhir 5%');
+                })
+                ->update(['reupload' => 0]);
+
             // Ambil semua data yang memenuhi syarat pengiriman (Reupload = 1)
-            $dataArray = $data_taskID_model->from($tableTaskID . ' as taskID')
+            $dataArray = $data_taskID_model->newQuery()->from($tableTaskID . ' as taskID')
                 ->leftJoin("$tableKodeBooking as dk", 'taskID.kodebooking', '=', 'dk.kodebooking')
                 ->where("taskID.reupload", 1)
                 ->where(function ($query) use ($tanggal, $isEmptyTanggal, $kodebooking) {
@@ -457,16 +464,16 @@ class PengirimanTaskIDController extends Controller
                                         
                                         $q->whereBetween('dk.tanggalperiksa', [$startDate, $endDate])
                                             ->orWhere(function($subQ) use ($startDate, $endDate) {
-                                                // Fallback ke taskID.waktu jika dk tidak ada
+                                                // Fallback ke taskID.tanggal (indexed DATE column) jika dk tidak ada
                                                 $subQ->whereNull('dk.kodebooking')
-                                                    ->whereRaw("DATE(FROM_UNIXTIME(taskID.waktu/1000)) BETWEEN ? AND ?", [$startDate, $endDate]);
+                                                    ->whereBetween('taskID.tanggal', [$startDate, $endDate]);
                                             });
                                     } else {
                                         $q->where('dk.tanggalperiksa', '=', $tanggal)
                                             ->orWhere(function($subQ) use ($tanggal) {
-                                                // Fallback ke taskID.waktu jika dk tidak ada
+                                                // Fallback ke taskID.tanggal (indexed DATE column) jika dk tidak ada
                                                 $subQ->whereNull('dk.kodebooking')
-                                                  ->whereRaw("DATE(FROM_UNIXTIME(taskID.waktu/1000)) = ?", [$tanggal]);
+                                                  ->where('taskID.tanggal', '=', $tanggal);
                                             });
                                     }
                             });

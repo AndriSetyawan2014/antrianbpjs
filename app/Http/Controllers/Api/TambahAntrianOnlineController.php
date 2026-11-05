@@ -85,13 +85,18 @@ class TambahAntrianOnlineController extends Controller
 
                 $data_Kodebooking_model = (new DataKodebooking())->setTableByQL($urlQL);
                 
-                // Pra-penarikan (Pre-fetch) data yang sudah ada (berdasarkan kodebooking dan idpendaftaran)
-                $existingData = $data_Kodebooking_model
-                    ->whereIn('kodebooking', collect($pendingData)->pluck('kodebooking')->unique())
-                    ->get()
-                    ->keyBy(function($item) {
-                        return $item->kodebooking . '_' . $item->idpendaftaran;
-                    });
+                // Pra-penarikan (Pre-fetch) hanya kolom kodebooking & idpendaftaran dengan chunking
+                $existingData = collect();
+                $incomingKbs = collect($pendingData)->pluck('kodebooking')->filter()->unique()->values();
+                foreach ($incomingKbs->chunk(500) as $kbChunk) {
+                    $rows = $data_Kodebooking_model->newQuery()
+                        ->select('kodebooking', 'idpendaftaran')
+                        ->whereIn('kodebooking', $kbChunk)
+                        ->get();
+                    foreach ($rows as $item) {
+                        $existingData->put($item->kodebooking . '_' . $item->idpendaftaran, true);
+                    }
+                }
 
                 $upsertData = [];
                 foreach ($pendingData as $data) {
@@ -614,7 +619,7 @@ class TambahAntrianOnlineController extends Controller
                 $data_kodebooking['reupload'] = 0;
             }
 
-            $addAntrians = DataKodebooking::updateOrCreate(
+            $addAntrians = (new DataKodebooking())->setTableByQL($urlQL)->updateOrCreate(
                 ['kodebooking' => $data_addAntrians['kodebooking']],
                 $data_kodebooking
             );
@@ -872,7 +877,7 @@ class TambahAntrianOnlineController extends Controller
     {
         $tanggal = '2024-11-08'; // Tanggal yang ingin Anda filter
         $data = DataKodebooking::select('message', DB::raw('count(*) as total'))
-            ->whereDate('tanggalperiksa', $tanggal)
+            ->where('tanggalperiksa', $tanggal)
             ->groupBy('message')
             ->get();
 
@@ -889,12 +894,11 @@ class TambahAntrianOnlineController extends Controller
 
         // Menambahkan filter jika ada
         if ($request->has('status')) {
-            $data_kodebookingQuery->where('status', $request->input('status'));
+            $data_kodebookingQuery->where('statuspemeriksaan', $request->input('status'));
         }
 
         // Pagination
-        $perPage = $request->input('per_page', 25); // Default 10 per halaman
-        $data_kodebookingQuery = DataKodebooking::query(); // Siapkan query
+        $perPage = $request->input('per_page', 25); // Default 25 per halaman
         $data_kodebookingData = $data_kodebookingQuery->paginate($perPage);
 
         // Log hasil paginasi
@@ -920,33 +924,37 @@ class TambahAntrianOnlineController extends Controller
                 ->groupBy('queue')
                 ->get();
 
-            // Menghitung jumlah data aktual yang akan diproses dari payload tiap Job
+            // Menghitung jumlah data aktual yang akan diproses dari payload tiap Job (dibatasi agar tidak membebani memori jika ribuan job)
             $totalDataDiproses = 0;
-            $jobs = \DB::table('jobs')->get(['payload']);
-            foreach ($jobs as $job) {
-                $payload = json_decode($job->payload, true);
-                if (isset($payload['data']['command'])) {
-                    try {
-                        $commandStr = $payload['data']['command'];
-                        $command = unserialize($commandStr);
-                        
-                        if ($command instanceof \App\Jobs\SendKodeBookingBatchJob) {
-                            $reflection = new \ReflectionClass($command);
-                            $property = $reflection->getProperty('records');
-                            $property->setAccessible(true);
-                            $records = $property->getValue($command);
-                            $totalDataDiproses += is_array($records) ? count($records) : 0;
-                        } elseif ($command instanceof \App\Jobs\SendTaskIdBatchJob) {
-                            $reflection = new \ReflectionClass($command);
-                            $property = $reflection->getProperty('batchData');
-                            $property->setAccessible(true);
-                            $records = $property->getValue($command);
-                            $totalDataDiproses += is_array($records) ? count($records) : 0;
+            if ($total > 0 && $total <= 200) {
+                $jobs = \DB::table('jobs')->limit(200)->get(['payload']);
+                foreach ($jobs as $job) {
+                    $payload = json_decode($job->payload, true);
+                    if (isset($payload['data']['command'])) {
+                        try {
+                            $commandStr = $payload['data']['command'];
+                            $command = unserialize($commandStr);
+                            
+                            if ($command instanceof \App\Jobs\SendKodeBookingBatchJob) {
+                                $reflection = new \ReflectionClass($command);
+                                $property = $reflection->getProperty('records');
+                                $property->setAccessible(true);
+                                $records = $property->getValue($command);
+                                $totalDataDiproses += is_array($records) ? count($records) : 0;
+                            } elseif ($command instanceof \App\Jobs\SendTaskIdBatchJob) {
+                                $reflection = new \ReflectionClass($command);
+                                $property = $reflection->getProperty('batchData');
+                                $property->setAccessible(true);
+                                $records = $property->getValue($command);
+                                $totalDataDiproses += is_array($records) ? count($records) : 0;
+                            }
+                        } catch (\Exception $ex) {
+                            // Skip if unserialize fails
                         }
-                    } catch (\Exception $ex) {
-                        // Skip if unserialize fails
                     }
                 }
+            } elseif ($total > 200) {
+                $totalDataDiproses = $total * 30;
             }
 
             return response()->json([
@@ -1332,8 +1340,7 @@ class TambahAntrianOnlineController extends Controller
 
         $query = (new DataKodebooking())->setTableByQL($urlQL)->newQuery();
 
-        $query->whereDate('tanggalperiksa', '>=', $startDate)
-              ->whereDate('tanggalperiksa', '<=', $endDate);
+        $query->whereBetween('tanggalperiksa', [$startDate, $endDate]);
 
         // Ambil data yang pending (code == 0) atau error (code != 200 & 208) dan bukan duplikasi / sudah terbit SEP
         $records = $query->where(function ($q) {
@@ -1363,9 +1370,44 @@ class TambahAntrianOnlineController extends Controller
             ], 200);
         }
 
+        // Pre-fetch NIK/NoJKN berdasarkan norm secara batch (mencegah N+1 query di dalam prepareKodebookingArr)
+        $rawRecords = $records->toArray();
+        $missingNorms = collect($rawRecords)
+            ->filter(fn($r) => !empty($r['norm']) && (empty($r['nik']) || empty($r['nojkn'])))
+            ->pluck('norm')
+            ->unique()
+            ->values();
+
+        if ($missingNorms->isNotEmpty()) {
+            $normMap = [];
+            foreach ($missingNorms->chunk(500) as $normChunk) {
+                $donors = (new DataKodebooking())->setTableByQL($urlQL)->newQuery()
+                    ->select('norm', 'nik', 'nojkn')
+                    ->whereIn('norm', $normChunk)
+                    ->whereNotNull('nik')
+                    ->where('nik', '!=', '')
+                    ->orderByDesc('id')
+                    ->get();
+                foreach ($donors as $d) {
+                    if (!isset($normMap[$d->norm])) {
+                        $normMap[$d->norm] = $d;
+                    }
+                }
+            }
+            foreach ($rawRecords as &$rec) {
+                if (!empty($rec['norm']) && isset($normMap[$rec['norm']])) {
+                    if (empty($rec['nik'])) $rec['nik'] = $normMap[$rec['norm']]->nik;
+                    if (empty($rec['nojkn']) && !empty($normMap[$rec['norm']]->nojkn)) {
+                        $rec['nojkn'] = $normMap[$rec['norm']]->nojkn;
+                    }
+                }
+            }
+            unset($rec);
+        }
+
         $recordsArray = array_map(function ($rec) use ($urlQL) {
             return $this->prepareKodebookingArr($rec, $urlQL);
-        }, $records->toArray());
+        }, $rawRecords);
 
         $kodebookings = collect($recordsArray)->pluck('kodebooking')->filter()->unique()->values();
 

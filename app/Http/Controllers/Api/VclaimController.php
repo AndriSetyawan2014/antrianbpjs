@@ -392,9 +392,11 @@ class VclaimController extends Controller
         
         $availableQLs = BpjsHelper::getUrlQLOptions();
 
+        $startOfMonth = Carbon::createFromDate($tahun, $bulan, 1)->startOfMonth()->toDateString();
+        $endOfMonth   = Carbon::createFromDate($tahun, $bulan, 1)->endOfMonth()->toDateString();
+
         $data = VclaimKunjungan::rawatJalan()
-            ->whereMonth('tgl_kunjungan', $bulan)
-            ->whereYear('tgl_kunjungan', $tahun)
+            ->whereBetween('tgl_kunjungan', [$startOfMonth, $endOfMonth])
             ->selectRaw('tgl_kunjungan, kode_ql, COUNT(*) as total')
             ->groupBy('tgl_kunjungan', 'kode_ql')
             ->get();
@@ -713,9 +715,9 @@ class VclaimController extends Controller
             ]);
         }
 
-        $logs = AntreanPerTanggalLog::where('tanggal', $tanggal)
-                    ->where('kode_ql', $urlQL)
-                    ->get();
+        $logs = AntreanPerTanggalLog::where('kode_ql', $urlQL)
+                    ->where('tanggal', $tanggal)
+                    ->get(['raw_response']);
         
         // Format response so it looks exactly like BPJS raw format
         $responseArray = $logs->map(function($log) {
@@ -842,8 +844,10 @@ class VclaimController extends Controller
         
         $availableQLs = BpjsHelper::getUrlQLOptions();
 
-        $data = AntreanPerTanggalLog::whereMonth('tanggal', $bulan)
-            ->whereYear('tanggal', $tahun)
+        $startOfMonth = Carbon::createFromDate($tahun, $bulan, 1)->startOfMonth()->toDateString();
+        $endOfMonth   = Carbon::createFromDate($tahun, $bulan, 1)->endOfMonth()->toDateString();
+
+        $data = AntreanPerTanggalLog::whereBetween('tanggal', [$startOfMonth, $endOfMonth])
             ->selectRaw('tanggal, kode_ql, COUNT(*) as total')
             ->groupBy('tanggal', 'kode_ql')
             ->get();

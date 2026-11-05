@@ -30,15 +30,18 @@ Route::get('/dashboard', [AntrianController::class, 'index'])->name('dashboard')
 
 // Chart data
 Route::get('/api/chart-data', function () {
-    // Ambil data dari tabel
-    $dataKodebooking = DataKodebooking::selectRaw('DATE(created_at) as date, COUNT(*) as total')
-        ->groupBy('date')
-        ->orderBy('date', 'ASC')
+    $since = now()->subDays(90)->toDateString();
+    // Ambil data 90 hari terakhir menggunakan kolom tanggal terindeks
+    $dataKodebooking = DataKodebooking::selectRaw('tanggalperiksa as date, COUNT(*) as total')
+        ->where('tanggalperiksa', '>=', $since)
+        ->groupBy('tanggalperiksa')
+        ->orderBy('tanggalperiksa', 'ASC')
         ->get();
 
-    $dataTaskids = data_taskid::selectRaw('DATE(created_at) as date, COUNT(*) as total')
-        ->groupBy('date')
-        ->orderBy('date', 'ASC')
+    $dataTaskids = data_taskid::selectRaw('tanggal as date, COUNT(*) as total')
+        ->where('tanggal', '>=', $since)
+        ->groupBy('tanggal')
+        ->orderBy('tanggal', 'ASC')
         ->get();
 
     return response()->json([

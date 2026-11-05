@@ -99,7 +99,7 @@ class WABlastControllerapi extends Controller
         // Query untuk mendapatkan data dari database
         $detailData = DB::table('data_kodebooking')
             ->select('norm', 'message') // Ambil kolom yang relevan
-            ->whereDate('tanggalperiksa', $today) // Filter hanya data hari ini
+            ->where('tanggalperiksa', $today) // Filter hanya data hari ini (menggunakan index B-Tree)
             ->get();
 
         // Inisialisasi array untuk pengelompokan data

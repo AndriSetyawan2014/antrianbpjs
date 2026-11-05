@@ -11,7 +11,7 @@ class QlkpDataKodebookingExport implements FromCollection, WithHeadings, WithMap
 {
     public function collection()
     {
-        return (new DataKodebooking([], 'QLKP'))->get();
+        return (new DataKodebooking())->setTableByQL('QLKP')->newQuery()->get();
     }
 
     public function headings(): array
