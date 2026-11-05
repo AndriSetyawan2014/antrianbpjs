@@ -7,7 +7,7 @@ APP_PATH="/var/www/html/antrianonline"
 echo "SETUP PERMISSION"
 cd $APP_PATH
 sudo chown -R wa-blast-user:www-data $APP_PATH
-sudo chown -R wa-blast-user:www-data storage bootstrap/cache
+sudo chown -R wa-blast-user:www-data $APP_PATH/storage $APP_PATH/bootstrap/cache
 
 echo "INSTALL COMPOSER"
 sudo -u wa-blast-user composer install --no-dev --optimize-autoloader
@@ -36,6 +36,6 @@ sudo -u wa-blast-user php artisan queue:restart || true
 echo "FIX PERMISSION"
 cd $APP_PATH
 sudo chown -R wa-blast-user:www-data $APP_PATH
-sudo chown -R wa-blast-user:www-data storage bootstrap/cache
+sudo chown -R wa-blast-user:www-data $APP_PATH/storage $APP_PATH/bootstrap/cache
 
 echo "FINISHED"
