@@ -4,30 +4,38 @@ set -e
 
 APP_PATH="/var/www/html/antrianonline"
 
+echo "SETUP PERMISSION"
 cd $APP_PATH
+sudo chown -R wa-blast-user:www-data $APP_PATH
+sudo chown -R wa-blast-user:www-data storage bootstrap/cache
 
-echo "Install composer"
-composer install --no-dev --optimize-autoloader
+echo "INSTALL COMPOSER"
+sudo -u wa-blast-user composer install --no-dev --optimize-autoloader
 
-echo "Laravel migrate"
-php artisan migrate --force
+#echo "Laravel migrate"
+#sudo -u wa-blast-user php artisan migrate --force
 
-echo "Clear cache"
-php artisan optimize:clear
+echo "NODE.JS.."
+sudo -u wa-blast-user npm install
+sudo -u wa-blast-user npm run build
 
-echo "Cache config"
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+echo "CLEAR CACHE"
+sudo -u wa-blast-user php artisan optimize:clear
+
+echo "CLEAR CACHE CONFIG"
+sudo -u wa-blast-user php artisan config:cache
+sudo -u wa-blast-user php artisan route:cache
+sudo -u wa-blast-user php artisan view:cache
 
 #echo "Optimize"
 #php artisan optimize
 
-echo "Restart queue"
-php artisan queue:restart || true
+echo "RESTART QUEUE"
+sudo -u wa-blast-user php artisan queue:restart || true
 
-echo "Fix permission"
+echo "FIX PERMISSION"
+cd $APP_PATH
+sudo chown -R wa-blast-user:www-data $APP_PATH
 sudo chown -R wa-blast-user:www-data storage bootstrap/cache
-sudo chown -R wa-blast-user:www-data /var/www/html/antrianonline
 
-echo "Deploy finished"
+echo "FINISHED"
