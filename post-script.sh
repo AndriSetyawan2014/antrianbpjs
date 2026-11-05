@@ -12,6 +12,7 @@ echo ""
 echo "[1/8] SETUP PERMISSION"
 cd $APP_PATH
 sudo chown -R wa-blast-user:www-data $APP_PATH
+sudo chmod -R 775 $APP_PATH/storage $APP_PATH/bootstrap/cache
 
 echo ""
 echo "[2/8] INSTALL COMPOSER"
@@ -41,24 +42,24 @@ sudo rm -rf $APP_PATH/bootstrap/cache/views.php 2>/dev/null || true
 sudo -u wa-blast-user php artisan view:clear
 
 echo ""
-echo "[6/8] CACHE CONFIG & ROUTE & VIEW"
+echo "[6/8] CACHE CONFIG & ROUTE"
 sudo -u wa-blast-user php artisan config:cache
 sudo -u wa-blast-user php artisan route:cache
-sudo -u wa-blast-user php artisan view:cache
 
-# Verifikasi view cache berhasil dibuat
-if [ ! -f "$APP_PATH/bootstrap/cache/views.php" ]; then
-    echo "ERROR: view cache tidak berhasil dibuat!"
-    exit 1
-fi
-echo "✓ view cache berhasil dibuat"
+# View cache — TIDAK FATAL jika gagal
+echo "  Mencoba cache view (non-fatal)..."
+sudo -u wa-blast-user php artisan view:cache 2>&1 || echo "⚠ view cache gagal — akan di-regenerate otomatis oleh Laravel"
+
+# Debug permission
+echo "  Debug bootstrap/cache:"
+ls -la $APP_PATH/bootstrap/cache/ 2>/dev/null || echo "  Tidak dapat mengakses"
 
 echo ""
 echo "[7/8] RESTART QUEUE"
 sudo -u wa-blast-user php artisan queue:restart || true
 
 echo ""
-echo "[8/8] FIX PERMISSION"
+echo "[8/8] FIX PERMISSION AKHIR"
 cd $APP_PATH
 sudo chown -R wa-blast-user:www-data $APP_PATH
 sudo chmod -R 775 $APP_PATH/storage $APP_PATH/bootstrap/cache
