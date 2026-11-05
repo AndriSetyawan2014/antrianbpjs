@@ -62,7 +62,7 @@ $modalSize = $sizeMap[$size] ?? 'modal-md';
     </div>
 </div>
 
-@pushOnce('styles')
+@push('styles')
 <style>
 .modal-dialog-centered { display: flex; align-items: center; min-height: calc(100% - 2rem); }
 .modal-content { border-radius: var(--radius-lg); border: none; }

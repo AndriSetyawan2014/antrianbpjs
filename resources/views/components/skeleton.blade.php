@@ -34,7 +34,7 @@ if ($height) $style .= "height:{$height};";
     @endfor
 </div>
 
-@pushOnce('styles')
+@push('styles')
 <style>
 /* ── Skeleton Base ── */
 .skeleton-base {

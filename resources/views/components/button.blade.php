@@ -66,7 +66,7 @@ if ($href):
 </button>
 @endif
 
-@pushOnce('styles')
+@push('styles')
 <style>
 .btn-primary,
 .btn-secondary,
