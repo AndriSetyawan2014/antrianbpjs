@@ -244,9 +244,14 @@ Route::get('/clear-view-cache', function () {
             }
         }
         
-        $viewCacheFile = bootstrap_path('cache/views.php');
+        // Hapus view cache file di bootstrap/cache (tanpa bootstrap_path)
+        $viewCacheFile = base_path('bootstrap/cache/views.php');
         if (file_exists($viewCacheFile)) {
             unlink($viewCacheFile);
+        }
+        $viewCacheFile2 = base_path('bootstrap/cache/views.php');
+        if (file_exists($viewCacheFile2)) {
+            unlink($viewCacheFile2);
         }
         
         \Illuminate\Support\Facades\Artisan::call('view:clear');
