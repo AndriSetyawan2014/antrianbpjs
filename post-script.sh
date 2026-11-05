@@ -7,22 +7,25 @@ APP_PATH="/var/www/html/antrianonline"
 echo "SETUP PERMISSION"
 cd $APP_PATH
 sudo chown -R wa-blast-user:www-data $APP_PATH
-sudo chown -R wa-blast-user:www-data $APP_PATH/storage $APP_PATH/bootstrap/cache
 
 echo "INSTALL COMPOSER"
+pwd
 sudo -u wa-blast-user composer install --no-dev --optimize-autoloader
 
 #echo "Laravel migrate"
 #sudo -u wa-blast-user php artisan migrate --force
 
 echo "NODE.JS.."
+pwd
 sudo -u wa-blast-user npm install
 sudo -u wa-blast-user npm run build
 
 echo "CLEAR CACHE"
+pwd
 sudo -u wa-blast-user php artisan optimize:clear
 
 echo "CLEAR CACHE CONFIG"
+pwd
 sudo -u wa-blast-user php artisan config:cache
 sudo -u wa-blast-user php artisan route:cache
 sudo -u wa-blast-user php artisan view:cache
@@ -36,6 +39,6 @@ sudo -u wa-blast-user php artisan queue:restart || true
 echo "FIX PERMISSION"
 cd $APP_PATH
 sudo chown -R wa-blast-user:www-data $APP_PATH
-sudo chown -R wa-blast-user:www-data $APP_PATH/storage $APP_PATH/bootstrap/cache
+sudo chmod -R 775 $APP_PATH/storage $APP_PATH/bootstrap/cache
 
 echo "FINISHED"
