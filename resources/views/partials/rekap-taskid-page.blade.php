@@ -1,15 +1,15 @@
-{{-- Partial DRY: halaman Rekap Task ID (QLJ / QLKP / QLTMG)
+{@--
+  Partial DRY: halaman Rekap Task ID (QLJ / QLKP / QLTMG)
   Params: $pageTitle, $filterAction, $resetUrl, $detailRoute, $items
---}}
-{{-- Judul + breadcrumb seragam (pola dashboard/settings) --}}
-<div class="page-header">
-    <h2 class="page-title"><i class="fas fa-clipboard-list me-2"></i>{{ $pageTitle }}</h2>
-    <nav class="breadcrumb-nav" aria-label="breadcrumb">
-        <span>Sistem Pemantauan Bridging BPJS</span>
-        <i class="fas fa-chevron-right"></i>
-        <span>{{ $pageTitle }}</span>
-    </nav>
-</div>
+--@}
+
+@section('page_title')
+    <h1 class="page-title"><i class="fas fa-clipboard-list me-2 text-primary"></i>{{ $pageTitle }}</h1>
+@endsection
+
+@section('page_subtitle')
+    Ringkasan data Task ID per pesan
+@endsection
 
 <div class="filter-card">
     <i class="fas fa-filter" style="color:var(--color-primary);"></i>
@@ -33,41 +33,41 @@
     </div>
 </div>
 
-    <table class="table table-hover table-striped table-bordered">
-        <thead>
-            <tr>
-                <th style="width:6%;">No</th>
-                <th>Pesan / Message</th>
-                <th style="width:10%;">Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            @php
-                $startDate = request('start_date', date('Y-m-d'));
-                $endDate = request('end_date', date('Y-m-d'));
-                $counter = 1;
-                $grandTotal = 0;
-            @endphp
-            @foreach($items as $row)
-            @php $grandTotal += (int) $row->total; @endphp
-            <tr>
-                <td>{{ $counter++ }}</td>
-                <td>
-                    <a href="{{ route($detailRoute, ['message' => $row->message, 'start_date' => $startDate, 'end_date' => $endDate]) }}"
-                       style="color:var(--color-info); font-weight:500;">
-                        <i class="fas fa-search me-1" style="font-size:11px;"></i>{{ $row->message }}
-                    </a>
-                </td>
-                <td class="text-center">
-                    <span class="status-badge badge-muted">{{ number_format($row->total) }}</span>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-        <tfoot>
-            <tr>
-                <th colspan="2" class="text-end">Total Keseluruhan</th>
-                <th class="text-center">{{ number_format($grandTotal) }}</th>
-            </tr>
-        </tfoot>
-    </table>
+<table class="table table-hover table-striped table-bordered">
+    <thead>
+        <tr>
+            <th style="width:6%;">No</th>
+            <th>Pesan / Message</th>
+            <th style="width:10%;">Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @php
+            $startDate = request('start_date', date('Y-m-d'));
+            $endDate = request('end_date', date('Y-m-d'));
+            $counter = 1;
+            $grandTotal = 0;
+        @endphp
+        @foreach($items as $row)
+        @php $grandTotal += (int) $row->total; @endphp
+        <tr>
+            <td>{{ $counter++ }}</td>
+            <td>
+                <a href="{{ route($detailRoute, ['message' => $row->message, 'start_date' => $startDate, 'end_date' => $endDate]) }}"
+                   style="color:var(--color-info); font-weight:500;">
+                    <i class="fas fa-search me-1" style="font-size:11px;"></i>{{ $row->message }}
+                </a>
+            </td>
+            <td class="text-center">
+                <span class="status-badge badge-muted">{{ number_format($row->total) }}</span>
+            </td>
+        </tr>
+        @endforeach
+    </tbody>
+    <tfoot>
+        <tr>
+            <th colspan="2" class="text-end">Total Keseluruhan</th>
+            <th class="text-center">{{ number_format($grandTotal) }}</th>
+        </tr>
+    </tfoot>
+</table>

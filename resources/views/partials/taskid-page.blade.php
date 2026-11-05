@@ -1,8 +1,20 @@
-{{-- Partial DRY: halaman Data Task ID (QLJ / QLKP / QLTMG)
+{@--
+  Partial DRY: halaman Data Task ID (QLJ / QLKP / QLTMG)
   Params: $pageTitle, $filterAction, $resetUrl, $exportUrl, $exportMode ('server'|'client'),
           $items, $startDate, $endDate, $tableId, $urlQL
---}}
-{{-- Judul + breadcrumb seragam (pola dashboard/settings) --}}
+--@}
+
+@section('page_title')
+    <h1 class="page-title"><i class="fas fa-tasks me-2 text-primary"></i>{{ $pageTitle }}</h1>
+@endsection
+
+@section('page_subtitle')
+    Kelola data Task ID antrian pasien
+@endsection
+
+@section('content')
+
+{-- Judul + breadcrumb seragam --}}
 <div class="page-header">
     <h2 class="page-title"><i class="fas fa-tasks me-2"></i>{{ $pageTitle }}</h2>
     <nav class="breadcrumb-nav" aria-label="breadcrumb">
@@ -12,7 +24,7 @@
     </nav>
 </div>
 
-{{-- Filter Card --}}
+{-- Filter Card --}}
 <div class="filter-card">
     <i class="fas fa-filter" style="color:var(--color-primary);"></i>
     <form method="GET" action="{{ $filterAction }}" style="display:contents;">
@@ -46,7 +58,7 @@
     @endif
 </div>
 
-{{-- Tabel --}}
+{-- Tabel --}}
 <div class="table-responsive">
     <table id="{{ $tableId }}" class="table table-hover table-striped table-bordered">
         <thead>
@@ -141,14 +153,25 @@
     </table>
 </div>
 
+{-- Empty State --}}
+@if(empty($items))
+<div class="empty-state mt-5">
+    <i class="fas fa-tasks text-slate-300" style="font-size: 3rem;"></i>
+    <p class="mt-3 text-slate-500">Tidak ada data Task ID untuk periode yang dipilih.</p>
+    <button class="btn btn-primary mt-3" onclick="location.reload()">
+        <i class="fas fa-sync-alt me-1"></i> Coba Lagi
+    </button>
+</div>
+@endif
+
 <!-- Modal Duplicate Task ID -->
 <div class="modal fade" id="modalDuplicate_{{ $tableId }}" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <form id="formDuplicate_{{ $tableId }}">
-      <div class="modal-header">
+      <div class="modal-header" style="background: var(--color-primary); color: white;">
         <h5 class="modal-title">Duplikat Task ID</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <input type="hidden" name="urlQL" value="{{ $urlQL }}">
@@ -184,9 +207,9 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <form id="formEdit_{{ $tableId }}">
-      <div class="modal-header">
+      <div class="modal-header" style="background: var(--color-primary); color: white;">
         <h5 class="modal-title">Edit Task ID</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <input type="hidden" name="urlQL" value="{{ $urlQL }}">
@@ -248,7 +271,6 @@ $(document).ready(function () {
         return (new Date(d - off)).toISOString().slice(0, 19);
     }
 
-    // Duplicate
     $table.on('click', '.btn-duplicate', function() {
         var btn = $(this);
         var modal = $('#modalDuplicate_' + tableId);
@@ -281,7 +303,6 @@ $(document).ready(function () {
         });
     });
 
-    // Edit
     $table.on('click', '.btn-edit', function() {
         var btn = $(this);
         var modal = $('#modalEdit_' + tableId);
@@ -315,7 +336,6 @@ $(document).ready(function () {
         });
     });
 
-    // Sync by kodebooking
     $table.on('click', '.btn-sync-kb', function() {
         var kb = $(this).data('kodebooking');
         Swal.fire({
@@ -342,7 +362,6 @@ $(document).ready(function () {
         });
     });
 
-    // Export bersih: teks saja, tanpa tombol HTML (kolom Request/Response/Aksi dikecualikan)
     $('#download_excel_' + tableId).on('click', function () {
         var skip = [12, 13, 15];
         var headers = [];

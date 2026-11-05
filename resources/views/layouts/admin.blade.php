@@ -73,7 +73,28 @@
         <div class="content-wrapper">
             <section class="content" id="mainContent" tabindex="-1">
                 <div class="container-fluid px-0">
-                    @yield('content')
+                    @include('components.flash')
+
+                    @if(isset($pageTitle) || $__env->hasSection('page_header'))
+                        <div class="page-header">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                                <div>
+                                    @yield('page_title')
+                                </div>
+                                <nav class="breadcrumb-nav" aria-label="breadcrumb">
+                                    <span>Sistem Pemantauan Bridging BPJS</span>
+                                    <i class="fas fa-chevron-right text-xs text-slate-400"></i>
+                                    <span class="text-sm font-medium text-slate-700">
+                                        @yield('page_subtitle', null)
+                                    </span>
+                                </nav>
+                            </div>
+                        </div>
+                    @endif
+
+                    <div class="page-body">
+                        @yield('content')
+                    </div>
                 </div>
             </section>
             <footer class="app-footer">

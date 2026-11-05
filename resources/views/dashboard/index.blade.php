@@ -1,19 +1,18 @@
 @extends('layouts.admin')
 
-{{-- index.css sudah dimuat global via @vite di layouts/admin --}}
+{-- index.css sudah dimuat global via @vite di layouts/admin --}}
+
+@section('page_title')
+    <h1 class="page-title"><i class="fas fa-tachometer-alt me-2 text-primary"></i>Dashboard</h1>
+@endsection
+
+@section('page_subtitle')
+    Ringkasan data antrian BPJS per cabang
+@endsection
+
 @section('content')
 
-{{-- ── Page Header ── --}}
-<div class="page-header">
-    <h2 class="page-title"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h2>
-    <nav class="breadcrumb-nav">
-        <span>Sistem Pemantauan Bridging BPJS</span>
-        <i class="fas fa-chevron-right"></i>
-        <span>Dashboard</span>
-    </nav>
-</div>
-
-{{-- ── Control Bar ── --}}
+{-- ── Control Bar ── --}}
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-body p-3 d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
         <div class="d-flex flex-column flex-sm-row align-items-center gap-3 w-100">
@@ -56,7 +55,7 @@
     </div>
 </div>
 
-{{-- ── Status operasional (queue worker) ── --}}
+{-- ── Status operasional (queue worker) ── --}}
 <div class="card shadow-sm border-0 mb-4" id="queueStatusBar">
     <div class="card-body p-2 px-3 d-flex flex-column flex-sm-row align-items-center justify-content-between gap-2">
         <div class="d-flex align-items-center">
@@ -118,10 +117,11 @@
     'barId' => 'patientChartTemanggungOverall',
     'pieId' => 'patientPieChartTemanggung',
 ])
-{{-- ── Tren 7 hari terakhir (mengikuti wilayah & tanggal aktif) ── --}}
+
+{-- ── Tren 7 hari terakhir (mengikuti wilayah & tanggal aktif) ── --}}
 <div class="row">
     <div class="col-12">
-        <div class="chart-card">
+        <div class="chart-card position-relative">
             <div class="chart-card-header">
                 <i class="fas fa-chart-line"></i>&nbsp;<span id="trendTitle">Tren 7 Hari Terakhir</span>
                 <span id="trendLoading" class="ms-auto" style="font-weight:400;font-size:11px;opacity:.85;display:none;">
@@ -129,7 +129,9 @@
                 </span>
             </div>
             <div class="chart-card-body">
-                <div class="chart-container" id="trendWrap" style="height:220px;">
+                {{-- Skeleton placeholder sebelum chart render --}}
+                <div id="trendSkeleton" class="skeleton-chart" style="margin:16px;"></div>
+                <div class="chart-container" id="trendWrap" style="height:220px; display:none;">
                     <canvas id="trendChart"></canvas>
                 </div>
             </div>
@@ -294,11 +296,16 @@ async function loadTrend() {
     const end = (endInput && endInput.value) || localToday();
     const days = Array.from({ length: 7 }, (_, i) => shiftISO(end, i - 6));
     const wrap = document.getElementById('trendWrap');
+    const skeleton = document.getElementById('trendSkeleton');
     const loading = document.getElementById('trendLoading');
     document.getElementById('trendTitle').textContent =
         `Tren 7 Hari — ${REGION_NAMES[key] ?? key} (s/d ${end})`;
-    if (wrap) wrap.classList.add('is-loading');
+    
+    // Tampilkan skeleton, sembunyikan chart
+    if (skeleton) skeleton.style.display = 'block';
+    if (wrap) wrap.style.display = 'none';
     if (loading) loading.style.display = '';
+    
     try {
         const totals = await Promise.all(days.map(dt =>
             fetch(`${cfg.url}?date=${dt}`)
@@ -342,7 +349,9 @@ async function loadTrend() {
             }
         });
     } finally {
-        if (wrap) wrap.classList.remove('is-loading');
+        // Sembunyikan skeleton, tampilkan chart
+        if (skeleton) skeleton.style.display = 'none';
+        if (wrap) wrap.style.display = 'block';
         if (loading) loading.style.display = 'none';
     }
 }

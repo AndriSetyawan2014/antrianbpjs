@@ -1,8 +1,12 @@
 @extends('layouts.admin')
 
 @section('page_title')
-    <i class="fas fa-hospital-user me-1" style="color:var(--color-primary);"></i>
+    <i class="fas fa-hospital-user me-1 text-primary"></i>
     Monitoring Kunjungan Rawat Jalan
+@endsection
+
+@section('page_subtitle')
+    Data kunjungan pasien Rawat Jalan dari BPJS VClaim
 @endsection
 
 {{-- styles VClaim dimuat global via Vite (resources/css/vclaim.css) --}}

@@ -1,16 +1,15 @@
-{{-- Partial DRY: halaman Rekap Kode Booking (QLJ / QLKP / QLTMG), mode ringkas + detail.
-  Params: $pageTitle, $routeName, $summaryItems,
-          $isDetail, $detailItems, $startDate, $endDate
---}}
-{{-- Judul + breadcrumb seragam (pola dashboard/settings) --}}
-<div class="page-header">
-    <h2 class="page-title"><i class="fas fa-chart-bar me-2"></i>{{ $pageTitle }}</h2>
-    <nav class="breadcrumb-nav" aria-label="breadcrumb">
-        <span>Sistem Pemantauan Bridging BPJS</span>
-        <i class="fas fa-chevron-right"></i>
-        <span>{{ $pageTitle }}</span>
-    </nav>
-</div>
+{@--
+  Partial DRY: halaman Rekap Kode Booking (QLJ / QLKP / QLTMG), mode ringkas + detail.
+  Params: $pageTitle, $routeName, $summaryItems, $isDetail, $detailItems, $startDate, $endDate
+--@}
+
+@section('page_title')
+    <h1 class="page-title"><i class="fas fa-chart-bar me-2 text-primary"></i>{{ $pageTitle }}</h1>
+@endsection
+
+@section('page_subtitle')
+    Ringkasan dan detail data kode booking
+@endsection
 
 <style>
 .filter-box {
@@ -64,7 +63,7 @@
 .filter-danger .filter-icon { color: #e74a3b; }
 </style>
 
-{{-- Filter Card --}}
+{-- Filter Card --}}
 <div class="filter-card">
     <i class="fas fa-filter" style="color:var(--color-primary);"></i>
     <form method="GET" action="{{ route($routeName) }}" style="display:contents;">
@@ -93,150 +92,150 @@
     @endif
 </div>
 
-{{-- Tabel --}}
-    @if($isDetail ?? false)
-    @php
-        $count200 = 0;
-        $count0 = 0;
-        $countError = 0;
-        foreach($detailItems as $item) {
-            if ($item->code == 200) $count200++;
-            else if ($item->code == 0) $count0++;
-            else $countError++;
-        }
-        $totalCount = count($detailItems);
-    @endphp
+{-- Tabel --}}
+@if($isDetail ?? false)
+@php
+    $count200 = 0;
+    $count0 = 0;
+    $countError = 0;
+    foreach($detailItems as $item) {
+        if ($item->code == 200) $count200++;
+        else if ($item->code == 0) $count0++;
+        else $countError++;
+    }
+    $totalCount = count($detailItems);
+@endphp
 
-    <div class="row mb-3 mt-4">
-        <div class="col-md-3 col-sm-6 mb-3">
-            <div class="filter-box filter-primary active-filter" onclick="filterTableCode(this, '')">
-                <div class="filter-info">
-                    <span class="filter-title">Total Data</span>
-                    <span class="filter-value">{{ $totalCount }}</span>
-                </div>
-                <div class="filter-icon">
-                    <i class="fas fa-list-alt"></i>
-                </div>
+<div class="row mb-3 mt-4">
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="filter-box filter-primary active-filter" onclick="filterTableCode(this, '')">
+            <div class="filter-info">
+                <span class="filter-title">Total Data</span>
+                <span class="filter-value">{{ $totalCount }}</span>
             </div>
-        </div>
-        <div class="col-md-3 col-sm-6 mb-3">
-            <div class="filter-box filter-success" onclick="filterTableCode(this, '200')">
-                <div class="filter-info">
-                    <span class="filter-title">200 (OK)</span>
-                    <span class="filter-value">{{ $count200 }}</span>
-                </div>
-                <div class="filter-icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 col-sm-6 mb-3">
-            <div class="filter-box filter-warning" onclick="filterTableCode(this, '0')">
-                <div class="filter-info">
-                    <span class="filter-title">Pending</span>
-                    <span class="filter-value">{{ $count0 }}</span>
-                </div>
-                <div class="filter-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 col-sm-6 mb-3">
-            <div class="filter-box filter-danger" onclick="filterTableCode(this, 'error')">
-                <div class="filter-info">
-                    <span class="filter-title">Error</span>
-                    <span class="filter-value">{{ $countError }}</span>
-                </div>
-                <div class="filter-icon">
-                    <i class="fas fa-times-circle"></i>
-                </div>
+            <div class="filter-icon">
+                <i class="fas fa-list-alt"></i>
             </div>
         </div>
     </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="filter-box filter-success" onclick="filterTableCode(this, '200')">
+            <div class="filter-info">
+                <span class="filter-title">200 (OK)</span>
+                <span class="filter-value">{{ $count200 }}</span>
+            </div>
+            <div class="filter-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="filter-box filter-warning" onclick="filterTableCode(this, '0')">
+            <div class="filter-info">
+                <span class="filter-title">Pending</span>
+                <span class="filter-value">{{ $count0 }}</span>
+            </div>
+            <div class="filter-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="filter-box filter-danger" onclick="filterTableCode(this, 'error')">
+            <div class="filter-info">
+                <span class="filter-title">Error</span>
+                <span class="filter-value">{{ $countError }}</span>
+            </div>
+            <div class="filter-icon">
+                <i class="fas fa-times-circle"></i>
+            </div>
+        </div>
+    </div>
+</div>
 
-    {{-- Detail per message --}}
-    <table id="detailTable" class="table table-hover table-striped table-bordered">
-        <thead>
-            <tr>
-                <th style="width:4%;">No</th>
-                <th style="width:8%;">No RM</th>
-                <th style="width:10%;">Tgl Periksa</th>
-                <th style="width:7%;">Code</th>
-                <th style="width:16%;">Message</th>
-                <th style="width:27%;" class="text-center">Request</th>
-                <th style="width:28%;" class="text-center">Response</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($detailItems as $index => $item)
-            @php
-                $code = $item->code;
-                $badgeClass = $code == 200 ? 'badge-success' : ($code == 0 ? 'badge-warning' : 'badge-danger');
-                $badgeLabel = $code == 200 ? '✓ 200 OK' : ($code == 0 ? '⏳ Pending' : '✗ Err '.$code);
-            @endphp
-            <tr>
-                <td></td>
-                <td>{{ $item->norm }}</td>
-                <td>{{ $item->tanggalperiksa }}</td>
-                <td class="text-center">
-                    <span class="status-badge {{ $badgeClass }}">{{ $badgeLabel }}</span>
-                </td>
-                <td>{{ json_decode($item->response)->metadata->message ?? '' }}</td>
-                <td class="text-center">
-                    <button class="btn-json-view"
-                            data-json="{{ htmlspecialchars($item->request, ENT_QUOTES, 'UTF-8') }}"
-                            data-title="Request — No RM {{ $item->norm }}">
-                        <i class="fas fa-eye"></i> Lihat
-                    </button>
-                </td>
-                <td class="text-center">
-                    <button class="btn-json-view"
-                            data-json="{{ htmlspecialchars($item->response, ENT_QUOTES, 'UTF-8') }}"
-                            data-title="Response — No RM {{ $item->norm }}">
-                        <i class="fas fa-eye"></i> Lihat
-                    </button>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+{-- Detail per message --}}
+<table id="detailTable" class="table table-hover table-striped table-bordered">
+    <thead>
+        <tr>
+            <th style="width:4%;">No</th>
+            <th style="width:8%;">No RM</th>
+            <th style="width:10%;">Tgl Periksa</th>
+            <th style="width:7%;">Code</th>
+            <th style="width:16%;">Message</th>
+            <th style="width:27%;" class="text-center">Request</th>
+            <th style="width:28%;" class="text-center">Response</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($detailItems as $index => $item)
+        @php
+            $code = $item->code;
+            $badgeClass = $code == 200 ? 'badge-success' : ($code == 0 ? 'badge-warning' : 'badge-danger');
+            $badgeLabel = $code == 200 ? '✓ 200 OK' : ($code == 0 ? '⏳ Pending' : '✗ Err '.$code);
+        @endphp
+        <tr>
+            <td></td>
+            <td>{{ $item->norm }}</td>
+            <td>{{ $item->tanggalperiksa }}</td>
+            <td class="text-center">
+                <span class="status-badge {{ $badgeClass }}">{{ $badgeLabel }}</span>
+            </td>
+            <td>{{ json_decode($item->response)->metadata->message ?? '' }}</td>
+            <td class="text-center">
+                <button class="btn-json-view"
+                        data-json="{{ htmlspecialchars($item->request, ENT_QUOTES, 'UTF-8') }}"
+                        data-title="Request — No RM {{ $item->norm }}">
+                    <i class="fas fa-eye"></i> Lihat
+                </button>
+            </td>
+            <td class="text-center">
+                <button class="btn-json-view"
+                        data-json="{{ htmlspecialchars($item->response, ENT_QUOTES, 'UTF-8') }}"
+                        data-title="Response — No RM {{ $item->norm }}">
+                    <i class="fas fa-eye"></i> Lihat
+                </button>
+            </td>
+        </tr>
+        @endforeach
+    </tbody>
+</table>
 
-    @else
-    {{-- Rekap summary --}}
-    <table class="table table-hover table-striped table-bordered">
-        <thead>
-            <tr>
-                <th style="width:6%;">No</th>
-                <th>Pesan / Message</th>
-                <th style="width:10%;">Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            @php $grandTotal = 0; @endphp
-            @foreach($summaryItems as $index => $item)
-            @php $grandTotal += (int) $item->total; @endphp
-            <tr>
-                <td>{{ $index + 1 }}</td>
-                <td>
-                    <a href="{{ route($routeName, ['start_date' => $startDate, 'end_date' => $endDate, 'message' => $item->message_all]) }}"
-                       style="color:var(--color-info); font-weight:500;">
-                        <i class="fas fa-search me-1" style="font-size:11px;"></i>{{ $item->message_all }}
-                    </a>
-                </td>
-                <td class="text-center">
-                    <span class="status-badge badge-muted">{{ number_format($item->total) }}</span>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-        <tfoot>
-            <tr>
-                <th colspan="2" class="text-end">Total Keseluruhan</th>
-                <th class="text-center">{{ number_format($grandTotal) }}</th>
-            </tr>
-        </tfoot>
-    </table>
-    @endif
+@else
+{-- Rekap summary --}}
+<table class="table table-hover table-striped table-bordered">
+    <thead>
+        <tr>
+            <th style="width:6%;">No</th>
+            <th>Pesan / Message</th>
+            <th style="width:10%;">Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @php $grandTotal = 0; @endphp
+        @foreach($summaryItems as $index => $item)
+        @php $grandTotal += (int) $item->total; @endphp
+        <tr>
+            <td>{{ $index + 1 }}</td>
+            <td>
+                <a href="{{ route($routeName, ['start_date' => $startDate, 'end_date' => $endDate, 'message' => $item->message_all]) }}"
+                   style="color:var(--color-info); font-weight:500;">
+                    <i class="fas fa-search me-1" style="font-size:11px;"></i>{{ $item->message_all }}
+                </a>
+            </td>
+            <td class="text-center">
+                <span class="status-badge badge-muted">{{ number_format($item->total) }}</span>
+            </td>
+        </tr>
+        @endforeach
+    </tbody>
+    <tfoot>
+        <tr>
+            <th colspan="2" class="text-end">Total Keseluruhan</th>
+            <th class="text-center">{{ number_format($grandTotal) }}</th>
+        </tr>
+    </tfoot>
+</table>
+@endif
 
 @push('scripts')
 <script>
@@ -245,7 +244,7 @@ function filterTableCode(element, type) {
     $(element).addClass('active-filter');
 
     var table = $('#detailTable').DataTable();
-    
+
     if (type === '') {
         table.column(3).search('').draw();
     } else if (type === '200') {

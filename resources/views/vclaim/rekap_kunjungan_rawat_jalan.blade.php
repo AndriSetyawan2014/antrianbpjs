@@ -1,8 +1,12 @@
 @extends('layouts.admin')
 
 @section('page_title')
-    <i class="fas fa-chart-bar me-1" style="color:var(--color-primary);"></i>
+    <i class="fas fa-chart-bar me-1 text-primary"></i>
     Rekap Kunjungan Rawat Jalan
+@endsection
+
+@section('page_subtitle')
+    Ringkasan kunjungan pasien Rawat Jalan per bulan
 @endsection
 
 {{-- styles VClaim dimuat global via Vite (resources/css/vclaim.css) --}}
