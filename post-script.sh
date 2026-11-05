@@ -4,41 +4,56 @@ set -e
 
 APP_PATH="/var/www/html/antrianonline"
 
-echo "SETUP PERMISSION"
+echo "========================================"
+echo "  DEPLOYMENT ANTRIAN BPJS ONLINE"
+echo "========================================"
+
+echo ""
+echo "[1/8] SETUP PERMISSION"
 cd $APP_PATH
 sudo chown -R wa-blast-user:www-data $APP_PATH
 
-echo "INSTALL COMPOSER"
-pwd
+echo ""
+echo "[2/8] INSTALL COMPOSER"
 sudo -u wa-blast-user composer install --no-dev --optimize-autoloader
 
-#echo "Laravel migrate"
-#sudo -u wa-blast-user php artisan migrate --force
+echo ""
+echo "[3/8] INSTALL NODE.JS DEPENDENCIES"
+sudo -u wa-blast-user bash -c 'export PATH="/usr/local/bin:/usr/bin:/bin:/home/wa-blast-user/.nvm/versions/node/v22.14.0/bin" && cd /var/www/html/antrianonline && npm install'
 
-echo "NODE.JS.."
-pwd
-sudo -u wa-blast-user env PATH="/usr/local/bin:/usr/bin:/bin:/home/wa-blast-user/.nvm/versions/node/v22.14.0/bin" npm install
-sudo -u wa-blast-user env PATH="/usr/local/bin:/usr/bin:/bin:/home/wa-blast-user/.nvm/versions/node/v22.14.0/bin" npm run build
+echo ""
+echo "[4/8] BUILD VITE ASSETS (CSS + JS)"
+sudo -u wa-blast-user bash -c 'export PATH="/usr/local/bin:/usr/bin:/bin:/home/wa-blast-user/.nvm/versions/node/v22.14.0/bin" && cd /var/www/html/antrianonline && npm run build'
 
-echo "CLEAR CACHE"
-pwd
+# Verifikasi manifest.json ada (mencegah error Vite manifest not found)
+if [ ! -f "$APP_PATH/public/build/manifest.json" ]; then
+    echo "ERROR: manifest.json tidak ditemukan setelah npm run build!"
+    exit 1
+fi
+echo "✓ manifest.json tersedia"
+
+echo ""
+echo "[5/8] CLEAR LARAVEL CACHE"
 sudo -u wa-blast-user php artisan optimize:clear
+sudo -u wa-blast-user php artisan view:clear
 
-echo "CLEAR CACHE CONFIG"
-pwd
+echo ""
+echo "[6/8] CACHE CONFIG & ROUTE & VIEW"
 sudo -u wa-blast-user php artisan config:cache
 sudo -u wa-blast-user php artisan route:cache
 sudo -u wa-blast-user php artisan view:cache
 
-#echo "Optimize"
-#php artisan optimize
-
-echo "RESTART QUEUE"
+echo ""
+echo "[7/8] RESTART QUEUE"
 sudo -u wa-blast-user php artisan queue:restart || true
 
-echo "FIX PERMISSION"
+echo ""
+echo "[8/8] FIX PERMISSION"
 cd $APP_PATH
 sudo chown -R wa-blast-user:www-data $APP_PATH
 sudo chmod -R 775 $APP_PATH/storage $APP_PATH/bootstrap/cache
 
-echo "FINISHED"
+echo ""
+echo "========================================"
+echo "  DEPLOYMENT SELESAI"
+echo "========================================"

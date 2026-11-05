@@ -3,9 +3,21 @@ stages:
 
 variables:
   DEPLOY_PATH: /var/www/html/antrianonline
+  NODE_VERSION: "22.14.0"
+
+cache:
+  key:
+    files:
+      - package-lock.json
+      - composer.lock
+    prefix: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+    - vendor/
 
 deploy_production:
   stage: deploy
+  timeout: 30m
   before_script:
     - which ssh-agent || ( apt-get update -y && apt-get install -y openssh-client rsync )
     - eval $(ssh-agent -s)
@@ -18,5 +30,7 @@ deploy_production:
     - rsync -avz --delete --exclude=".git" --exclude=".env" --exclude="node_modules" --exclude="vendor" --exclude="storage" ./ $SERVER_USER@$SERVER_HOST:$DEPLOY_PATH
     - ssh $SERVER_USER@$SERVER_HOST "cd $DEPLOY_PATH && bash post-script.sh"
 
-  only:
-    - main
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
