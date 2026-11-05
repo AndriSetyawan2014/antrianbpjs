@@ -33,30 +33,28 @@ fi
 echo "✓ manifest.json tersedia"
 
 echo ""
-echo "[5/8] CLEAR LARAVEL CACHE (PAKSA)"
-sudo -u wa-blast-user php artisan optimize:clear
+echo "[5/8] CLEAR LARAVEL CACHE"
+sudo -u wa-blast-user php artisan optimize:clear 2>&1 || true
 
-echo "  Menghapus semua file view cache secara manual..."
-sudo rm -rf $APP_PATH/storage/framework/views/*
+echo "  Menghapus view cache secara paksa (root)..."
+# Paksa hapus semua file di views/ menggunakan root (sudo find -delete)
+sudo find $APP_PATH/storage/framework/views/ -type f -delete 2>/dev/null || true
 sudo rm -rf $APP_PATH/bootstrap/cache/views.php 2>/dev/null || true
-sudo -u wa-blast-user php artisan view:clear
+sudo rm -rf $APP_PATH/bootstrap/cache/*.php 2>/dev/null || true
+sudo -u wa-blast-user php artisan view:clear 2>&1 || true
 
 echo ""
-echo "[6/8] CACHE CONFIG & ROUTE"
-sudo -u wa-blast-user php artisan config:cache
-sudo -u wa-blast-user php artisan route:cache
+echo "[6/8] CACHE CONFIG & ROUTE (VIEW TIDAK FATAL)"
+sudo -u wa-blast-user php artisan config:cache 2>&1 || true
+sudo -u wa-blast-user php artisan route:cache 2>&1 || true
 
-# View cache — TIDAK FATAL jika gagal
-echo "  Mencoba cache view (non-fatal)..."
-sudo -u wa-blast-user php artisan view:cache 2>&1 || echo "⚠ view cache gagal — akan di-regenerate otomatis oleh Laravel"
-
-# Debug permission
-echo "  Debug bootstrap/cache:"
-ls -la $APP_PATH/bootstrap/cache/ 2>/dev/null || echo "  Tidak dapat mengakses"
+# View cache — TIDAK FATAL
+echo "  Mencoba view:cache (jika gagal, tidak masalah)..."
+sudo -u wa-blast-user php artisan view:cache 2>&1 || echo "⚠ view cache skip — akan di-regenerate otomatis oleh Laravel"
 
 echo ""
 echo "[7/8] RESTART QUEUE"
-sudo -u wa-blast-user php artisan queue:restart || true
+sudo -u wa-blast-user php artisan queue:restart 2>&1 || true
 
 echo ""
 echo "[8/8] FIX PERMISSION AKHIR"
