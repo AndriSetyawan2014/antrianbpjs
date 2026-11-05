@@ -1,0 +1,22 @@
+stages:
+  - deploy
+
+variables:
+  DEPLOY_PATH: /var/www/html/antrianonline
+
+deploy_production:
+  stage: deploy
+  before_script:
+    - which ssh-agent || ( apt-get update -y && apt-get install -y openssh-client rsync )
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -H $SERVER_HOST >> ~/.ssh/known_hosts
+
+  script:
+    - rsync -avz --delete --exclude=".git" --exclude=".env" --exclude="node_modules" --exclude="vendor" --exclude="storage" ./ $SERVER_USER@$SERVER_HOST:$DEPLOY_PATH
+    - ssh $SERVER_USER@$SERVER_HOST "cd $DEPLOY_PATH && bash post-script.sh"
+
+  only:
+    - main
