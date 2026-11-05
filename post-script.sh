@@ -33,8 +33,12 @@ fi
 echo "✓ manifest.json tersedia"
 
 echo ""
-echo "[5/8] CLEAR LARAVEL CACHE"
+echo "[5/8] CLEAR LARAVEL CACHE (PAKSA)"
 sudo -u wa-blast-user php artisan optimize:clear
+
+# Paksa hapus semua file view cache secara manual
+echo "  Menghapus semua file view cache secara manual..."
+sudo rm -rf $APP_PATH/storage/framework/views/*
 sudo -u wa-blast-user php artisan view:clear
 
 echo ""
