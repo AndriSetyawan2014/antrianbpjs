@@ -383,85 +383,85 @@ $(document).ready(function () {
             // Bangun form input dari response BPJS — label dan input dalam satu baris
             var formHtml = '' +
                 '<div class="row g-2 mb-2">' +
-                '  <div class="col-md-4">' +
+                '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">Kode Booking</label>' +
                 '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.kodebooking || kb) + '" readonly>' +
                 '    </div>' +
                 '  </div>' +
-                '  <div class="col-md-4">' +
+                '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">No RM</label>' +
                 '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.norm || '') + '" readonly>' +
                 '    </div>' +
                 '  </div>' +
-                '  <div class="col-md-4">' +
+                '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">No Antrian</label>' +
                 '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.noantrian || '') + '" readonly>' +
                 '    </div>' +
                 '  </div>' +
-                '  <div class="col-md-4">' +
+                '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">Tgl Periksa</label>' +
                 '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.tanggalperiksa || '') + '" readonly>' +
                 '    </div>' +
                 '  </div>' +
-                '  <div class="col-md-4">' +
+                '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">Dokter</label>' +
                 '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.namadokter || '') + '" readonly>' +
                 '    </div>' +
                 '  </div>' +
-                '  <div class="col-md-4">' +
+                '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">Poli</label>' +
                 '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.namaunit || '') + '" readonly>' +
                 '    </div>' +
                 '  </div>' +
-                '  <div class="col-md-4">' +
+                '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">Jam Mulai</label>' +
                 '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.jammulai || '') + '" readonly>' +
                 '    </div>' +
                 '  </div>' +
-                '  <div class="col-md-4">' +
+                '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">Jam Akhir</label>' +
                 '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.jamakhir || '') + '" readonly>' +
                 '    </div>' +
                 '  </div>' +
-                '  <div class="col-md-4">' +
+                '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">Jenis Kunj.</label>' +
                 '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.idjeniskunjungan || '') + '" readonly>' +
                 '    </div>' +
                 '  </div>' +
-                '  <div class="col-md-4">' +
+                '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">Cara Bayar</label>' +
                 '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.carabayar || '') + '" readonly>' +
                 '    </div>' +
                 '  </div>' +
-                '  <div class="col-md-4">' +
+                '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">No Kartu BPJS</label>' +
                 '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.nojkn || '') + '" readonly>' +
                 '    </div>' +
                 '  </div>' +
-                '  <div class="col-md-4">' +
+                '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">NIK</label>' +
                 '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.nik || '') + '" readonly>' +
                 '    </div>' +
                 '  </div>' +
-                '  <div class="col-md-4">' +
+                '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">No Telpon</label>' +
                 '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.notelpon || '') + '" readonly>' +
                 '    </div>' +
                 '  </div>' +
-                '  <div class="col-md-4">' +
+                '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">Nomor Referensi</label>' +
                 '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.nomorreferensi || '') + '" readonly>' +
@@ -633,3 +633,4 @@ $(document).ready(function () {
 });
 </script>
 @endpush
+
