@@ -367,7 +367,7 @@ $(document).ready(function () {
             var pOk = (pc == 200 || pc == 208);
             var pMsgStr = String(pMsg);
             var prevBar = '<div class="resend-prev ' + (pOk ? 'ok' : 'err') + '" title="' + pMsgStr.replace(/"/g, '&quot;') + '">' +
-                '<span class="resend-prev-label">Response Sebelumnya</span>' +
+                '<span class="resend-prev-label">Status</span>' +
                 '<span class="resend-prev-code">' + pc + '</span>' +
                 '<span class="resend-prev-msg">' + pMsgStr + '</span></div>';
             var prevBox = '<div class="mb-3 p-3 rounded bg-' + (pOk ? 'success' : 'danger') + '-light border border-' + (pOk ? 'success' : 'danger') + '">' +
