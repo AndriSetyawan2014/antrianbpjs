@@ -1,4 +1,4 @@
-﻿{{--
+{{--
   Partial DRY: halaman Data Kode Booking (QLJ / QLKP / QLTMG)
   Params: $pageTitle, $filterAction, $exportUrl, $items, $startDate, $endDate, $tableId, $urlQL
   Catatan: Partial ini HANYA mendefinisikan page_title, page_subtitle, dan konten.
@@ -302,13 +302,6 @@ function filterTableCode(element, type) {
     }
 }
 
-$(document).ready(function () {
-    var tableId = '{{ $tableId }}';
-    var urlQL = '{{ $urlQL ?? (str_contains($tableId, "qlkp") ? "QLKP" : (str_contains($tableId, "qltmg") ? "QLTMG" : "QLJ")) }}';
-    var $table = $('#' + tableId);
-@section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
 $(document).ready(function() {
     var tableId = '{{ $tableId }}';
     var urlQL = '{{ $urlQL }}';
