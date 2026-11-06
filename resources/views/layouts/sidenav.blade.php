@@ -43,8 +43,8 @@
              id="ddKodeBookingJogja">
             <ul class="nav flex-column ms-3">
                 <li class="nav-item">
-                    <a href="{{ url('/data_kodebooking') }}"
-                       class="nav-link {{ Request::is('data_kodebooking') ? 'active' : '' }}">
+                    <a href="{{ route('data_kodebooking_jogja') }}"
+                       class="nav-link {{ Request::is('data_kodebooking_jogja') ? 'active' : '' }}">
                         <i class="fas fa-table nav-icon"></i> Data Kode Booking
                     </a>
                 </li>

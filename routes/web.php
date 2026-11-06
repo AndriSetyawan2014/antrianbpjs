@@ -52,7 +52,7 @@ Route::get('/api/chart-data', function () {
 
 // Routes untuk QL Yogyakarta
 // Tampilan
-Route::get('/data_kodebooking', [AntrianController::class, 'data_kodebooking_jogja'])->name('data_kodebooking_jogja');
+Route::get('/data_kodebooking_jogja', [AntrianController::class, 'data_kodebooking_jogja'])->name('data_kodebooking_jogja');
 Route::get('/rekap_kodebooking', [AntrianController::class, 'rekapKodebooking'])->name('rekap_kodebooking');
 Route::get('/TaskID', [AntrianController::class, 'TaskID'])->name('TaskID');
 Route::get('/monitoring_taskid', [AntrianController::class, 'monitoringTaskid'])->name('monitoring_taskid');
