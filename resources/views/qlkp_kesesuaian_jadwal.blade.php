@@ -10,7 +10,7 @@
 
 @section('content')
 
-{-- KPI Summary Cards --}}
+{{-- KPI Summary Cards --}}
 <div class="row mb-3">
     <div class="col-xl-3 col-md-6 mb-3">
         <div class="card border-0 shadow-sm border-start border-primary border-4 h-100 py-2">
@@ -74,7 +74,7 @@
     </div>
 </div>
 
-{-- Filter Card --}}
+{{-- Filter Card --}}
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-body p-3">
         <form method="GET" action="{{ route('qlkp_kesesuaian_jadwal') }}" class="row g-2 align-items-center" id="formFilterKesesuaian">
@@ -135,7 +135,7 @@
     </div>
 </div>
 
-{-- Data Table --}}
+{{-- Data Table --}}
 <div class="card shadow-sm border-0">
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>

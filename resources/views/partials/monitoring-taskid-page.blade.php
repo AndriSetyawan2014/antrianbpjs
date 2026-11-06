@@ -1,7 +1,7 @@
-{-- Partial: halaman Monitoring Task ID --}}
-{-- Page header dihandle oleh layout via @section('page_title') --}}
+{{-- Partial: halaman Monitoring Task ID --}}
+{{-- Page header dihandle oleh layout via @section('page_title') --}}
 
-{-- Filter Card --}}
+{{-- Filter Card --}}
 <div class="filter-card">
     <i class="fas fa-filter" style="color:var(--color-primary);"></i>
     <form method="GET" action="{{ $filterAction }}" style="display:contents;">
@@ -25,7 +25,7 @@
     </div>
 </div>
 
-{-- Tabel --}}
+{{-- Tabel --}}
 <table id="{{ $tableId }}" class="table table-hover table-striped table-bordered text-center">
         <thead>
             <tr>
@@ -107,7 +107,7 @@
         </tbody>
     </table>
 
-{-- Modal Detail Task ID --}}
+{{-- Modal Detail Task ID --}}
 <div class="modal fade" id="modalDetailTask" tabindex="-1" aria-labelledby="modalDetailTaskLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
