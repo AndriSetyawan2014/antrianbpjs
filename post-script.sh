@@ -42,9 +42,10 @@ sudo rm -rf $APP_PATH/bootstrap/cache/views.php 2>/dev/null || true
 sudo -u wa-blast-user php artisan view:clear 2>&1 || true
 
 echo ""
-echo "[6/8] CACHE CONFIG & ROUTE (VIEW TIDAK FATAL)"
+echo "[6/8] CACHE CONFIG & CLEAR ROUTE CACHE"
 sudo -u wa-blast-user php artisan config:cache 2>&1 || true
-sudo -u wa-blast-user php artisan route:cache 2>&1 || true
+sudo -u wa-blast-user php artisan route:clear 2>&1 || true
+sudo rm -f $APP_PATH/bootstrap/cache/routes*.php 2>/dev/null || true
 
 echo "  Mencoba view:cache (jika gagal, tidak masalah)..."
 sudo -u wa-blast-user php artisan view:cache 2>&1 || echo "⚠ view cache skip — akan di-regenerate otomatis"

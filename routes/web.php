@@ -25,8 +25,8 @@ use App\Models\data_taskid;
 */
 
 // dashboard
-Route::get('/', [AntrianController::class, 'index'])->name('dashboard.index');
-Route::get('/dashboard', [AntrianController::class, 'index'])->name('dashboard');
+Route::match(['get', 'head'], '/', [AntrianController::class, 'index'])->name('dashboard.index');
+Route::match(['get', 'head'], '/dashboard', [AntrianController::class, 'index'])->name('dashboard');
 
 // Chart data
 Route::get('/api/chart-data', function () {
