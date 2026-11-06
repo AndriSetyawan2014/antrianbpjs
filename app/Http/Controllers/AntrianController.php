@@ -187,7 +187,9 @@ class AntrianController extends Controller
             $groupedTasks[$t->kodebooking][$t->taskid] = $t;
         }
 
-        return view('monitoring_taskid', compact('kodebookings', 'groupedTasks', 'start_date', 'end_date', 'vclaimMap'));
+        $pageTitle = 'Monitoring Task ID Antrian';
+
+        return view('monitoring_taskid', compact('kodebookings', 'groupedTasks', 'start_date', 'end_date', 'vclaimMap', 'pageTitle'));
     }
 
     public function getMonitoringTaskidDetail($kodebooking)
