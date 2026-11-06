@@ -380,71 +380,72 @@ $(document).ready(function () {
 
             // Bangun form input dari response BPJS
             var r = res.response || {};
+            // Bangun form input dari response BPJS — compact layout
             var formHtml = '' +
-                '<div class="row g-3 mb-3">' +
-                '  <div class="col-md-6">' +
-                '    <label class="form-label fw-bold small">Kode Booking</label>' +
+                '<div class="row g-2 mb-2">' +
+                '  <div class="col-md-4">' +
+                '    <label class="form-label fw-bold text-xs">Kode Booking</label>' +
                 '    <input type="text" class="form-control form-control-sm" value="' + (r.kodebooking || kb) + '" readonly>' +
                 '  </div>' +
-                '  <div class="col-md-6">' +
-                '    <label class="form-label fw-bold small">No RM</label>' +
+                '  <div class="col-md-4">' +
+                '    <label class="form-label fw-bold text-xs">No RM</label>' +
                 '    <input type="text" class="form-control form-control-sm" value="' + (r.norm || '') + '" readonly>' +
                 '  </div>' +
-                '  <div class="col-md-6">' +
-                '    <label class="form-label fw-bold small">No Antrian</label>' +
+                '  <div class="col-md-4">' +
+                '    <label class="form-label fw-bold text-xs">No Antrian</label>' +
                 '    <input type="text" class="form-control form-control-sm" value="' + (r.noantrian || '') + '" readonly>' +
                 '  </div>' +
-                '  <div class="col-md-6">' +
-                '    <label class="form-label fw-bold small">Tanggal Periksa</label>' +
+                '  <div class="col-md-4">' +
+                '    <label class="form-label fw-bold text-xs">Tgl Periksa</label>' +
                 '    <input type="text" class="form-control form-control-sm" value="' + (r.tanggalperiksa || '') + '" readonly>' +
                 '  </div>' +
-                '  <div class="col-md-6">' +
-                '    <label class="form-label fw-bold small">Nama Dokter</label>' +
+                '  <div class="col-md-4">' +
+                '    <label class="form-label fw-bold text-xs">Dokter</label>' +
                 '    <input type="text" class="form-control form-control-sm" value="' + (r.namadokter || '') + '" readonly>' +
                 '  </div>' +
-                '  <div class="col-md-6">' +
-                '    <label class="form-label fw-bold small">Nama Poli</label>' +
+                '  <div class="col-md-4">' +
+                '    <label class="form-label fw-bold text-xs">Poli</label>' +
                 '    <input type="text" class="form-control form-control-sm" value="' + (r.namaunit || '') + '" readonly>' +
                 '  </div>' +
-                '  <div class="col-md-6">' +
-                '    <label class="form-label fw-bold small">Jam Mulai</label>' +
+                '  <div class="col-md-4">' +
+                '    <label class="form-label fw-bold text-xs">Jam Mulai</label>' +
                 '    <input type="text" class="form-control form-control-sm" value="' + (r.jammulai || '') + '" readonly>' +
                 '  </div>' +
-                '  <div class="col-md-6">' +
-                '    <label class="form-label fw-bold small">Jam Akhir</label>' +
+                '  <div class="col-md-4">' +
+                '    <label class="form-label fw-bold text-xs">Jam Akhir</label>' +
                 '    <input type="text" class="form-control form-control-sm" value="' + (r.jamakhir || '') + '" readonly>' +
                 '  </div>' +
-                '  <div class="col-md-6">' +
-                '    <label class="form-label fw-bold small">Jenis Kunjungan</label>' +
+                '  <div class="col-md-4">' +
+                '    <label class="form-label fw-bold text-xs">Jenis Kunj.</label>' +
                 '    <input type="text" class="form-control form-control-sm" value="' + (r.idjeniskunjungan || '') + '" readonly>' +
                 '  </div>' +
-                '  <div class="col-md-6">' +
-                '    <label class="form-label fw-bold small">Cara Bayar</label>' +
+                '  <div class="col-md-4">' +
+                '    <label class="form-label fw-bold text-xs">Cara Bayar</label>' +
                 '    <input type="text" class="form-control form-control-sm" value="' + (r.carabayar || '') + '" readonly>' +
                 '  </div>' +
-                '  <div class="col-md-6">' +
-                '    <label class="form-label fw-bold small">No Kartu BPJS</label>' +
+                '  <div class="col-md-4">' +
+                '    <label class="form-label fw-bold text-xs">No Kartu BPJS</label>' +
                 '    <input type="text" class="form-control form-control-sm" value="' + (r.nojkn || '') + '" readonly>' +
                 '  </div>' +
-                '  <div class="col-md-6">' +
-                '    <label class="form-label fw-bold small">NIK</label>' +
+                '  <div class="col-md-4">' +
+                '    <label class="form-label fw-bold text-xs">NIK</label>' +
                 '    <input type="text" class="form-control form-control-sm" value="' + (r.nik || '') + '" readonly>' +
                 '  </div>' +
-                '  <div class="col-md-6">' +
-                '    <label class="form-label fw-bold small">No Telepon</label>' +
+                '  <div class="col-md-4">' +
+                '    <label class="form-label fw-bold text-xs">No Telpon</label>' +
                 '    <input type="text" class="form-control form-control-sm" value="' + (r.notelpon || '') + '" readonly>' +
                 '  </div>' +
-                '  <div class="col-md-6">' +
-                '    <label class="form-label fw-bold small">Nomor Referensi</label>' +
+                '  <div class="col-md-4">' +
+                '    <label class="form-label fw-bold text-xs">Nomor Referensi</label>' +
                 '    <input type="text" class="form-control form-control-sm" value="' + (r.nomorreferensi || '') + '" readonly>' +
                 '  </div>' +
                 '</div>' +
-                '<div class="mb-3">' +
-                '  <button type="button" class="btn btn-sm btn-outline-secondary" id="btnToggleJson" style="width:100%;"><i class="fas fa-code me-1"></i> Tampilkan / Edit JSON Raw</button>' +
+                '<div class="mb-2">' +
+                '  <button type="button" class="btn btn-sm btn-outline-secondary" id="btnToggleJson" style="width:100%;font-size:11px;"><i class="fas fa-code me-1"></i> Edit JSON</button>' +
                 '</div>' +
-                '<div id="jsonRawBox" style="display:none;" class="mb-3 p-3 bg-dark text-light rounded border border-secondary">' +
-                '  <label class="form-label fw-bold small text-white mb-2">JSON Request (Edit Manual)</label>' +
-                '  <textarea id="resendPayload" class="form-control form-control-sm bg-black text-white border-0" rows="8" spellcheck="false"></textarea>' +
+                '<div id="jsonRawBox" style="display:none;" class="mb-2 p-2 bg-dark text-light rounded border border-secondary">' +
+                '  <label class="form-label fw-bold text-xs text-white mb-1">JSON Request</label>' +
+                '  <textarea id="resendPayload" class="form-control form-control-sm bg-black text-white border-0" rows="4" spellcheck="false"></textarea>' +
                 '</div>';
 
             Swal.fire({
