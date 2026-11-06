@@ -381,7 +381,7 @@ $(document).ready(function () {
             // Bangun form input dari response BPJS — label rata kanan, input lebih kecil
             // Urutan field sesuai dengan JSON payload dari controller (buildKodebookingPayload)
             var r = res.response || {};
-            var jampraktek = r.jampraktek || '';
+            var jampraktek = r.jampraktek != null ? r.jampraktek : ';
             var jamMulai = '', jamAkhir = '';
             if (jampraktek && jampraktek.includes('-')) {
                 var parts = jampraktek.split('-');
@@ -390,7 +390,7 @@ $(document).ready(function () {
             }
             var pasienbaru = r.pasienbaru || 0;
             var pasienbaruLabel = (pasienbaru == 1) ? 'Baru' : 'Lama';
-            var jeniskunjungan = r.jeniskunjungan || '';
+            var jeniskunjungan = r.jeniskunjungan != null ? r.jeniskunjungan : ';
             var jeniskunjunganLabel = (jeniskunjungan == 1) ? 'Rawat Inap' : (jeniskunjungan == 2) ? 'Rawat Jalan' : (jeniskunjungan == 3) ? 'Rawat Darurat' : jeniskunjungan;
 
             var formHtml = '' +
@@ -405,37 +405,37 @@ $(document).ready(function () {
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Jenis Pasien</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.jenispasien || '') + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.jenispasien != null ? r.jenispasien : ') + '" >' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">No Kartu BPJS</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.nomorkartu || '') + '">' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.nomorkartu != null ? r.nomorkartu : ') + '">' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">NIK</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.nik || '') + '">' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.nik != null ? r.nik : ') + '">' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">No Telpon</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.nohp || '') + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.nohp != null ? r.nohp : ') + '" >' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Kode Poli</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.kodepoli || '') + '">' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.kodepoli != null ? r.kodepoli : ') + '">' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Nama Poli</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.namapoli || '') + '">' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.namapoli != null ? r.namapoli : ') + '">' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
@@ -447,31 +447,31 @@ $(document).ready(function () {
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">No RM</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.norm || '') + '">' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.norm != null ? r.norm : ') + '">' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Tgl Periksa</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.tanggalperiksa || '') + '">' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.tanggalperiksa != null ? r.tanggalperiksa : ') + '">' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Kode Dokter</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.kodedokter || '') + '">' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.kodedokter != null ? r.kodedokter : ') + '">' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Nama Dokter</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.namadokter || '') + '">' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.namadokter != null ? r.namadokter : ') + '">' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Jam Praktik</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.jampraktek || '') + '">' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.jampraktek != null ? r.jampraktek : ') + '">' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
@@ -483,55 +483,55 @@ $(document).ready(function () {
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">No Referensi</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.nomorreferensi || '') + '">' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.nomorreferensi != null ? r.nomorreferensi : ') + '">' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">No Antrean</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.nomorantrean || '') + '">' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.nomorantrean != null ? r.nomorantrean : ') + '">' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Angka Antrean</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.angkaantrean || '') + '">' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.angkaantrean != null ? r.angkaantrean : ') + '">' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Estimasi Dilayani</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.estimasidilayani || '') + '">' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.estimasidilayani != null ? r.estimasidilayani : ') + '">' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Sisa Kuota JKN</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.sisakuotajkn || '') + '">' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.sisakuotajkn != null ? r.sisakuotajkn : ') + '">' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Kuota JKN</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.kuotajkn || '') + '">' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.kuotajkn != null ? r.kuotajkn : ') + '">' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Sisa Kuota Non JKN</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.sisakuotanonjkn || '') + '">' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.sisakuotanonjkn != null ? r.sisakuotanonjkn : ') + '">' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Kuota Non JKN</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.kuotanonjkn || '') + '">' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.kuotanonjkn != null ? r.kuotanonjkn : ') + '">' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Keterangan</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.keterangan || '') + '">' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.keterangan != null ? r.keterangan : ') + '">' +
                 '    </div>' +
                 '  </div>' +
                 '</div>' +
@@ -700,5 +700,6 @@ $(document).ready(function () {
 });
 </script>
 @endpush
+
 
 
