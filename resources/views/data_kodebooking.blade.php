@@ -3,7 +3,7 @@
 @section('content')
 @include('partials.kodebooking-page', [
     'pageTitle' => 'Data Kode Booking',
-    'filterAction' => route('data_kodebooking_jogja'),
+    'filterAction' => url('/data_kodebooking_jogja'),
     'exportUrl' => url('export-kodebooking'),
     'items' => $data_kodebooking,
     'startDate' => $start_date ?? request('start_date', date('Y-m-d')),
