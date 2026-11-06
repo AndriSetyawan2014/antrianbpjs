@@ -233,6 +233,11 @@ class AntrianController extends Controller
     return view('data_kodebooking', compact('data_kodebooking', 'start_date', 'end_date'));
     }
 
+    public function data_kodebooking(Request $request)
+    {
+        return $this->data_kodebooking_jogja($request);
+    }
+
 public function rekapKodeBooking(Request $request)
 {
     // Ambil nilai tanggal, start_date, end_date, dan message dari parameter
