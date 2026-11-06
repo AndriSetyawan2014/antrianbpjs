@@ -1,4 +1,4 @@
-{@--
+{{--
   Komponen Tabel Standar — Sistem Pemantauan Bridging BPJS
   Params:
     - id: string — ID tabel (untuk DataTables)
@@ -16,7 +16,7 @@
     - bordered: boolean (default: true)
     - small: boolean (default: false)
     - stickyHeader: boolean (default: true)
---@}
+--}}
 @props([
     'id' => 'dataTable',
     'columns' => [],

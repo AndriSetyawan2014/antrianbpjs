@@ -1,7 +1,7 @@
-{@--
+{{--
   Komponen Flash Message — Notifikasi sukses/error dari server
   Digunakan di semua halaman untuk menampilkan pesan hasil aksi.
---@}
+--}}
 @php
     $flashTypes = [
         'success' => ['icon' => 'fas fa-check-circle', 'color' => 'text-emerald-600', 'bg' => 'bg-emerald-50', 'border' => 'border-emerald-200'],

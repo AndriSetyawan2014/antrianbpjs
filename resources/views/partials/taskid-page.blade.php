@@ -1,10 +1,10 @@
-{@--
+{{--
   Partial DRY: halaman Data Task ID (QLJ / QLKP / QLTMG)
   Params: $pageTitle, $filterAction, $resetUrl, $exportUrl, $exportMode ('server'|'client'),
           $items, $startDate, $endDate, $tableId, $urlQL
   Catatan: Partial ini HANYA berisi konten (tanpa @section wrapper).
            View induk bertanggung jawab membungkus dengan @section('content').
---@}
+--}}
 
 {{-- Judul + breadcrumb dihandle oleh layout via @section('page_title') / @section('page_subtitle') --}}
 
