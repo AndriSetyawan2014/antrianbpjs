@@ -18,7 +18,13 @@ class BpjsHelper
 
     public static function getRequest($urlQL, $endpoint, array $params = [])
     {
-        $url = env('BPJS_ANTROL_SIRS_URL_' . $urlQL) . $endpoint;
+        $baseUrl = env('BPJS_ANTROL_SIRS_URL_' . $urlQL);
+        if (empty($baseUrl)) {
+            Log::error('[BpjsHelper::getRequest] Base URL tidak di-set untuk QL=' . $urlQL);
+            return null;
+        }
+
+        $url = $baseUrl . $endpoint;
 
         Log::info('[BpjsHelper::getRequest] Target URL', [
             'url' => $url,

@@ -24,6 +24,26 @@ class TambahAntrianOnlineController extends Controller
         $dari    = $request->query('dari', $request->input('dari', null));
         $sampai  = $request->query('sampai', $request->input('sampai', null));
 
+        $allowedQL = BpjsHelper::getUrlQLOptions();
+        if (!in_array($urlQL, $allowedQL)) {
+            return response()->json([
+                'metadata' => [
+                    'code'    => 422,
+                    'message' => 'Parameter urlQL tidak valid. Nilai yang diizinkan: ' . implode(', ', $allowedQL),
+                ],
+            ], 422);
+        }
+
+        $baseUrl = env('BPJS_ANTROL_SIRS_URL_' . $urlQL);
+        if (empty($baseUrl)) {
+            return response()->json([
+                'metadata' => [
+                    'code'    => 503,
+                    'message' => 'Konfigurasi SIRSTQL (' . $urlQL . ') belum di-set di .env. Silakan atur BPJS_ANTROL_SIRS_URL_' . $urlQL,
+                ],
+            ], 503);
+        }
+
         return $this->data_pending_kodebooking_get($urlQL, $tanggal, $dari, $sampai);
     }
 
