@@ -1,4 +1,4 @@
-{@--
+{{--
   Komponen Tombol Form — Submit/Reset/Button dengan loading state
   Params:
     - type: submit|reset|button (default: submit)
@@ -10,7 +10,7 @@
     - iconPosition: left|right (default: left)
     - title: string — Teks tombol
     - class: string — Kelas CSS tambahan
---@}
+--}}
 @props([
     'type' => 'submit',
     'variant' => 'primary',

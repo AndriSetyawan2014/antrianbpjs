@@ -1,4 +1,4 @@
-{@--
+{{--
   Komponen Form Select — Dropdown standar
   Params:
     - label: string — Label select
@@ -12,7 +12,7 @@
     - help: string|null — Teks bantuan
     - icon: string — FontAwesome icon (opsional)
     - class: string — Kelas CSS tambahan
---@}
+--}}
 @props([
     'label' => null,
     'name' => null,
@@ -103,4 +103,4 @@ if ($hasError) $selectClass .= ' is-invalid';
   border-color: var(--color-danger);
 }
 </style>
-@endpushOnce
+@endpush

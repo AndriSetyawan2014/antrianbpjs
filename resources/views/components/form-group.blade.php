@@ -1,4 +1,4 @@
-{@--
+{{--
   Komponen Form Group — Label + Input + Error Message + Help Text
   Params:
     - label: string — Label input
@@ -15,7 +15,7 @@
     - class: string — Kelas CSS tambahan untuk input
     - wrapperClass: string — Kelas CSS tambahan untuk wrapper
     - id: string — ID custom (default: otomatis dari name)
---@}
+--}}
 @props([
     'label' => null,
     'name' => null,
@@ -155,4 +155,4 @@ textarea.form-control {
   min-height: 80px;
 }
 </style>
-@endpushOnce
+@endpush

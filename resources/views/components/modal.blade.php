@@ -1,4 +1,4 @@
-{@--
+{{--
   Komponen Modal Standar — Sistem Pemantauan Bridging BPJS
   Params:
     - id: string (wajib) — ID modal
@@ -10,7 +10,7 @@
     - showClose: boolean (default: true)
     - slot: isi body modal
     - footerSlot: isi footer modal (opsional)
---@}
+--}}
 @props([
     'id' => null,
     'title' => null,
@@ -71,4 +71,4 @@ $modalSize = $sizeMap[$size] ?? 'modal-md';
 .modal-footer { border-top: none; padding: 1rem 1.25rem; }
 .modal-fullscreen .modal-content { height: 100vh; max-height: 100vh; }
 </style>
-@endpushOnce
+@endpush

@@ -1,7 +1,7 @@
-{@--
+{{--
   Partial DRY: halaman Rekap Task ID (QLJ / QLKP / QLTMG)
   Params: $pageTitle, $filterAction, $resetUrl, $detailRoute, $items
---@}
+--}}
 
 @section('page_title')
     <h1 class="page-title"><i class="fas fa-clipboard-list me-2 text-primary"></i>{{ $pageTitle }}</h1>

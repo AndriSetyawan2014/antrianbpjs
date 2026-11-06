@@ -1,7 +1,7 @@
-{@--
+{{--
   Partial DRY: halaman Rekap Kode Booking (QLJ / QLKP / QLTMG), mode ringkas + detail.
   Params: $pageTitle, $routeName, $summaryItems, $isDetail, $detailItems, $startDate, $endDate
---@}
+--}}
 
 @section('page_title')
     <h1 class="page-title"><i class="fas fa-chart-bar me-2 text-primary"></i>{{ $pageTitle }}</h1>

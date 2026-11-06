@@ -1,7 +1,7 @@
-{@--
+{{--
   Komponen Flash Message — Notifikasi sukses/error dari server
   Digunakan di semua halaman untuk menampilkan pesan hasil aksi.
---@}
+--}}
 @php
     $flashTypes = [
         'success' => ['icon' => 'fas fa-check-circle', 'color' => 'text-emerald-600', 'bg' => 'bg-emerald-50', 'border' => 'border-emerald-200'],
@@ -40,4 +40,4 @@
 @keyframes fade-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 .animate-fade-in { animation: fade-in 0.3s ease forwards; }
 </style>
-@endpushOnce
+@endpush

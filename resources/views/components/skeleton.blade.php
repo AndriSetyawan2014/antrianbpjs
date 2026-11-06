@@ -1,4 +1,4 @@
-{@--
+{{--
   Komponen Skeleton Loading — Sistem Pemantauan Bridging BPJS
   Digunakan saat menunggu data dari server agar halaman tidak terlihat kosong.
   
@@ -8,7 +8,7 @@
     - class: kelas CSS tambahan
     - width: lebar custom (opsional)
     - height: tinggi custom (opsional)
---@}
+--}}
 @props([
     'type' => 'text',
     'count' => 1,
@@ -157,4 +157,4 @@ if ($height) $style .= "height:{$height};";
   to { transform: rotate(360deg); }
 }
 </style>
-@endpushOnce
+@endpush

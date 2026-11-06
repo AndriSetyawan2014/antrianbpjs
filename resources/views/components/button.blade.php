@@ -1,4 +1,4 @@
-{@--
+{{--
   Komponen Tombol Standar — Sistem Pemantauan Bridging BPJS
   Params:
     - type: button|submit|reset (default: button)
@@ -12,7 +12,7 @@
     - title: string — teks tombol
     - href: string — jika diisi, render sebagai <a>
     - data-* : atribut tambahan via $attributes
---@}
+--}}
 @props([
     'type' => 'button',
     'variant' => 'primary',
@@ -121,4 +121,4 @@ if ($href):
   80%, 100% { text-shadow: .25em 0 0 rgba(0,0,0,1), .5em 0 0 rgba(0,0,0,1); }
 }
 </style>
-@endpushOnce
+@endpush

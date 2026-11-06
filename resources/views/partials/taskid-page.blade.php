@@ -1,8 +1,8 @@
-{@--
+{{--
   Partial DRY: halaman Data Task ID (QLJ / QLKP / QLTMG)
   Params: $pageTitle, $filterAction, $resetUrl, $exportUrl, $exportMode ('server'|'client'),
           $items, $startDate, $endDate, $tableId, $urlQL
---@}
+--}}
 
 @section('page_title')
     <h1 class="page-title"><i class="fas fa-tasks me-2 text-primary"></i>{{ $pageTitle }}</h1>

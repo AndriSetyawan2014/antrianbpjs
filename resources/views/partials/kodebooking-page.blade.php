@@ -1,9 +1,9 @@
-{@--
+{{--
   Partial DRY: halaman Data Kode Booking (QLJ / QLKP / QLTMG)
   Params: $pageTitle, $filterAction, $exportUrl, $items, $startDate, $endDate, $tableId, $urlQL
   Catatan: Partial ini HANYA mendefinisikan page_title, page_subtitle, dan konten.
            View induk bertanggung jawab membungkus @include ini dalam @section('content').
---@}
+--}}
 
 @section('page_title')
     <h1 class="page-title"><i class="fas fa-calendar-check me-2 text-primary"></i>{{ $pageTitle }}</h1>
