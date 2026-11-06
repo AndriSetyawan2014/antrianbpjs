@@ -379,6 +379,11 @@ $(document).ready(function() {
                 jamAkhir = parts[1] || '';
             }
 
+            var pasienbaru = r.pasienbaru || 0;
+            var pasienbaruLabel = (pasienbaru == 1) ? 'Baru' : 'Lama';
+            var jeniskunjungan = r.jeniskunjungan || '';
+            var jeniskunjunganLabel = (jeniskunjungan == 1) ? 'Rawat Inap' : (jeniskunjungan == 2) ? 'Rawat Jalan' : (jeniskunjungan == 3) ? 'Rawat Darurat' : jeniskunjungan;
+
             var formHtml = '' +
                 '<div class="row g-2 mb-2">' +
                 '  <div class="col-md-6">' +
