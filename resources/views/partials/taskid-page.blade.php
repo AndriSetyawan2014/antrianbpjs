@@ -14,7 +14,7 @@
 
 @section('content')
 
-{-- Judul + breadcrumb seragam --}}
+{{-- Judul + breadcrumb seragam --}}
 <div class="page-header">
     <h2 class="page-title"><i class="fas fa-tasks me-2"></i>{{ $pageTitle }}</h2>
     <nav class="breadcrumb-nav" aria-label="breadcrumb">
@@ -24,7 +24,7 @@
     </nav>
 </div>
 
-{-- Filter Card --}}
+{{-- Filter Card --}}
 <div class="filter-card">
     <i class="fas fa-filter" style="color:var(--color-primary);"></i>
     <form method="GET" action="{{ $filterAction }}" style="display:contents;">
@@ -58,7 +58,7 @@
     @endif
 </div>
 
-{-- Tabel --}}
+{{-- Tabel --}}
 <div class="table-responsive">
     <table id="{{ $tableId }}" class="table table-hover table-striped table-bordered">
         <thead>
@@ -153,7 +153,7 @@
     </table>
 </div>
 
-{-- Empty State --}}
+{{-- Empty State --}}
 @if(empty($items))
 <div class="empty-state mt-5">
     <i class="fas fa-tasks text-slate-300" style="font-size: 3rem;"></i>

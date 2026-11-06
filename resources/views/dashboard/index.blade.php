@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-{-- index.css sudah dimuat global via @vite di layouts/admin --}}
+{{-- index.css sudah dimuat global via @vite di layouts/admin --}}
 
 @section('page_title')
     <h1 class="page-title"><i class="fas fa-tachometer-alt me-2 text-primary"></i>Dashboard</h1>
@@ -12,7 +12,7 @@
 
 @section('content')
 
-{-- ── Control Bar ── --}}
+{{-- ── Control Bar ── --}}
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-body p-3 d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
         <div class="d-flex flex-column flex-sm-row align-items-center gap-3 w-100">
@@ -55,7 +55,7 @@
     </div>
 </div>
 
-{-- ── Status operasional (queue worker) ── --}}
+{{-- ── Status operasional (queue worker) ── --}}
 <div class="card shadow-sm border-0 mb-4" id="queueStatusBar">
     <div class="card-body p-2 px-3 d-flex flex-column flex-sm-row align-items-center justify-content-between gap-2">
         <div class="d-flex align-items-center">
@@ -118,7 +118,7 @@
     'pieId' => 'patientPieChartTemanggung',
 ])
 
-{-- ── Tren 7 hari terakhir (mengikuti wilayah & tanggal aktif) ── --}}
+{{-- ── Tren 7 hari terakhir (mengikuti wilayah & tanggal aktif) ── --}}
 <div class="row">
     <div class="col-12">
         <div class="chart-card position-relative">

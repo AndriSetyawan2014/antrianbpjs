@@ -63,7 +63,7 @@
 .filter-danger .filter-icon { color: #e74a3b; }
 </style>
 
-{-- Filter Card --}}
+{{-- Filter Card --}}
 <div class="filter-card">
     <i class="fas fa-filter" style="color:var(--color-primary);"></i>
     <form method="GET" action="{{ route($routeName) }}" style="display:contents;">
@@ -92,7 +92,7 @@
     @endif
 </div>
 
-{-- Tabel --}}
+{{-- Tabel --}}
 @if($isDetail ?? false)
 @php
     $count200 = 0;
@@ -153,7 +153,7 @@
     </div>
 </div>
 
-{-- Detail per message --}}
+{{-- Detail per message --}}
 <table id="detailTable" class="table table-hover table-striped table-bordered">
     <thead>
         <tr>
@@ -201,7 +201,7 @@
 </table>
 
 @else
-{-- Rekap summary --}}
+{{-- Rekap summary --}}
 <table class="table table-hover table-striped table-bordered">
     <thead>
         <tr>

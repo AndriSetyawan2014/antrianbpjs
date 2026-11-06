@@ -10,7 +10,7 @@
 
 @section('content')
 
-{-- Flash Messages akan di-include otomatis dari layout --}
+{{-- Flash Messages akan di-include otomatis dari layout --}}
 
 <div class="row">
     <div class="col-md-6">

@@ -114,7 +114,7 @@
 .resend-prev-msg { overflow: hidden; text-overflow: ellipsis; color: #5a5c69; }
 </style>
 
-{-- Filter Card (form GET agar tetap jalan tanpa JS) --}}
+{{-- Filter Card (form GET agar tetap jalan tanpa JS) --}}
 <div class="filter-card">
     <i class="fas fa-filter" style="color:var(--color-primary);"></i>
     <form method="GET" action="{{ $filterAction }}" style="display:contents;">
@@ -214,7 +214,7 @@
     </div>
 </div>
 
-{-- Tabel --}}
+{{-- Tabel --}}
 <div class="kb-table-wrap">
     <table id="{{ $tableId }}" class="table table-hover table-striped table-bordered">
         <thead>
@@ -272,7 +272,7 @@
     </table>
 </div>
 
-{-- Empty State --}}
+{{-- Empty State --}}
 @if(empty($items))
 <div class="empty-state mt-5">
     <i class="fas fa-calendar-check text-slate-300" style="font-size: 3rem;"></i>
