@@ -479,8 +479,13 @@ $(document).ready(function() {
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
-                '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Jenis Kunj.</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + jeniskunjunganLabel + '" >' +
+                '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;" title="1=Rawat Inap, 2=Rawat Jalan, 3=Rawat Darurat, 4=Kontrol">Jenis Kunj.</label>' +
+                '      <select class="form-select form-select-sm flex-fill" id="inputJeniskunjungan" title="1=Rawat Inap, 2=Rawat Jalan, 3=Rawat Darurat, 4=Kontrol">' +
+                '        <option value="1" ' + (r.jeniskunjungan == 1 ? 'selected' : '') + '>1 - Rawat Inap</option>' +
+                '        <option value="2" ' + (r.jeniskunjungan == 2 ? 'selected' : '') + '>2 - Rawat Jalan</option>' +
+                '        <option value="3" ' + (r.jeniskunjungan == 3 ? 'selected' : '') + '>3 - Rawat Darurat</option>' +
+                '        <option value="4" ' + (r.jeniskunjungan == 4 ? 'selected' : '') + '>4 - Kontrol</option>' +
+                '      </select>' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
@@ -590,7 +595,7 @@ $(document).ready(function() {
                             payload.kodedokter = getVal('inputKodedokter') || r.kodedokter || '';
                             payload.namadokter = getVal('inputNamadokter') || r.namadokter || '';
                             payload.jampraktek = getVal('inputJampraktek') || r.jampraktek || '';
-                            payload.jeniskunjungan = r.jeniskunjungan || 3;
+                            payload.jeniskunjungan = getVal('inputJeniskunjungan') || r.jeniskunjungan || 3;
                             payload.nomorreferensi = getVal('inputNomorreferensi') || r.nomorreferensi || '';
                             payload.nomorantrean = getVal('inputNomorantrean') || r.nomorantrean || '';
                             payload.angkaantrean = getVal('inputAngkaantrean') || r.angkaantrean || '';
