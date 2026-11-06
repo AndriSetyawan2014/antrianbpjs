@@ -74,7 +74,7 @@
     'regionId' => 'yogyakarta',
     'hidden' => false,
     'chartSuffix' => '',
-    'routeKodebooking' => route('data_kodebooking'),
+    'routeKodebooking' => route('data_kodebooking_jogja'),
     'routeRekapKodebooking' => route('rekap_kodebooking'),
     'routeTaskid' => route('TaskID'),
     'routeRekapTaskid' => route('rekap_taskid'),
