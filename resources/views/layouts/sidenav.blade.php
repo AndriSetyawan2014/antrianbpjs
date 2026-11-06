@@ -33,17 +33,17 @@
 
         <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddKodeBookingJogja"
-           aria-expanded="{{ Request::is('data_kodebooking*') || Request::is('rekap_kodebooking*') ? 'true' : 'false' }}">
+           aria-expanded="{{ Request::is('data_kodebooking_jogja*') || Request::is('rekap_kodebooking*') ? 'true' : 'false' }}">
             <i class="fas fa-calendar-check nav-icon"></i>
             <span>Kode Booking</span>
-            <i class="fas fa-angle-down arrow-icon {{ Request::is('data_kodebooking*') || Request::is('rekap_kodebooking*') ? 'rotated' : '' }}"></i>
+            <i class="fas fa-angle-down arrow-icon {{ Request::is('data_kodebooking_jogja*') || Request::is('rekap_kodebooking*') ? 'rotated' : '' }}"></i>
         </button>
-        <div class="collapse {{ Request::is('data_kodebooking*') || Request::is('rekap_kodebooking*') ? 'show' : '' }}"
+        <div class="collapse {{ Request::is('data_kodebooking_jogja*') || Request::is('rekap_kodebooking*') ? 'show' : '' }}"
              id="ddKodeBookingJogja">
             <ul class="nav flex-column ms-3">
                 <li class="nav-item">
-                    <a href="{{ url('/data_kodebooking') }}"
-                       class="nav-link {{ Request::is('data_kodebooking') ? 'active' : '' }}">
+                    <a href="{{ url('/data_kodebooking_jogja') }}"
+                       class="nav-link {{ Request::is('data_kodebooking_jogja') ? 'active' : '' }}">
                         <i class="fas fa-table nav-icon"></i> <span>Data Kode Booking</span>
                     </a>
                 </li>
