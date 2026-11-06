@@ -478,7 +478,7 @@ $(document).ready(function () {
 
             Swal.fire({
                 title: '<i class="fas fa-paper-plane me-2"></i> Kirim Ulang Kode Booking',
-                width: 760,
+                width: 950,
                 html: '<div class="text-start mb-3">' +
                     '<div class="d-flex align-items-center mb-1">' +
                     '<span class="badge bg-primary fs-6 me-2">Kode Booking</span>' +
