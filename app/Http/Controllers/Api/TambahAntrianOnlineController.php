@@ -17,6 +17,16 @@ use App\Providers\PerformanceServiceProvider; // Import performance provider
 class TambahAntrianOnlineController extends Controller
 {
 
+    public function data_kodebooking(Request $request)
+    {
+        $urlQL   = strtoupper($request->query('urlQL', $request->input('urlQL', 'QLJ')));
+        $tanggal = $request->query('tanggal', $request->input('tanggal', null));
+        $dari    = $request->query('dari', $request->input('dari', null));
+        $sampai  = $request->query('sampai', $request->input('sampai', null));
+
+        return $this->data_pending_kodebooking_get($urlQL, $tanggal, $dari, $sampai);
+    }
+
     public function kodebooking_get()
     {
         set_time_limit(99999);
