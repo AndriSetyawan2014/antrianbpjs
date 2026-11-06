@@ -380,64 +380,92 @@ $(document).ready(function () {
 
             // Bangun form input dari response BPJS
             var r = res.response || {};
-            // Bangun form input dari response BPJS — compact layout
+            // Bangun form input dari response BPJS — label dan input dalam satu baris
             var formHtml = '' +
                 '<div class="row g-2 mb-2">' +
                 '  <div class="col-md-4">' +
-                '    <label class="form-label fw-bold text-xs">Kode Booking</label>' +
-                '    <input type="text" class="form-control form-control-sm" value="' + (r.kodebooking || kb) + '" readonly>' +
+                '    <div class="d-flex align-items-center gap-2">' +
+                '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">Kode Booking</label>' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.kodebooking || kb) + '" readonly>' +
+                '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-4">' +
-                '    <label class="form-label fw-bold text-xs">No RM</label>' +
-                '    <input type="text" class="form-control form-control-sm" value="' + (r.norm || '') + '" readonly>' +
+                '    <div class="d-flex align-items-center gap-2">' +
+                '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">No RM</label>' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.norm || '') + '" readonly>' +
+                '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-4">' +
-                '    <label class="form-label fw-bold text-xs">No Antrian</label>' +
-                '    <input type="text" class="form-control form-control-sm" value="' + (r.noantrian || '') + '" readonly>' +
+                '    <div class="d-flex align-items-center gap-2">' +
+                '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">No Antrian</label>' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.noantrian || '') + '" readonly>' +
+                '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-4">' +
-                '    <label class="form-label fw-bold text-xs">Tgl Periksa</label>' +
-                '    <input type="text" class="form-control form-control-sm" value="' + (r.tanggalperiksa || '') + '" readonly>' +
+                '    <div class="d-flex align-items-center gap-2">' +
+                '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">Tgl Periksa</label>' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.tanggalperiksa || '') + '" readonly>' +
+                '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-4">' +
-                '    <label class="form-label fw-bold text-xs">Dokter</label>' +
-                '    <input type="text" class="form-control form-control-sm" value="' + (r.namadokter || '') + '" readonly>' +
+                '    <div class="d-flex align-items-center gap-2">' +
+                '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">Dokter</label>' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.namadokter || '') + '" readonly>' +
+                '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-4">' +
-                '    <label class="form-label fw-bold text-xs">Poli</label>' +
-                '    <input type="text" class="form-control form-control-sm" value="' + (r.namaunit || '') + '" readonly>' +
+                '    <div class="d-flex align-items-center gap-2">' +
+                '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">Poli</label>' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.namaunit || '') + '" readonly>' +
+                '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-4">' +
-                '    <label class="form-label fw-bold text-xs">Jam Mulai</label>' +
-                '    <input type="text" class="form-control form-control-sm" value="' + (r.jammulai || '') + '" readonly>' +
+                '    <div class="d-flex align-items-center gap-2">' +
+                '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">Jam Mulai</label>' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.jammulai || '') + '" readonly>' +
+                '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-4">' +
-                '    <label class="form-label fw-bold text-xs">Jam Akhir</label>' +
-                '    <input type="text" class="form-control form-control-sm" value="' + (r.jamakhir || '') + '" readonly>' +
+                '    <div class="d-flex align-items-center gap-2">' +
+                '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">Jam Akhir</label>' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.jamakhir || '') + '" readonly>' +
+                '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-4">' +
-                '    <label class="form-label fw-bold text-xs">Jenis Kunj.</label>' +
-                '    <input type="text" class="form-control form-control-sm" value="' + (r.idjeniskunjungan || '') + '" readonly>' +
+                '    <div class="d-flex align-items-center gap-2">' +
+                '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">Jenis Kunj.</label>' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.idjeniskunjungan || '') + '" readonly>' +
+                '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-4">' +
-                '    <label class="form-label fw-bold text-xs">Cara Bayar</label>' +
-                '    <input type="text" class="form-control form-control-sm" value="' + (r.carabayar || '') + '" readonly>' +
+                '    <div class="d-flex align-items-center gap-2">' +
+                '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">Cara Bayar</label>' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.carabayar || '') + '" readonly>' +
+                '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-4">' +
-                '    <label class="form-label fw-bold text-xs">No Kartu BPJS</label>' +
-                '    <input type="text" class="form-control form-control-sm" value="' + (r.nojkn || '') + '" readonly>' +
+                '    <div class="d-flex align-items-center gap-2">' +
+                '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">No Kartu BPJS</label>' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.nojkn || '') + '" readonly>' +
+                '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-4">' +
-                '    <label class="form-label fw-bold text-xs">NIK</label>' +
-                '    <input type="text" class="form-control form-control-sm" value="' + (r.nik || '') + '" readonly>' +
+                '    <div class="d-flex align-items-center gap-2">' +
+                '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">NIK</label>' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.nik || '') + '" readonly>' +
+                '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-4">' +
-                '    <label class="form-label fw-bold text-xs">No Telpon</label>' +
-                '    <input type="text" class="form-control form-control-sm" value="' + (r.notelpon || '') + '" readonly>' +
+                '    <div class="d-flex align-items-center gap-2">' +
+                '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">No Telpon</label>' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.notelpon || '') + '" readonly>' +
+                '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-4">' +
-                '    <label class="form-label fw-bold text-xs">Nomor Referensi</label>' +
-                '    <input type="text" class="form-control form-control-sm" value="' + (r.nomorreferensi || '') + '" readonly>' +
+                '    <div class="d-flex align-items-center gap-2">' +
+                '      <label class="form-label fw-bold text-xs mb-0" style="width: 60px;">Nomor Referensi</label>' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.nomorreferensi || '') + '" readonly>' +
+                '    </div>' +
                 '  </div>' +
                 '</div>' +
                 '<div class="mb-2">' +
