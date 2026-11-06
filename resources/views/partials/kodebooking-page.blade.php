@@ -365,74 +365,187 @@ $(document).ready(function () {
                 } catch (e) {}
             }
             var pOk = (pc == 200 || pc == 208);
-            pMsg = $('<div>').text(pMsg).html();
-            var prevBar = '<div class="resend-prev ' + (pOk ? 'ok' : 'err') + '" title="' + pMsg.replace(/"/g, '&quot;') + '">' +
-                '<span class="resend-prev-label">Response</span>' +
+            var pMsgStr = String(pMsg);
+            var prevBar = '<div class="resend-prev ' + (pOk ? 'ok' : 'err') + '" title="' + pMsgStr.replace(/"/g, '&quot;') + '">' +
+                '<span class="resend-prev-label">Response Sebelumnya</span>' +
                 '<span class="resend-prev-code">' + pc + '</span>' +
-                '<span class="resend-prev-msg">' + pMsg + '</span></div>';
+                '<span class="resend-prev-msg">' + pMsgStr + '</span></div>';
+            var prevBox = '<div class="mb-3 p-3 rounded bg-' + (pOk ? 'success' : 'danger') + '-light border border-' + (pOk ? 'success' : 'danger') + '">' +
+                '<div class="d-flex justify-content-between align-items-start mb-2">' +
+                '<small class="fw-bold text-' + (pOk ? 'success' : 'danger') + '"><i class="fas fa-' + (pOk ? 'check-circle' : 'exclamation-circle') + ' me-1"></i> Status Sebelumnya</small>' +
+                '<span class="badge bg-' + (pOk ? 'success' : 'danger') + ' text-white fw-normal">' + pc + '</span>' +
+                '</div>' +
+                '<div><small class="text-' + (pOk ? 'success' : 'danger') + '">' + pMsgStr.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</small></div>' +
+                '</div>';
+
+            // Bangun form input dari response BPJS
+            var r = res.response || {};
+            var formHtml = '' +
+                '<div class="row g-3 mb-3">' +
+                '  <div class="col-md-6">' +
+                '    <label class="form-label fw-bold small">Kode Booking</label>' +
+                '    <input type="text" class="form-control form-control-sm" value="' + (r.kodebooking || kb) + '" readonly>' +
+                '  </div>' +
+                '  <div class="col-md-6">' +
+                '    <label class="form-label fw-bold small">No RM</label>' +
+                '    <input type="text" class="form-control form-control-sm" value="' + (r.norm || '') + '" readonly>' +
+                '  </div>' +
+                '  <div class="col-md-6">' +
+                '    <label class="form-label fw-bold small">No Antrian</label>' +
+                '    <input type="text" class="form-control form-control-sm" value="' + (r.noantrian || '') + '" readonly>' +
+                '  </div>' +
+                '  <div class="col-md-6">' +
+                '    <label class="form-label fw-bold small">Tanggal Periksa</label>' +
+                '    <input type="text" class="form-control form-control-sm" value="' + (r.tanggalperiksa || '') + '" readonly>' +
+                '  </div>' +
+                '  <div class="col-md-6">' +
+                '    <label class="form-label fw-bold small">Nama Dokter</label>' +
+                '    <input type="text" class="form-control form-control-sm" value="' + (r.namadokter || '') + '" readonly>' +
+                '  </div>' +
+                '  <div class="col-md-6">' +
+                '    <label class="form-label fw-bold small">Nama Poli</label>' +
+                '    <input type="text" class="form-control form-control-sm" value="' + (r.namaunit || '') + '" readonly>' +
+                '  </div>' +
+                '  <div class="col-md-6">' +
+                '    <label class="form-label fw-bold small">Jam Mulai</label>' +
+                '    <input type="text" class="form-control form-control-sm" value="' + (r.jammulai || '') + '" readonly>' +
+                '  </div>' +
+                '  <div class="col-md-6">' +
+                '    <label class="form-label fw-bold small">Jam Akhir</label>' +
+                '    <input type="text" class="form-control form-control-sm" value="' + (r.jamakhir || '') + '" readonly>' +
+                '  </div>' +
+                '  <div class="col-md-6">' +
+                '    <label class="form-label fw-bold small">Jenis Kunjungan</label>' +
+                '    <input type="text" class="form-control form-control-sm" value="' + (r.idjeniskunjungan || '') + '" readonly>' +
+                '  </div>' +
+                '  <div class="col-md-6">' +
+                '    <label class="form-label fw-bold small">Cara Bayar</label>' +
+                '    <input type="text" class="form-control form-control-sm" value="' + (r.carabayar || '') + '" readonly>' +
+                '  </div>' +
+                '  <div class="col-md-6">' +
+                '    <label class="form-label fw-bold small">No Kartu BPJS</label>' +
+                '    <input type="text" class="form-control form-control-sm" value="' + (r.nojkn || '') + '" readonly>' +
+                '  </div>' +
+                '  <div class="col-md-6">' +
+                '    <label class="form-label fw-bold small">NIK</label>' +
+                '    <input type="text" class="form-control form-control-sm" value="' + (r.nik || '') + '" readonly>' +
+                '  </div>' +
+                '  <div class="col-md-6">' +
+                '    <label class="form-label fw-bold small">No Telepon</label>' +
+                '    <input type="text" class="form-control form-control-sm" value="' + (r.notelpon || '') + '" readonly>' +
+                '  </div>' +
+                '  <div class="col-md-6">' +
+                '    <label class="form-label fw-bold small">Nomor Referensi</label>' +
+                '    <input type="text" class="form-control form-control-sm" value="' + (r.nomorreferensi || '') + '" readonly>' +
+                '  </div>' +
+                '</div>' +
+                '<div class="mb-3">' +
+                '  <button type="button" class="btn btn-sm btn-outline-secondary" id="btnToggleJson" style="width:100%;"><i class="fas fa-code me-1"></i> Tampilkan / Edit JSON Raw</button>' +
+                '</div>' +
+                '<div id="jsonRawBox" style="display:none;" class="mb-3 p-3 bg-dark text-light rounded border border-secondary">' +
+                '  <label class="form-label fw-bold small text-white mb-2">JSON Request (Edit Manual)</label>' +
+                '  <textarea id="resendPayload" class="form-control form-control-sm bg-black text-white border-0" rows="8" spellcheck="false"></textarea>' +
+                '</div>';
+
             Swal.fire({
-                title: 'Kirim Ulang Kode Booking',
-                width: 720,
-                html: '<div class="text-start mb-2" style="font-size:.85rem;">Kode Booking: <strong>' + kb + '</strong> (No RM: ' + norm + ')</div>' + prevBar +
-                      '<div class="text-start mb-1" style="font-size:.8rem;color:#858796;">Periksa &amp; edit isi request (JSON) sebelum dikirim:</div>' +
-                      '<textarea id="resendPayload" class="resend-editor" spellcheck="false"></textarea>',
-                didOpen: () => { document.getElementById('resendPayload').value = JSON.stringify(res.response, null, 2); },
+                title: '<i class="fas fa-paper-plane me-2"></i> Kirim Ulang Kode Booking',
+                width: 760,
+                html: '<div class="text-start mb-3">' +
+                    '<div class="d-flex align-items-center mb-1">' +
+                    '<span class="badge bg-primary fs-6 me-2">Kode Booking</span>' +
+                    '<span class="fw-bold text-dark">' + kb + '</span>' +
+                    '</div>' +
+                    '<small class="text-muted">No RM: <strong>' + norm + '</strong></small>' +
+                    '</div>' + prevBox +
+                    '<div class="mt-3"><h6 class="fw-bold text-dark mb-2"><i class="fas fa-edit me-1"></i>Form Pengisian Ulang</h6></div>' +
+                    formHtml,
                 showCancelButton: true,
-                confirmButtonText: 'Kirim ke BPJS',
+                confirmButtonText: '<i class="fas fa-paper-plane me-1"></i> Kirim ke BPJS',
                 cancelButtonText: 'Batal',
-                confirmButtonColor: '#4e73df',
-                cancelButtonColor: '#858796',
+                confirmButtonColor: '#0f4c5c',
+                cancelButtonColor: '#6c757d',
+                buttonsStyling: false,
+                customClass: {
+                    confirmButton: 'btn btn-primary btn-sm px-4',
+                    cancelButton: 'btn btn-outline-secondary btn-sm px-4'
+                },
                 preConfirm: () => {
-                    try { return JSON.parse(document.getElementById('resendPayload').value); }
-                    catch (e) { Swal.showValidationMessage('Format JSON tidak valid: ' + e.message); return false; }
+                    var payloadText = document.getElementById('resendPayload') ? document.getElementById('resendPayload').value : '';
+                    var payload = {};
+                    try {
+                        if (payloadText.trim()) {
+                            payload = JSON.parse(payloadText);
+                        } else {
+                            payload = r;
+                        }
+                    } catch (e) {
+                        Swal.showValidationMessage('Format JSON tidak valid: ' + e.message);
+                        return false;
+                    }
+                    return payload;
                 }
             }).then((result) => {
-            if (result.isConfirmed) {
-                Swal.fire({
-                    title: 'Memproses ke BPJS...',
-                    html: 'Sedang menghubungi BPJS Antrol...',
-                    allowOutsideClick: false,
-                    didOpen: () => Swal.showLoading()
-                });
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Memproses ke BPJS...',
+                        html: 'Sedang menghubungi BPJS Antrol...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
 
-                $.ajax({
-                    url: '{{ url("api/run-kodebooking-by-kodebooking") }}',
-                    type: 'POST',
-                    data: {
-                        urlQL: urlQL,
-                        kodebooking: kb,
-                        payload: JSON.stringify(result.value)
-                    },
-                    success: function(res) {
-                        var meta = res.metadata || {};
-                        var code = meta.code || 200;
-                        var msg = meta.message || 'Proses selesai.';
+                    $.ajax({
+                        url: '{{ url("api/run-kodebooking-by-kodebooking") }}',
+                        type: 'POST',
+                        data: {
+                            urlQL: urlQL,
+                            kodebooking: kb,
+                            payload: JSON.stringify(result.value)
+                        },
+                        success: function(res) {
+                            var meta = res.metadata || {};
+                            var code = meta.code || 200;
+                            var msg = meta.message || 'Proses selesai.';
 
-                        if (code == 200 || code == 208) {
+                            if (code == 200 || code == 208) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil (Code ' + code + ')',
+                                    text: msg,
+                                    timer: 3000,
+                                    timerProgressBar: true
+                                }).then(() => location.reload());
+                            } else {
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Respon BPJS (Code ' + code + ')',
+                                    text: msg
+                                }).then(() => location.reload());
+                            }
+                        },
+                        error: function(xhr) {
+                            var errMeta = (xhr.responseJSON && xhr.responseJSON.metadata) ? xhr.responseJSON.metadata : {};
+                            var errMsg = errMeta.message || (xhr.responseJSON ? JSON.stringify(xhr.responseJSON) : 'Gagal mengirim ulang data.');
                             Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil (Code ' + code + ')',
-                                text: msg
-                            }).then(() => location.reload());
-                        } else {
-                            Swal.fire({
-                                icon: 'warning',
-                                title: 'Respon BPJS (Code ' + code + ')',
-                                text: msg
-                            }).then(() => location.reload());
+                                icon: 'error',
+                                title: 'Gagal Mengirim',
+                                text: errMsg
+                            });
                         }
-                    },
-                    error: function(xhr) {
-                        var errMeta = (xhr.responseJSON && xhr.responseJSON.metadata) ? xhr.responseJSON.metadata : {};
-                        var errMsg = errMeta.message || (xhr.responseJSON ? JSON.stringify(xhr.responseJSON) : 'Gagal mengirim ulang data.');
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal Mengirim',
-                            text: errMsg
-                        });
-                    }
-                });
-            }
+                    });
+                }
+            });
+
+            // Toggle JSON box
+            document.getElementById('resendPayload').value = JSON.stringify(r, null, 2);
+            document.getElementById('btnToggleJson') && document.getElementById('btnToggleJson').addEventListener('click', function() {
+                var box = document.getElementById('jsonRawBox');
+                if (box.style.display === 'none') {
+                    box.style.display = 'block';
+                    this.innerHTML = '<i class="fas fa-eye-slash me-1"></i> Sembunyikan JSON';
+                } else {
+                    box.style.display = 'none';
+                    this.innerHTML = '<i class="fas fa-code me-1"></i> Tampilkan / Edit JSON Raw';
+                }
             });
         });
     });
