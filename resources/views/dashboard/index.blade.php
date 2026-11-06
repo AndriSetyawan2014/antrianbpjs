@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-{{-- index.css sudah dimuat global via @vite di layouts/admin --}}
+{-- index.css sudah dimuat global via @vite di layouts/admin --}}
 
 @section('page_title')
     <h1 class="page-title"><i class="fas fa-tachometer-alt me-2 text-primary"></i>Dashboard</h1>
@@ -12,7 +12,7 @@
 
 @section('content')
 
-{{-- ── Control Bar ── --}}
+{-- ── Control Bar ── --}}
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-body p-3 d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
         <div class="d-flex flex-column flex-sm-row align-items-center gap-3 w-100">
@@ -55,7 +55,7 @@
     </div>
 </div>
 
-{{-- ── Status operasional (queue worker) ── --}}
+{-- ── Status operasional (queue worker) ── --}}
 <div class="card shadow-sm border-0 mb-4" id="queueStatusBar">
     <div class="card-body p-2 px-3 d-flex flex-column flex-sm-row align-items-center justify-content-between gap-2">
         <div class="d-flex align-items-center">
@@ -74,7 +74,7 @@
     'regionId' => 'yogyakarta',
     'hidden' => false,
     'chartSuffix' => '',
-    'routeKodebooking' => route('data_kodebooking_jogja'),
+    'routeKodebooking' => route('data_kodebooking'),
     'routeRekapKodebooking' => route('rekap_kodebooking'),
     'routeTaskid' => route('TaskID'),
     'routeRekapTaskid' => route('rekap_taskid'),
@@ -118,7 +118,7 @@
     'pieId' => 'patientPieChartTemanggung',
 ])
 
-{{-- ── Tren 7 hari terakhir (mengikuti wilayah & tanggal aktif) ── --}}
+{-- ── Tren 7 hari terakhir ── --}}
 <div class="row">
     <div class="col-12">
         <div class="chart-card position-relative">
@@ -130,8 +130,8 @@
             </div>
             <div class="chart-card-body">
                 {{-- Skeleton placeholder sebelum chart render --}}
-                <div id="trendSkeleton" class="skeleton-chart" style="margin:16px;"></div>
-                <div class="chart-container" id="trendWrap" style="height:220px; display:none;">
+                <div id="trendSkeleton" class="skeleton-chart" style="margin:20px;"></div>
+                <div class="chart-container" id="trendWrap" style="height:280px; display:none;">
                     <canvas id="trendChart"></canvas>
                 </div>
             </div>
@@ -144,14 +144,13 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-// ── Palet warna tetap (tidak lagi random) ──
+// ── Palet warna tetap ──
 const CHART_PALETTE = [
-    '#0C356A','#FFC436','#1E8449','#9B59B6',
-    '#C0392B','#F39C12','#1A6FA0','#1ABC9C',
-    '#E67E22','#2ECC71','#8E44AD','#3498DB'
+    '#0f4c5c','#f59e0b','#10b981','#8b5cf6',
+    '#ef4444','#3b82f6','#14b8a6','#a855f7',
+    '#eab308','#22c55e','#a855f7','#3b82f6'
 ];
 
-// ── Helper tanggal lokal (hindari geser hari karena UTC) ──
 function localToday() {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -166,7 +165,6 @@ function fetchJson(url, onOk) {
         });
 }
 
-// ── Chart generik: 1 fungsi untuk 3 wilayah (ganti 3x duplikat) ──
 const barCharts = {};
 
 function makeBarChart(canvasId, labels, values) {
@@ -180,7 +178,7 @@ function makeBarChart(canvasId, labels, values) {
                 label: 'Jumlah Pasien',
                 data: values,
                 backgroundColor: values.map((_, i) => CHART_PALETTE[i % CHART_PALETTE.length]),
-                borderRadius: 5,
+                borderRadius: 6,
                 borderWidth: 0
             }]
         },
@@ -190,8 +188,8 @@ function makeBarChart(canvasId, labels, values) {
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: '#1A202C',
-                    bodyFont: { family: 'Poppins' },
+                    backgroundColor: '#111827',
+                    bodyFont: { family: 'Inter' },
                     callbacks: { label: c => `Jumlah: ${c.raw}` }
                 }
             },
@@ -200,14 +198,14 @@ function makeBarChart(canvasId, labels, values) {
                     beginAtZero: true,
                     grid: { color: 'rgba(0,0,0,0.05)' },
                     ticks: {
-                        font: { family: 'Poppins', size: 11 },
+                        font: { family: 'Inter', size: 11 },
                         stepSize: 1,
                         callback: value => Number.isInteger(value) ? value : null
                     }
                 },
                 x: {
                     grid: { display: false },
-                    ticks: { font: { family: 'Poppins', size: 11 } }
+                    ticks: { font: { family: 'Inter', size: 11 } }
                 }
             }
         }
@@ -221,25 +219,22 @@ function initPie(canvasId, valBooking, valTask) {
             labels: ['Kode Booking', 'Task ID'],
             datasets: [{
                 data: [valBooking, valTask],
-                backgroundColor: ['#0C356A', '#FFC436'],
-                borderWidth: 2,
+                backgroundColor: ['#0f4c5c', '#f59e0b'],
+                borderWidth: 3,
                 borderColor: '#fff'
             }]
         },
         options: {
             maintainAspectRatio: false,
             plugins: {
-                legend: { display: true, position: 'bottom',
-                    labels: { font: { family: 'Poppins', size: 12 }, padding: 16 }
-                },
-                tooltip: { backgroundColor: '#1A202C', bodyFont: { family: 'Poppins' } }
+                legend: { display: true, position: 'bottom', labels: { font: { family: 'Inter', size: 12 }, padding: 20 } },
+                tooltip: { backgroundColor: '#111827', bodyFont: { family: 'Inter' } }
             },
-            cutout: '55%'
+            cutout: '70%'
         }
     });
 }
 
-// Konfigurasi per wilayah: [pieId, barId, filterInputId, urlFetch, valBooking, valTask]
 const REGIONS = [
     { pie: 'patientPieChart', bar: 'patientChartOverall', input: 'filterDateYogyakarta',
       url: `{{ url('/get-patient-data') }}`, booking: {{ $totalKodebooking }}, task: {{ $totalTaskId }} },
@@ -259,8 +254,6 @@ REGIONS.forEach(r => {
     load(t);
 });
 
-
-// ── Region Switcher (diingat via localStorage) ──
 const regionSelector = document.getElementById('regionSelector');
 function showRegion(selectedRegion) {
     document.querySelectorAll('.region-content').forEach(el => el.classList.add('d-none'));
@@ -280,7 +273,6 @@ try {
     }
 } catch (e) {}
 
-// ── Tren 7 hari: total pasien per hari untuk wilayah & tanggal aktif ──
 let trendChart = null;
 const REGION_INDEX = { yogyakarta: 0, kulonprogo: 1, temanggung: 2 };
 const REGION_NAMES = { yogyakarta: 'Yogyakarta', kulonprogo: 'Kulon Progo', temanggung: 'Temanggung' };
@@ -298,14 +290,10 @@ async function loadTrend() {
     const wrap = document.getElementById('trendWrap');
     const skeleton = document.getElementById('trendSkeleton');
     const loading = document.getElementById('trendLoading');
-    document.getElementById('trendTitle').textContent =
-        `Tren 7 Hari — ${REGION_NAMES[key] ?? key} (s/d ${end})`;
-    
-    // Tampilkan skeleton, sembunyikan chart
+    document.getElementById('trendTitle').textContent = `Tren 7 Hari — ${REGION_NAMES[key] ?? key} (s/d ${end})`;
     if (skeleton) skeleton.style.display = 'block';
     if (wrap) wrap.style.display = 'none';
     if (loading) loading.style.display = '';
-    
     try {
         const totals = await Promise.all(days.map(dt =>
             fetch(`${cfg.url}?date=${dt}`)
@@ -313,7 +301,7 @@ async function loadTrend() {
                 .then(d => (d.values || []).reduce((a, b) => a + (Number(b) || 0), 0))
                 .catch(() => null)
         ));
-        const primary = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#0C356A';
+        const primary = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#0f4c5c';
         if (trendChart) trendChart.destroy();
         trendChart = new Chart(document.getElementById('trendChart').getContext('2d'), {
             type: 'line',
@@ -325,7 +313,7 @@ async function loadTrend() {
                     borderColor: primary,
                     backgroundColor: primary + '22',
                     fill: true,
-                    tension: 0.35,
+                    tension: 0.4,
                     pointRadius: 4,
                     pointBackgroundColor: primary,
                     spanGaps: true
@@ -336,20 +324,19 @@ async function loadTrend() {
                 maintainAspectRatio: false,
                 plugins: {
                     legend: { display: false },
-                    tooltip: { backgroundColor: '#1A202C', bodyFont: { family: 'Poppins' } }
+                    tooltip: { backgroundColor: '#111827', bodyFont: { family: 'Inter' } }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
                         grid: { color: 'rgba(0,0,0,0.05)' },
-                        ticks: { font: { family: 'Poppins', size: 11 }, precision: 0 }
+                        ticks: { font: { family: 'Inter', size: 11 }, precision: 0 }
                     },
-                    x: { grid: { display: false }, ticks: { font: { family: 'Poppins', size: 11 } } }
+                    x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11 } } }
                 }
             }
         });
     } finally {
-        // Sembunyikan skeleton, tampilkan chart
         if (skeleton) skeleton.style.display = 'none';
         if (wrap) wrap.style.display = 'block';
         if (loading) loading.style.display = 'none';
@@ -362,7 +349,6 @@ regionSelector.addEventListener('change', () => loadTrend());
 });
 loadTrend();
 
-// ── Status queue (ringkas, tanpa timeout dashboard) ──
 (function loadQueueStatus() {
     const el = document.getElementById('queueStatusText');
     if (!el) return;

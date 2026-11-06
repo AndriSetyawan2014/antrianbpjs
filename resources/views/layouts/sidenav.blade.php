@@ -1,7 +1,9 @@
-{{-- ═══════════════════════════════════════════
-     SIDENAV — Sistem Pemantauan Bridging BPJS
-     resources/views/layouts/sidenav.blade.php
-     ═══════════════════════════════════════════ --}}
+{{
+  -- ══════════════════════════════════════════════════════════
+       SIDENAV — Antrian BPJS Online (Modern Healthcare)
+       resources/views/layouts/sidenav.blade.php
+  ═══════════════════════════════════════════════════════════ --
+}}
 
 <div class="sidebar" id="sidebar">
     <!-- Logo -->
@@ -9,7 +11,7 @@
         <img src="{{ asset('dist/img/logoqlheader.png') }}" alt="Queen Latifa Logo">
     </a>
 
-    <!-- Pencarian menu (filter cepat) -->
+    <!-- Pencarian menu -->
     <div class="sidebar-search">
         <i class="fas fa-search" aria-hidden="true"></i>
         <input type="search" id="sidebarSearch" placeholder="Cari menu…" aria-label="Cari menu navigasi" autocomplete="off">
@@ -31,7 +33,6 @@
             <i class="fas fa-map-marker-alt"></i> Queen Latifa Yogyakarta
         </div>
 
-        {{-- Kode Booking Yogyakarta --}}
         <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddKodeBookingJogja"
            aria-expanded="{{ Request::is('data_kodebooking*') || Request::is('rekap_kodebooking*') ? 'true' : 'false' }}">
@@ -43,21 +44,20 @@
              id="ddKodeBookingJogja">
             <ul class="nav flex-column ms-3">
                 <li class="nav-item">
-                    <a href="{{ route('data_kodebooking_jogja') }}"
-                       class="nav-link {{ Request::is('data_kodebooking_jogja') ? 'active' : '' }}">
-                        <i class="fas fa-table nav-icon"></i> Data Kode Booking
+                    <a href="{{ url('/data_kodebooking') }}"
+                       class="nav-link {{ Request::is('data_kodebooking') ? 'active' : '' }}">
+                        <i class="fas fa-table nav-icon"></i> <span>Data Kode Booking</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ url('/rekap_kodebooking') }}"
                        class="nav-link {{ Request::is('rekap_kodebooking') ? 'active' : '' }}">
-                        <i class="fas fa-chart-bar nav-icon"></i> Rekap Kode Booking
+                        <i class="fas fa-chart-bar nav-icon"></i> <span>Rekap Kode Booking</span>
                     </a>
                 </li>
             </ul>
         </div>
 
-        {{-- Task ID Yogyakarta --}}
         <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddTaskIDJogja"
            aria-expanded="{{ Request::is('TaskID*') || Request::is('rekap_taskid*') || Request::is('monitoring_taskid*') ? 'true' : 'false' }}">
@@ -71,19 +71,19 @@
                 <li class="nav-item">
                     <a href="{{ url('/monitoring_taskid') }}"
                        class="nav-link {{ Request::is('monitoring_taskid') ? 'active' : '' }}">
-                        <i class="fas fa-table nav-icon"></i> Monitoring Task ID
+                        <i class="fas fa-table nav-icon"></i> <span>Monitoring Task ID</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ url('/TaskID') }}"
                        class="nav-link {{ Request::is('TaskID') ? 'active' : '' }}">
-                        <i class="fas fa-file-medical nav-icon"></i> Data Task ID
+                        <i class="fas fa-file-medical nav-icon"></i> <span>Data Task ID</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ url('/rekap_taskid') }}"
                        class="nav-link {{ Request::is('rekap_taskid') ? 'active' : '' }}">
-                        <i class="fas fa-clipboard-list nav-icon"></i> Rekap Task ID
+                        <i class="fas fa-clipboard-list nav-icon"></i> <span>Rekap Task ID</span>
                     </a>
                 </li>
             </ul>
@@ -94,7 +94,6 @@
             <i class="fas fa-map-marker-alt"></i> Queen Latifa Kulon Progo
         </div>
 
-        {{-- Kode Booking Kulon Progo --}}
         <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddKodeBookingKP"
            aria-expanded="{{ Request::is('qlkp_data_kodebooking*') || Request::is('qlkp_rekap_kodebooking*') ? 'true' : 'false' }}">
@@ -108,19 +107,18 @@
                 <li class="nav-item">
                     <a href="{{ url('/qlkp_data_kodebooking') }}"
                        class="nav-link {{ Request::is('qlkp_data_kodebooking') ? 'active' : '' }}">
-                        <i class="fas fa-table nav-icon"></i> Data Kode Booking
+                        <i class="fas fa-table nav-icon"></i> <span>Data Kode Booking</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ url('/qlkp_rekap_kodebooking') }}"
                        class="nav-link {{ Request::is('qlkp_rekap_kodebooking') ? 'active' : '' }}">
-                        <i class="fas fa-chart-bar nav-icon"></i> Rekap Kode Booking
+                        <i class="fas fa-chart-bar nav-icon"></i> <span>Rekap Kode Booking</span>
                     </a>
                 </li>
             </ul>
         </div>
 
-        {{-- Task ID Kulon Progo --}}
         <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddTaskIDKP"
            aria-expanded="{{ Request::is('qlkp_TaskID*') || Request::is('qlkp_rekap_taskid*') || Request::is('qlkp_kesesuaian_jadwal*') ? 'true' : 'false' }}">
@@ -134,19 +132,19 @@
                 <li class="nav-item">
                     <a href="{{ url('/qlkp_TaskID') }}"
                        class="nav-link {{ Request::is('qlkp_TaskID') ? 'active' : '' }}">
-                        <i class="fas fa-file-medical nav-icon"></i> Data Task ID
+                        <i class="fas fa-file-medical nav-icon"></i> <span>Data Task ID</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ url('/qlkp_rekap_taskid') }}"
                        class="nav-link {{ Request::is('qlkp_rekap_taskid') ? 'active' : '' }}">
-                        <i class="fas fa-clipboard-list nav-icon"></i> Rekap Task ID
+                        <i class="fas fa-clipboard-list nav-icon"></i> <span>Rekap Task ID</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ url('/qlkp_kesesuaian_jadwal') }}"
                        class="nav-link {{ Request::is('qlkp_kesesuaian_jadwal*') ? 'active' : '' }}">
-                        <i class="fas fa-user-clock nav-icon"></i> Kesesuaian Jadwal Dokter
+                        <i class="fas fa-user-clock nav-icon"></i> <span>Kesesuaian Jadwal</span>
                     </a>
                 </li>
             </ul>
@@ -157,7 +155,6 @@
             <i class="fas fa-map-marker-alt"></i> Queen Latifa Temanggung
         </div>
 
-        {{-- Kode Booking Temanggung --}}
         <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddKodeBookingTMG"
            aria-expanded="{{ Request::is('qltmg_data_kodebooking*') || Request::is('qltmg_rekap_kodebooking*') ? 'true' : 'false' }}">
@@ -171,19 +168,18 @@
                 <li class="nav-item">
                     <a href="{{ url('/qltmg_data_kodebooking') }}"
                        class="nav-link {{ Request::is('qltmg_data_kodebooking') ? 'active' : '' }}">
-                        <i class="fas fa-table nav-icon"></i> Data Kode Booking
+                        <i class="fas fa-table nav-icon"></i> <span>Data Kode Booking</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ url('/qltmg_rekap_kodebooking') }}"
                        class="nav-link {{ Request::is('qltmg_rekap_kodebooking') ? 'active' : '' }}">
-                        <i class="fas fa-chart-bar nav-icon"></i> Rekap Kode Booking
+                        <i class="fas fa-chart-bar nav-icon"></i> <span>Rekap Kode Booking</span>
                     </a>
                 </li>
             </ul>
         </div>
 
-        {{-- Task ID Temanggung --}}
         <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddTaskIDTMG"
            aria-expanded="{{ Request::is('qltmg_TaskID*') || Request::is('qltmg_rekap_taskid*') ? 'true' : 'false' }}">
@@ -197,28 +193,27 @@
                 <li class="nav-item">
                     <a href="{{ url('/qltmg_TaskID') }}"
                        class="nav-link {{ Request::is('qltmg_TaskID') ? 'active' : '' }}">
-                        <i class="fas fa-file-medical nav-icon"></i> Data Task ID
+                        <i class="fas fa-file-medical nav-icon"></i> <span>Data Task ID</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ url('/qltmg_rekap_taskid') }}"
                        class="nav-link {{ Request::is('qltmg_rekap_taskid') ? 'active' : '' }}">
-                        <i class="fas fa-clipboard-list nav-icon"></i> Rekap Task ID
+                        <i class="fas fa-clipboard-list nav-icon"></i> <span>Rekap Task ID</span>
                     </a>
                 </li>
             </ul>
         </div>
 
         {{-- ══ VCLAIM ══ --}}
-        <div class="sidebar-section-label" style="color:#86efac;">
+        <div class="sidebar-section-label" style="color:#a5f3fc;">
             <i class="fas fa-stethoscope"></i> VClaim Monitoring
         </div>
 
-        {{-- Monitoring Rawat Jalan --}}
         <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddMonitoringRawatJalan"
            aria-expanded="{{ Request::is('vclaim/kunjungan-rawat-jalan*') || Request::is('vclaim/rekap-kunjungan-rawat-jalan*') || Request::is('vclaim/antrol-antrean-per-tanggal*') || Request::is('vclaim/rekap-antrean-per-tanggal*') ? 'true' : 'false' }}">
-            <i class="fas fa-walking nav-icon" style="color:#86efac;"></i>
+            <i class="fas fa-walking nav-icon" style="color:#a5f3fc;"></i>
             <span>Monitoring Rawat Jalan</span>
             <i class="fas fa-angle-down arrow-icon {{ Request::is('vclaim/kunjungan-rawat-jalan*') || Request::is('vclaim/rekap-kunjungan-rawat-jalan*') || Request::is('vclaim/antrol-antrean-per-tanggal*') || Request::is('vclaim/rekap-antrean-per-tanggal*') ? 'rotated' : '' }}"></i>
         </button>
@@ -228,39 +223,38 @@
                 <li class="nav-item">
                     <a href="{{ route('vclaim.kunjungan.jalan') }}"
                        class="nav-link {{ Request::is('vclaim/kunjungan-rawat-jalan') ? 'active' : '' }}">
-                        <i class="fas fa-list nav-icon" style="color:#86efac;"></i> <span>Detail Kunjungan</span>
+                        <i class="fas fa-list nav-icon" style="color:#a5f3fc;"></i> <span>Detail Kunjungan</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('vclaim.rekap.kunjungan.jalan') }}"
                        class="nav-link {{ Request::is('vclaim/rekap-kunjungan-rawat-jalan') ? 'active' : '' }}">
-                        <i class="fas fa-chart-bar nav-icon" style="color:#86efac;"></i> <span>Rekap Kunjungan</span>
+                        <i class="fas fa-chart-bar nav-icon" style="color:#a5f3fc;"></i> <span>Rekap Kunjungan</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('vclaim.antrol.antrean.per.tanggal') }}"
                        class="nav-link {{ Request::is('vclaim/antrol-antrean-per-tanggal') ? 'active' : '' }}">
-                        <i class="fas fa-list-ol nav-icon" style="color:#86efac;"></i> <span>Detail Antrean</span>
+                        <i class="fas fa-list-ol nav-icon" style="color:#a5f3fc;"></i> <span>Detail Antrean</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('vclaim.rekap.antrean.per.tanggal') }}"
                        class="nav-link {{ Request::is('vclaim/rekap-antrean-per-tanggal') ? 'active' : '' }}">
-                        <i class="fas fa-table nav-icon" style="color:#86efac;"></i> <span>Rekap Antrean</span>
+                        <i class="fas fa-table nav-icon" style="color:#a5f3fc;"></i> <span>Rekap Antrean</span>
                     </a>
                 </li>
             </ul>
         </div>
 
-        {{-- Endpoint Status --}}
         <a href="{{ route('vclaim.endpoint.status') }}"
            class="nav-link {{ Request::is('vclaim/endpoint-status*') ? 'active' : '' }}">
-            <i class="fas fa-network-wired nav-icon" style="color:#86efac;"></i>
+            <i class="fas fa-network-wired nav-icon" style="color:#a5f3fc;"></i>
             <span>Endpoint Status</span>
         </a>
 
-        {{-- Pengaturan Sistem --}}
-        <div class="sidebar-section-label" style="color:#fcd34d; margin-top: 20px;">
+        {{-- ══ SISTEM ══ --}}
+        <div class="sidebar-section-label" style="color:#fcd34d; margin-top: 16px;">
             <i class="fas fa-cogs"></i> Sistem
         </div>
         <a href="{{ route('settings.index') }}"
@@ -273,7 +267,7 @@
 </div>
 
 <style>
-/* Arrow rotation for open collapse */
+/* Arrow rotation */
 .arrow-icon.rotated,
 [aria-expanded="true"] .arrow-icon {
     transform: rotate(180deg);
