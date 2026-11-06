@@ -198,7 +198,7 @@ class AntrianController extends Controller
         ]);
     }
 
-    public function data_kodebooking(Request $request)
+    public function data_kodebooking_jogja(Request $request)
     {
     // Mendapatkan tanggal hari ini
     $today = date('Y-m-d');
