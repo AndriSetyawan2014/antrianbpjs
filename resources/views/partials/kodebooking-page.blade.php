@@ -383,6 +383,19 @@ $(document).ready(function() {
             var pasienbaruLabel = (pasienbaru == 1) ? 'Baru' : 'Lama';
             var jeniskunjungan = r.jeniskunjungan || '';
             var jeniskunjunganLabel = (jeniskunjungan == 1) ? 'Rawat Inap' : (jeniskunjungan == 2) ? 'Rawat Jalan' : (jeniskunjungan == 3) ? 'Rawat Darurat' : jeniskunjungan;
+            var estimasiRaw = r.estimasidilayani != null ? r.estimasidilayani : '';
+            var estimasiWIB = '';
+            if (estimasiRaw && !isNaN(estimasiRaw)) {
+                var estDate = new Date(parseInt(estimasiRaw));
+                if (!isNaN(estDate.getTime())) {
+                    var opt = { timeZone: 'Asia/Jakarta', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+                    estimasiWIB = estDate.toLocaleString('id-ID', opt).replace(/\./g, ':').replace(/\//g, '-');
+                } else {
+                    estimasiWIB = estimasiRaw;
+                }
+            } else {
+                estimasiWIB = estimasiRaw;
+            }
 
             var formHtml = '' +
                 '<div class="row g-2 mb-2">' +
@@ -395,37 +408,37 @@ $(document).ready(function() {
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Jenis Pasien</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.jenispasien || '') + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" id="inputJenispasien" value="' + (r.jenispasien || '') + '" >' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">No Kartu BPJS</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.nomorkartu || '') + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" id="inputNomorkartu" value="' + (r.nomorkartu || '') + '" >' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">NIK</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.nik || '') + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" id="inputNik" value="' + (r.nik || '') + '" >' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">No Telpon</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.nohp || '') + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" id="inputNohp" value="' + (r.nohp || '') + '" >' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Kode Poli</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.kodepoli || '') + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" id="inputKodepoli" value="' + (r.kodepoli || '') + '" >' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Nama Poli</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.namapoli || '') + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" id="inputNamapoli" value="' + (r.namapoli || '') + '" >' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
@@ -437,31 +450,31 @@ $(document).ready(function() {
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">No RM</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.norm || '') + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" id="inputNorm" value="' + (r.norm || '') + '" >' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Tgl Periksa</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.tanggalperiksa || '') + '" >' +
+                '      <input type="date" class="form-control form-control-sm flex-fill" id="inputTanggalperiksa" value="' + (r.tanggalperiksa || '') + '" >' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Kode Dokter</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.kodedokter || '') + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" id="inputKodedokter" value="' + (r.kodedokter || '') + '" >' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Nama Dokter</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.namadokter || '') + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" id="inputNamadokter" value="' + (r.namadokter || '') + '" >' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Jam Praktik</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.jampraktek || '') + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" id="inputJampraktek" value="' + (r.jampraktek || '') + '" >' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
@@ -473,55 +486,55 @@ $(document).ready(function() {
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">No Referensi</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.nomorreferensi || '') + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" id="inputNomorreferensi" value="' + (r.nomorreferensi || '') + '" >' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">No Antrean</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.nomorantrean || '') + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" id="inputNomorantrean" value="' + (r.nomorantrean || '') + '" >' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Angka Antrean</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.angkaantrean || '') + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" id="inputAngkaantrean" value="' + (r.angkaantrean || '') + '" >' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Estimasi Dilayani</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.estimasidilayani != null ? r.estimasidilayani : '') + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" id="inputEstimasi" value="' + estimasiWIB + '" >' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Sisa Kuota JKN</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.sisakuotajkn != null ? r.sisakuotajkn : '') + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" id="inputSisakuotajkn" value="' + (r.sisakuotajkn != null ? r.sisakuotajkn : '') + '" >' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Kuota JKN</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.kuotajkn || '') + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" id="inputKuotajkn" value="' + (r.kuotajkn || '') + '" >' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Sisa Kuota Non JKN</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.sisakuotanonjkn || '') + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" id="inputSisakuotanonjkn" value="' + (r.sisakuotanonjkn || '') + '" >' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Kuota Non JKN</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.kuotanonjkn || '') + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" id="inputKuotanonjkn" value="' + (r.kuotanonjkn || '') + '" >' +
                 '    </div>' +
                 '  </div>' +
-                '  <div class="col-md-6">' +
+                '  <div class="col-md-12">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Keterangan</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.keterangan || '') + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" id="inputKeterangan" value="' + (r.keterangan || '') + '" >' +
                 '    </div>' +
                 '  </div>' +
                 '</div>' +
@@ -562,7 +575,43 @@ $(document).ready(function() {
                         if (payloadText.trim()) {
                             payload = JSON.parse(payloadText);
                         } else {
-                            payload = r;
+                            // Build payload from form inputs
+                            var getVal = function(id) { var el = document.getElementById(id); return el ? el.value : ''; };
+                            payload.kodebooking = kb;
+                            payload.jenispasien = getVal('inputJenispasien') || r.jenispasien || 'JKN';
+                            payload.nomorkartu = getVal('inputNomorkartu') || r.nomorkartu || '';
+                            payload.nik = getVal('inputNik') || r.nik || '';
+                            payload.nohp = getVal('inputNohp') || r.nohp || '';
+                            payload.kodepoli = getVal('inputKodepoli') || r.kodepoli || '';
+                            payload.namapoli = getVal('inputNamapoli') || r.namapoli || '';
+                            payload.pasienbaru = (r.pasienbaru != null) ? r.pasienbaru : 0;
+                            payload.norm = getVal('inputNorm') || r.norm || '';
+                            payload.tanggalperiksa = getVal('inputTanggalperiksa') || r.tanggalperiksa || '';
+                            payload.kodedokter = getVal('inputKodedokter') || r.kodedokter || '';
+                            payload.namadokter = getVal('inputNamadokter') || r.namadokter || '';
+                            payload.jampraktek = getVal('inputJampraktek') || r.jampraktek || '';
+                            payload.jeniskunjungan = r.jeniskunjungan || 3;
+                            payload.nomorreferensi = getVal('inputNomorreferensi') || r.nomorreferensi || '';
+                            payload.nomorantrean = getVal('inputNomorantrean') || r.nomorantrean || '';
+                            payload.angkaantrean = getVal('inputAngkaantrean') || r.angkaantrean || '';
+                            // Convert estimasi WIB back to timestamp
+                            var estInput = getVal('inputEstimasi');
+                            if (estInput && estInput !== estimasiWIB) {
+                                // User changed the value - try to parse it as datetime
+                                var estDate = new Date(estInput);
+                                if (!isNaN(estDate.getTime())) {
+                                    payload.estimasidilayani = estDate.getTime();
+                                } else {
+                                    payload.estimasidilayani = r.estimasidilayani || 0;
+                                }
+                            } else {
+                                payload.estimasidilayani = r.estimasidilayani || 0;
+                            }
+                            payload.sisakuotajkn = getVal('inputSisakuotajkn') || r.sisakuotajkn || 0;
+                            payload.kuotajkn = getVal('inputKuotajkn') || r.kuotajkn || 0;
+                            payload.sisakuotanonjkn = getVal('inputSisakuotanonjkn') || r.sisakuotanonjkn || 0;
+                            payload.kuotanonjkn = getVal('inputKuotanonjkn') || r.kuotanonjkn || 0;
+                            payload.keterangan = getVal('inputKeterangan') || r.keterangan || '';
                         }
                     } catch (e) {
                         Swal.showValidationMessage('Format JSON tidak valid: ' + e.message);
@@ -677,3 +726,4 @@ $(document).ready(function() {
 });
 </script>
 @endpush
+
