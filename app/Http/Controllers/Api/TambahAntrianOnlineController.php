@@ -10,7 +10,9 @@ use Illuminate\Support\Facades\Log; // Import class Log
 use App\Http\Controllers\Controller; // Import class Controller
 use Illuminate\Support\Facades\Validator; // Import class Validator
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache; // Import Cache untuk optimasi
 use App\Jobs\SendKodeBookingBatchJob;
+use App\Providers\PerformanceServiceProvider; // Import performance provider
 
 class TambahAntrianOnlineController extends Controller
 {
@@ -159,6 +161,9 @@ class TambahAntrianOnlineController extends Controller
                         ]);
                     }
                     Log::info("[data_pending_kodebooking_get - $urlQL] UPSERT_SUCCESS: Processed " . count($upsertData) . " / $totalIncoming records.");
+                    
+                    // Clear dashboard cache karena data telah berubah
+                    PerformanceServiceProvider::clearDashboardCache($urlQL);
                     
                     // Panggil otomatisasi antrean hanya jika ada data yang diproses
                     $this->addAntrians_otomatis($urlQL);

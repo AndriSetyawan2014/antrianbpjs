@@ -1,8 +1,12 @@
 @extends('layouts.admin')
 
 @section('page_title')
-    <i class="fas fa-chart-bar me-1" style="color:var(--color-primary);"></i>
+    <i class="fas fa-chart-bar me-1 text-primary"></i>
     Rekap Antrean Per Tanggal
+@endsection
+
+@section('page_subtitle')
+    Ringkasan antrian pasien per tanggal kunjungan
 @endsection
 
 {{-- styles VClaim dimuat global via Vite (resources/css/vclaim.css) --}}

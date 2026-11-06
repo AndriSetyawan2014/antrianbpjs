@@ -107,3 +107,15 @@ Always validate branch code against `$availableQLs` before processing.
 - [ ] Request validation with Laravel Validation
 - [ ] Logging with `Log::info/error/warning`
 - [ ] Branch code validated against available QL list
+
+## 9. Verifikasi Sintaks PHP (WAJIB)
+
+Sebelum menyelesaikan setiap tugas yang melibatkan editing file `.php`, **harus** menjalankan perintah berikut untuk memastikan tidak ada error sintaks:
+
+```bash
+php -l path/to/file.php
+```
+
+Hanya lanjut ke commit/push jika output menunjukkan `No syntax errors detected`.
+
+Jika menggunakan PHP versi yang berbeda dengan server (misal lokal PHP 7.4 tapi server PHP 8+), perhatikan fitur bahasa yang tidak didukung lokal (misal `match` expression membutuhkan PHP 8.0+). Verifikasi final harus dilakukan di server produksi atau environment yang cocok.

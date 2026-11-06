@@ -13,6 +13,7 @@ use App\Jobs\SyncAntreanPerTanggalJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use App\Providers\PerformanceServiceProvider;
 
 class VclaimController extends Controller
 {
@@ -117,6 +118,9 @@ class VclaimController extends Controller
                         ]);
                         $totalData += $count;
                         Log::info("[VclaimController] Inline Sync Sukses — QL={$urlQL}, Tanggal={$tanggal}, Data={$count}");
+
+                        // Clear VClaim cache karena data telah berubah
+                        PerformanceServiceProvider::clearVClaimCache($urlQL, $tanggal);
                     }
                 } catch (\Throwable $e) {
                     $hasError = true;

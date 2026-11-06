@@ -1,8 +1,12 @@
 @extends('layouts.admin')
 
 @section('page_title')
-    <i class="fas fa-list-ol me-1" style="color:var(--color-primary);"></i>
+    <i class="fas fa-list-ol me-1 text-primary"></i>
     Antrean Per Tanggal
+@endsection
+
+@section('page_subtitle')
+    Detail antrian pasien per tanggal kunjungan
 @endsection
 
 @section('content')

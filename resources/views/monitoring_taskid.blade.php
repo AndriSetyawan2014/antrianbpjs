@@ -1,5 +1,13 @@
 @extends('layouts.admin')
 
+@section('page_title')
+    <h1 class="page-title"><i class="fas fa-tasks me-2 text-primary"></i>{{ $pageTitle }}</h1>
+@endsection
+
+@section('page_subtitle')
+    Monitoring status pengiriman Task ID ke BPJS
+@endsection
+
 @section('content')
 @include('partials.monitoring-taskid-page', [
     'pageTitle' => 'Monitoring Task ID Antrian',

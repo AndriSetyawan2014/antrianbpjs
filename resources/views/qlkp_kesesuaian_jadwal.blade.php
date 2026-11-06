@@ -1,19 +1,16 @@
 @extends('layouts.admin')
 
-@section('content')
-{{-- Page Header --}}
-<div class="page-header">
-    <h2 class="page-title"><i class="fas fa-user-clock me-2"></i>Kesesuaian Jadwal Dokter — Kulon Progo</h2>
-    <nav class="breadcrumb-nav" aria-label="breadcrumb">
-        <span>Sistem Pemantauan Bridging BPJS</span>
-        <i class="fas fa-chevron-right"></i>
-        <span>Queen Latifa Kulon Progo</span>
-        <i class="fas fa-chevron-right"></i>
-        <span>Kesesuaian Jadwal Dokter (HFIS BPJS vs RS)</span>
-    </nav>
-</div>
+@section('page_title')
+    <h1 class="page-title"><i class="fas fa-user-clock me-2 text-primary"></i>Kesesuaian Jadwal Dokter — Kulon Progo</h1>
+@endsection
 
-{{-- KPI Summary Cards --}}
+@section('page_subtitle')
+    Perbandingan jadwal dokter HFIS BPJS vs waktu pelayanan RS
+@endsection
+
+@section('content')
+
+{-- KPI Summary Cards --}}
 <div class="row mb-3">
     <div class="col-xl-3 col-md-6 mb-3">
         <div class="card border-0 shadow-sm border-start border-primary border-4 h-100 py-2">
@@ -77,7 +74,7 @@
     </div>
 </div>
 
-{{-- Filter Card --}}
+{-- Filter Card --}}
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-body p-3">
         <form method="GET" action="{{ route('qlkp_kesesuaian_jadwal') }}" class="row g-2 align-items-center" id="formFilterKesesuaian">
@@ -138,7 +135,7 @@
     </div>
 </div>
 
-{{-- Data Table --}}
+{-- Data Table --}}
 <div class="card shadow-sm border-0">
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>

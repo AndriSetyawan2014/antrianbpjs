@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Cache;
+use App\Providers\PerformanceServiceProvider;
 
 class PengirimanTaskIDController extends Controller
 {
@@ -153,6 +155,9 @@ class PengirimanTaskIDController extends Controller
                 'reupload' => 1,
             ]);
 
+            // Clear dashboard cache karena data taskid telah berubah
+            PerformanceServiceProvider::clearDashboardCache($urlQL);
+
             return response()->json([
                 'metadata' => [
                     'code' => 200,
@@ -217,6 +222,9 @@ class PengirimanTaskIDController extends Controller
                 'message' => 'Menunggu Sinkronisasi',
                 'reupload' => 1,
             ]);
+
+            // Clear dashboard cache karena data taskid telah berubah
+            PerformanceServiceProvider::clearDashboardCache($urlQL);
 
             return response()->json([
                 'metadata' => [
