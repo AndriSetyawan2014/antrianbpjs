@@ -1,9 +1,7 @@
-{{
-  -- ══════════════════════════════════════════════════════════
-       SIDENAV — Antrian BPJS Online (Modern Healthcare)
-       resources/views/layouts/sidenav.blade.php
-  ═══════════════════════════════════════════════════════════ --
-}}
+{{-- ══════════════════════════════════════════════════════════
+     SIDENAV — Antrian BPJS Online (Modern Healthcare)
+     resources/views/layouts/sidenav.blade.php
+  ═══════════════════════════════════════════════════════════ --}}
 
 <div class="sidebar" id="sidebar">
     <!-- Logo -->
