@@ -12,9 +12,12 @@
             margin: 0;
             min-height: 100vh;
             font-family: 'Inter', system-ui, sans-serif;
-            background: radial-gradient(1200px 600px at 10% 10%, #1e6a7a 0%, transparent 60%),
-                        radial-gradient(1000px 700px at 90% 90%, #0a3a46 0%, transparent 60%),
-                        linear-gradient(135deg, #0a3a46 0%, #0f4c5c 50%, #1e6a7a 100%);
+            background-color: #05242c;
+            background-image: url('{{ asset('dist/img/login-bg.svg') }}');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover;
+            background-attachment: fixed;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -26,9 +29,10 @@
         .orb {
             position: absolute;
             border-radius: 50%;
-            filter: blur(60px);
-            opacity: 0.35;
-            animation: float 8s ease-in-out infinite;
+            filter: blur(70px);
+            opacity: 0.18;
+            animation: float 9s ease-in-out infinite;
+            pointer-events: none;
         }
         .orb.one { width: 320px; height: 320px; background: #f59e0b; top: -80px; left: -60px; }
         .orb.two { width: 400px; height: 400px; background: #10b981; bottom: -120px; right: -80px; animation-delay: 2s; }
@@ -44,7 +48,7 @@
             background: rgba(255, 255, 255, 0.96);
             backdrop-filter: blur(18px);
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255,255,255,0.4);
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255,255,255,0.55), 0 0 46px rgba(34, 211, 238, 0.18);
             overflow: hidden;
             z-index: 2;
         }
@@ -151,6 +155,12 @@
             color: #9ca3af;
         }
         .footer strong { color: #6b7280; }
+        @media (max-width: 480px) {
+            body { background-attachment: scroll; padding: 16px 12px; }
+            .login-body { padding: 20px 20px 24px; }
+            .brand-band { padding: 20px 18px 18px; }
+            .brand-band img { height: 52px; }
+        }
     </style>
 </head>
 <body>
