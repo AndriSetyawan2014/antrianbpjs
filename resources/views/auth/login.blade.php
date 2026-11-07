@@ -12,7 +12,7 @@
             margin: 0;
             min-height: 100vh;
             font-family: 'Inter', system-ui, sans-serif;
-            background-color: #05242c;
+            background-color: #0b2e38;
             background-image: url('{{ asset('dist/img/login-bg.svg') }}');
             background-repeat: no-repeat;
             background-position: center center;
@@ -26,29 +26,14 @@
             overflow-x: hidden;
             overflow-y: auto;
         }
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(70px);
-            opacity: 0.18;
-            animation: float 9s ease-in-out infinite;
-            pointer-events: none;
-        }
-        .orb.one { width: 320px; height: 320px; background: #f59e0b; top: -80px; left: -60px; }
-        .orb.two { width: 400px; height: 400px; background: #10b981; bottom: -120px; right: -80px; animation-delay: 2s; }
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
         .login-card {
             position: relative;
             width: 100%;
             max-width: 420px;
             padding: 0;
-            background: rgba(255, 255, 255, 0.96);
-            backdrop-filter: blur(18px);
-            border-radius: 20px;
-            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255,255,255,0.55), 0 0 46px rgba(34, 211, 238, 0.18);
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 16px;
+            box-shadow: 0 18px 46px rgba(0, 0, 0, 0.38), 0 0 0 1px rgba(255, 255, 255, 0.35);
             overflow: hidden;
             z-index: 2;
         }
@@ -56,19 +41,8 @@
             position: relative;
             padding: 26px 24px 22px;
             text-align: center;
-            background:
-                radial-gradient(420px 160px at 50% -40%, rgba(56, 189, 248, 0.35), transparent 70%),
-                linear-gradient(135deg, #0a3a46 0%, #0f4c5c 55%, #1e6a7a 100%);
-            border-bottom: 3px solid #f59e0b;
-        }
-        .brand-band::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
-            background-size: 26px 26px;
-            pointer-events: none;
+            background: #0a2832;
+            border-bottom: 3px solid #d9a24a;
         }
         .brand-band img {
             position: relative;
@@ -78,7 +52,6 @@
             max-width: 88%;
             object-fit: contain;
             margin-bottom: 8px;
-            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
         }
         .brand-band h1 {
             position: relative;
@@ -164,9 +137,6 @@
     </style>
 </head>
 <body>
-    <div class="orb one"></div>
-    <div class="orb two"></div>
-
     <div class="login-card">
         <div class="brand-band">
             <img src="{{ asset('dist/img/logoqlheader.png') }}" alt="Logo Queen Latifa">

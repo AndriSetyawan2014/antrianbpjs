@@ -1,156 +1,75 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Ilustrasi latar rumah sakit dan teknologi">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Ilustrasi latar rumah sakit">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#05242c"/>
-      <stop offset="0.45" stop-color="#0a3a46"/>
-      <stop offset="1" stop-color="#12505f"/>
+    <linearGradient id="base" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b2e38"/>
+      <stop offset="1" stop-color="#0d3641"/>
     </linearGradient>
-    <radialGradient id="glowTeal" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="#22d3ee" stop-opacity="0.30"/>
-      <stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="glowGold" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="#f59e0b" stop-opacity="0.28"/>
-      <stop offset="1" stop-color="#f59e0b" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="glowGreen" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="#10b981" stop-opacity="0.22"/>
-      <stop offset="1" stop-color="#10b981" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="ecg" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#22d3ee" stop-opacity="0"/>
-      <stop offset="0.18" stop-color="#22d3ee" stop-opacity="0.55"/>
-      <stop offset="0.5" stop-color="#f59e0b" stop-opacity="0.75"/>
-      <stop offset="0.82" stop-color="#22d3ee" stop-opacity="0.55"/>
-      <stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
-    </linearGradient>
-    <linearGradient id="tower" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#0d3d4a"/>
-      <stop offset="1" stop-color="#04222b"/>
-    </linearGradient>
-    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse">
-      <path d="M64 0H0V64" fill="none" stroke="#8be9f7" stroke-opacity="0.07" stroke-width="1"/>
-    </pattern>
-    <radialGradient id="gridFade" cx="50%" cy="45%" r="70%">
-      <stop offset="0.25" stop-color="#ffffff" stop-opacity="0.9"/>
-      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
-    </radialGradient>
-    <mask id="gridMask">
-      <rect width="1920" height="1080" fill="url(#gridFade)"/>
-    </mask>
-    <filter id="softGlow" x="-30%" y="-300%" width="160%" height="700%">
-      <feGaussianBlur stdDeviation="6" result="b"/>
-      <feMerge>
-        <feMergeNode in="b"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
   </defs>
 
-  <!-- Base -->
-  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <!-- Latar solid -->
+  <rect width="1920" height="1080" fill="url(#base)"/>
 
-  <!-- Ambient glows -->
-  <ellipse cx="250" cy="180" rx="620" ry="480" fill="url(#glowTeal)"/>
-  <ellipse cx="1760" cy="920" rx="700" ry="520" fill="url(#glowGreen)"/>
-  <ellipse cx="1500" cy="120" rx="480" ry="380" fill="url(#glowGold)"/>
-  <ellipse cx="420" cy="980" rx="520" ry="400" fill="url(#glowGold)" opacity="0.5"/>
+  <!-- Bentuk geometris datar (tanpa glow) -->
+  <circle cx="1700" cy="150" r="520" fill="#103d48" opacity="0.55"/>
+  <circle cx="1700" cy="150" r="360" fill="none" stroke="#4f8591" stroke-opacity="0.18" stroke-width="1.5"/>
+  <rect x="-120" y="720" width="900" height="420" fill="#0a2933" opacity="0.85"/>
 
-  <!-- Faint technical grid -->
-  <rect width="1920" height="1080" fill="url(#grid)" mask="url(#gridMask)"/>
-
-  <!-- Network nodes (top area) -->
-  <g stroke="#7dd3fc" stroke-opacity="0.18" stroke-width="1" fill="none">
-    <path d="M150 300 L330 220 L520 300 L470 470 L270 500 Z"/>
-    <path d="M1580 240 L1740 170 L1880 280 L1830 430 L1640 420 Z"/>
-    <path d="M900 140 L1060 90 L1200 170 L1140 300 L960 300 Z"/>
-    <path d="M330 220 L470 470 M150 300 L270 500 M1740 170 L1830 430 M1580 240 L1640 420 M1060 90 L1140 300"/>
-  </g>
-  <g fill="#7dd3fc" fill-opacity="0.45">
-    <circle cx="150" cy="300" r="4"/><circle cx="330" cy="220" r="5"/><circle cx="520" cy="300" r="4"/>
-    <circle cx="470" cy="470" r="4"/><circle cx="270" cy="500" r="5"/>
-    <circle cx="1580" cy="240" r="4"/><circle cx="1740" cy="170" r="5"/><circle cx="1880" cy="280" r="4"/>
-    <circle cx="1830" cy="430" r="4"/><circle cx="1640" cy="420" r="5"/>
-    <circle cx="900" cy="140" r="4"/><circle cx="1060" cy="90" r="5"/><circle cx="1200" cy="170" r="4"/>
-    <circle cx="1140" cy="300" r="4"/><circle cx="960" cy="300" r="5"/>
-  </g>
-
-  <!-- ECG line -->
-  <path d="M0 690 H320 L360 690 L392 618 L428 762 L462 690 H640 L676 690 L700 656 L724 690 H980 L1016 690 L1048 604 L1084 786 L1120 690 H1330 L1360 690 L1384 662 L1408 690 H1660 L1696 690 L1728 628 L1764 748 L1798 690 H1920"
-        fill="none" stroke="url(#ecg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
-        filter="url(#softGlow)" opacity="0.7"/>
-  <path d="M0 690 H320 L360 690 L392 618 L428 762 L462 690 H640 L676 690 L700 656 L724 690 H980 L1016 690 L1048 604 L1084 786 L1120 690 H1330 L1360 690 L1384 662 L1408 690 H1660 L1696 690 L1728 628 L1764 748 L1798 690 H1920"
-        fill="none" stroke="#e0f7ff" stroke-opacity="0.28" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
-
-  <!-- Medical cross accents -->
-  <g fill="#fbbf24" fill-opacity="0.16">
-    <path d="M240 760 h18 v18 h18 v18 h-18 v18 h-18 v-18 h-18 v-18 h18 z"/>
-    <path d="M1610 540 h14 v14 h14 v14 h-14 v14 h-14 v-14 h-14 v-14 h14 z"/>
-    <path d="M1240 860 h12 v12 h12 v12 h-12 v12 h-12 v-12 h-12 v-12 h12 z"/>
-  </g>
-
-  <!-- Hospital skyline -->
-  <g>
-    <!-- far buildings -->
-    <g fill="#062b35" opacity="0.9">
-      <rect x="0" y="880" width="220" height="200" rx="6"/>
-      <rect x="200" y="840" width="150" height="240" rx="6"/>
-      <rect x="1560" y="860" width="180" height="220" rx="6"/>
-      <rect x="1710" y="820" width="210" height="260" rx="6"/>
+  <!-- Siluet rumah sakit (line art datar) -->
+  <g stroke="#78aab4" stroke-opacity="0.38" stroke-width="2" fill="none" stroke-linejoin="round">
+    <!-- gedung kiri -->
+    <rect x="120" y="700" width="300" height="380"/>
+    <rect x="168" y="640" width="96" height="60"/>
+    <rect x="300" y="672" width="80" height="28"/>
+    <!-- jendela -->
+    <g stroke-opacity="0.26" stroke-width="1.5">
+      <path d="M150 740h40M210 740h40M270 740h40M330 740h40M387 740h20"/>
+      <path d="M150 786h40M210 786h40M270 786h40M330 786h40M387 786h20"/>
+      <path d="M150 832h40M210 832h40M270 832h40M330 832h40M387 832h20"/>
+      <path d="M150 878h40M210 878h40M270 878h40M330 878h40M387 878h20"/>
+      <path d="M150 924h40M210 924h40M270 924h40M330 924h40M387 924h20"/>
+      <path d="M150 970h40M210 970h40M270 970h40M330 970h40M387 970h20"/>
     </g>
+    <!-- pintu masuk -->
+    <path d="M236 1080v-70a34 34 0 0 1 68 0v70"/>
 
-    <!-- left hospital block -->
-    <g>
-      <rect x="90" y="790" width="300" height="290" rx="10" fill="url(#tower)"/>
-      <rect x="120" y="730" width="120" height="70" rx="8" fill="#0e4351"/>
-      <rect x="245" y="760" width="110" height="40" rx="8" fill="#0e4351"/>
-      <g fill="#7dd3fc" fill-opacity="0.30">
-        <rect x="115" y="820" width="26" height="16" rx="3"/><rect x="160" y="820" width="26" height="16" rx="3"/><rect x="205" y="820" width="26" height="16" rx="3"/><rect x="250" y="820" width="26" height="16" rx="3"/><rect x="295" y="820" width="26" height="16" rx="3"/><rect x="340" y="820" width="26" height="16" rx="3"/>
-        <rect x="115" y="860" width="26" height="16" rx="3"/><rect x="160" y="860" width="26" height="16" rx="3"/><rect x="205" y="860" width="26" height="16" rx="3"/><rect x="250" y="860" width="26" height="16" rx="3"/><rect x="295" y="860" width="26" height="16" rx="3"/><rect x="340" y="860" width="26" height="16" rx="3"/>
-        <rect x="115" y="900" width="26" height="16" rx="3"/><rect x="160" y="900" width="26" height="16" rx="3"/><rect x="205" y="900" width="26" height="16" rx="3"/><rect x="250" y="900" width="26" height="16" rx="3"/><rect x="295" y="900" width="26" height="16" rx="3"/><rect x="340" y="900" width="26" height="16" rx="3"/>
-        <rect x="115" y="940" width="26" height="16" rx="3"/><rect x="160" y="940" width="26" height="16" rx="3"/><rect x="205" y="940" width="26" height="16" rx="3"/><rect x="250" y="940" width="26" height="16" rx="3"/><rect x="295" y="940" width="26" height="16" rx="3"/><rect x="340" y="940" width="26" height="16" rx="3"/>
-      </g>
-      <g fill="#fbbf24" fill-opacity="0.35">
-        <rect x="205" y="820" width="26" height="16" rx="3"/>
-        <rect x="295" y="940" width="26" height="16" rx="3"/>
-      </g>
-      <!-- cross sign on tower -->
-      <g transform="translate(222 742)">
-        <rect x="0" y="12" width="48" height="14" rx="3" fill="#f59e0b" fill-opacity="0.85"/>
-        <rect x="17" y="-5" width="14" height="48" rx="3" fill="#f59e0b" fill-opacity="0.85"/>
-      </g>
+    <!-- gedung kanan -->
+    <rect x="1590" y="730" width="330" height="350"/>
+    <rect x="1660" y="664" width="120" height="66"/>
+    <g stroke-opacity="0.26" stroke-width="1.5">
+      <path d="M1625 770h44M1695 770h44M1765 770h44M1835 770h44M1885 770h15"/>
+      <path d="M1625 816h44M1695 816h44M1765 816h44M1835 816h44M1885 816h15"/>
+      <path d="M1625 862h44M1695 862h44M1765 862h44M1835 862h44M1885 862h15"/>
+      <path d="M1625 908h44M1695 908h44M1765 908h44M1835 908h44M1885 908h15"/>
+      <path d="M1625 954h44M1695 954h44M1765 954h44M1835 954h44M1885 954h15"/>
     </g>
-
-    <!-- right hospital block -->
-    <g>
-      <rect x="1560" y="770" width="360" height="310" rx="10" fill="url(#tower)"/>
-      <rect x="1640" y="700" width="140" height="80" rx="8" fill="#0e4351"/>
-      <g fill="#7dd3fc" fill-opacity="0.28">
-        <rect x="1600" y="810" width="26" height="16" rx="3"/><rect x="1645" y="810" width="26" height="16" rx="3"/><rect x="1690" y="810" width="26" height="16" rx="3"/><rect x="1735" y="810" width="26" height="16" rx="3"/><rect x="1780" y="810" width="26" height="16" rx="3"/><rect x="1825" y="810" width="26" height="16" rx="3"/><rect x="1870" y="810" width="26" height="16" rx="3"/>
-        <rect x="1600" y="850" width="26" height="16" rx="3"/><rect x="1645" y="850" width="26" height="16" rx="3"/><rect x="1690" y="850" width="26" height="16" rx="3"/><rect x="1735" y="850" width="26" height="16" rx="3"/><rect x="1780" y="850" width="26" height="16" rx="3"/><rect x="1825" y="850" width="26" height="16" rx="3"/><rect x="1870" y="850" width="26" height="16" rx="3"/>
-        <rect x="1600" y="890" width="26" height="16" rx="3"/><rect x="1645" y="890" width="26" height="16" rx="3"/><rect x="1690" y="890" width="26" height="16" rx="3"/><rect x="1735" y="890" width="26" height="16" rx="3"/><rect x="1780" y="890" width="26" height="16" rx="3"/><rect x="1825" y="890" width="26" height="16" rx="3"/><rect x="1870" y="890" width="26" height="16" rx="3"/>
-        <rect x="1600" y="930" width="26" height="16" rx="3"/><rect x="1645" y="930" width="26" height="16" rx="3"/><rect x="1690" y="930" width="26" height="16" rx="3"/><rect x="1735" y="930" width="26" height="16" rx="3"/><rect x="1780" y="930" width="26" height="16" rx="3"/><rect x="1825" y="930" width="26" height="16" rx="3"/><rect x="1870" y="930" width="26" height="16" rx="3"/>
-      </g>
-      <g fill="#fbbf24" fill-opacity="0.35">
-        <rect x="1690" y="810" width="26" height="16" rx="3"/>
-        <rect x="1825" y="930" width="26" height="16" rx="3"/>
-      </g>
-      <!-- cross sign -->
-      <g transform="translate(1688 706)">
-        <rect x="0" y="12" width="40" height="12" rx="3" fill="#f59e0b" fill-opacity="0.8"/>
-        <rect x="14" y="-2" width="12" height="40" rx="3" fill="#f59e0b" fill-opacity="0.8"/>
-      </g>
-    </g>
-
-    <!-- ground line -->
-    <rect x="0" y="1072" width="1920" height="8" fill="#031a21"/>
   </g>
 
-  <!-- Vignette -->
-  <rect width="1920" height="1080" fill="none"/>
-  <radialGradient id="vig" cx="50%" cy="45%" r="75%">
-    <stop offset="0.55" stop-color="#000000" stop-opacity="0"/>
-    <stop offset="1" stop-color="#02141a" stop-opacity="0.55"/>
-  </radialGradient>
-  <rect width="1920" height="1080" fill="url(#vig)"/>
+  <!-- Palang medis (satu aksen saja) -->
+  <g fill="#d9a24a" fill-opacity="0.75">
+    <rect x="206" y="656" width="20" height="48" rx="2"/>
+    <rect x="192" y="670" width="48" height="20" rx="2"/>
+    <rect x="1703" y="678" width="16" height="38" rx="2"/>
+    <rect x="1692" y="689" width="38" height="16" rx="2"/>
+  </g>
+
+  <!-- Garis ECG tipis, tanpa efek glow -->
+  <path d="M0 690h300l26 0 14-44 18 84 16-40h190l24 0 12-22 14 22h250l22 0 16-52 20 96 18-44h212l22 0 14-18 14 18h300l26 0 14-38 18 70 14-32h180"
+        fill="none" stroke="#78aab4" stroke-opacity="0.30" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Detail kecil: titik & plus -->
+  <g fill="#78aab4" fill-opacity="0.22">
+    <circle cx="620" cy="250" r="3"/>
+    <circle cx="700" cy="290" r="2.5"/>
+    <circle cx="1280" cy="220" r="3"/>
+    <circle cx="1340" cy="270" r="2.5"/>
+    <circle cx="1000" cy="330" r="2.5"/>
+  </g>
+  <g fill="none" stroke="#78aab4" stroke-opacity="0.18" stroke-width="1.5">
+    <path d="M560 520h16M568 512v16"/>
+    <path d="M1250 560h14M1257 553v14"/>
+    <path d="M1420 380h12M1426 374v12"/>
+  </g>
+
+  <!-- Garis horizon -->
+  <rect x="0" y="1076" width="1920" height="4" fill="#08242c"/>
 </svg>
