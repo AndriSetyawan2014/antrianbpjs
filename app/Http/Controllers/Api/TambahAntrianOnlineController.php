@@ -538,6 +538,8 @@ class TambahAntrianOnlineController extends Controller
                 $conditions['idpendaftaran'] = $arr['idpendaftaran'];
             }
             $data_Kodebooking = (new DataKodebooking())->setTableByQL($urlQL);
+            // Simpan juga field yang diedit user ke DB (agar data terbaru saat dibuka kembali)
+            $data_kodebooking = array_merge($arr, $data_kodebooking);
             $addAntrians = $data_Kodebooking->updateOrCreate(
                 $conditions,
                 $data_kodebooking
