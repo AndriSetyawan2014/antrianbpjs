@@ -467,7 +467,10 @@ $(document).ready(function() {
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Pasien Baru</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + pasienbaruLabel + '" >' +
+                '      <select class="form-select form-select-sm flex-fill" id="inputPasienbaru">' +
+                '        <option value="0" ' + (pasienbaru == 0 ? 'selected' : '') + '>0 - Pasien Lama</option>' +
+                '        <option value="1" ' + (pasienbaru == 1 ? 'selected' : '') + '>1 - Pasien Baru</option>' +
+                '      </select>' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
@@ -631,7 +634,7 @@ $(document).ready(function() {
                             payload.nohp = getVal('inputNohp') || r.nohp || '';
                             payload.kodepoli = getVal('inputKodepoli') || r.kodepoli || '';
                             payload.namapoli = getVal('inputNamapoli') || r.namapoli || '';
-                            payload.pasienbaru = (r.pasienbaru != null) ? r.pasienbaru : 0;
+                            payload.pasienbaru = parseInt(getVal('inputPasienbaru') || r.pasienbaru || 0);
                             payload.norm = getVal('inputNorm') || r.norm || '';
                             payload.tanggalperiksa = getVal('inputTanggalperiksa') || r.tanggalperiksa || '';
                             payload.kodedokter = getVal('inputKodedokter') || r.kodedokter || '';
