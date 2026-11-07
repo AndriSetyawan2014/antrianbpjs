@@ -122,8 +122,8 @@
     <div class="orb two"></div>
 
     <div class="login-card">
-        <div class="brand">
-            <div class="brand-icon"><i class="fas fa-hospital"></i></div>
+        <div class="brand" style="flex-direction:column; text-align:center; gap:6px;">
+            <img src="{{ asset('dist/img/logoqlheader.png') }}" alt="Logo Queen Latifa" style="height:64px; width:auto; object-fit:contain; margin-bottom:6px;">
             <div class="brand-text">
                 <h1>Antrian BPJS Online</h1>
                 <p>Queen Latifa Healthcare System</p>
