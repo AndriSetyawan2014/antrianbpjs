@@ -9,8 +9,8 @@
 {{-- Judul + breadcrumb dihandle oleh layout via @section('page_title') / @section('page_subtitle') --}}
 
 {{-- Filter Card --}}
-<div class="filter-card">
-    <i class="fas fa-filter" style="color:var(--color-primary);"></i>
+<div class="filter-card" style="flex-wrap: nowrap; overflow-x: auto;">
+    <i class="fas fa-filter" style="color:var(--color-primary); flex-shrink:0;"></i>
     <form method="GET" action="{{ $filterAction }}" style="display:contents;">
         <label for="start_date">Dari:</label>
         <input type="date" id="start_date" name="start_date" value="{{ $startDate }}">
