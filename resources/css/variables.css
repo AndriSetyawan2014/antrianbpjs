@@ -75,4 +75,14 @@
   /* ── Fokus ── */
   --focus-ring: rgba(15, 76, 92, 0.4);
   --color-accent-ink: #0a3a46;
+
+  /* ── Card Dashboard Gradients ── */
+  --card-booking-from: #0f4c5c;
+  --card-booking-to: #1e6a7a;
+  --card-rekap-from: #10b981;
+  --card-rekap-to: #059669;
+  --card-taskid-from: #8b5cf6;
+  --card-taskid-to: #7c3aed;
+  --card-rekapid-from: #f59e0b;
+  --card-rekapid-to: #d97706;
 }
