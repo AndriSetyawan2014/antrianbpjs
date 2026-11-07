@@ -115,13 +115,14 @@ class BpjsHelper
 
     public static function getRequestDirect($urlQL, $endpoint, array $params = [])
     {
-        $consId    = env('BPJS_ANTROL_CONS_ID_'  . $urlQL);
-        $secret    = env('BPJS_ANTROL_SECRET_'   . $urlQL);
-        $userKey   = env('BPJS_ANTROL_USERKEY_'  . $urlQL);
+        $consId    = config("bpjs.antrol.cons_id.{$urlQL}", env('BPJS_ANTROL_CONS_ID_'  . $urlQL));
+        $secret    = config("bpjs.antrol.secret.{$urlQL}", env('BPJS_ANTROL_SECRET_'   . $urlQL));
+        $userKey   = config("bpjs.antrol.user_key.{$urlQL}", env('BPJS_ANTROL_USERKEY_'  . $urlQL));
         $timestamp = strval(time());
         $signature = base64_encode(hash_hmac('sha256', $consId . '&' . $timestamp, $secret, true));
 
-        $url = env('BPJS_BASE_URL', 'https://apijkn.bpjs-kesehatan.go.id/antreanrs') . $endpoint;
+        $baseUrl = config('bpjs.antrol.base_url', env('BPJS_BASE_URL', 'https://apijkn.bpjs-kesehatan.go.id/antreanrs'));
+        $url = $baseUrl . $endpoint;
 
         $response = Http::timeout(30)
             ->connectTimeout(30)
@@ -257,13 +258,14 @@ class BpjsHelper
                 'error'         => 'Parameter urlQL (cabang) kosong/tidak valid',
             ];
         }
-        $consId    = env('BPJS_VCLAIM_CONS_ID_'  . $urlQL);
-        $secret    = env('BPJS_VCLAIM_SECRET_'   . $urlQL);
-        $userKey   = env('BPJS_VCLAIM_USERKEY_'  . $urlQL);
+        $consId    = config("bpjs.vclaim.cons_id.{$urlQL}", env('BPJS_VCLAIM_CONS_ID_'  . $urlQL));
+        $secret    = config("bpjs.vclaim.secret.{$urlQL}", env('BPJS_VCLAIM_SECRET_'   . $urlQL));
+        $userKey   = config("bpjs.vclaim.user_key.{$urlQL}", env('BPJS_VCLAIM_USERKEY_'  . $urlQL));
         $timestamp = strval(time());
         $signature = base64_encode(hash_hmac('sha256', $consId . '&' . $timestamp, $secret, true));
 
-        $url = env('BPJS_VCLAIM_BASE_URL', 'https://apijkn.bpjs-kesehatan.go.id/vclaim-rest') . $endpoint;
+        $baseUrl = config('bpjs.vclaim.base_url', env('BPJS_VCLAIM_BASE_URL', 'https://apijkn.bpjs-kesehatan.go.id/vclaim-rest'));
+        $url = $baseUrl . $endpoint;
 
         $startTime = microtime(true);
 
@@ -376,13 +378,14 @@ class BpjsHelper
                 'error'         => 'Parameter urlQL (cabang) kosong/tidak valid',
             ];
         }
-        $consId    = env('BPJS_ANTROL_CONS_ID_'  . $urlQL);
-        $secret    = env('BPJS_ANTROL_SECRET_'   . $urlQL);
-        $userKey   = env('BPJS_ANTROL_USERKEY_'  . $urlQL);
+        $consId    = config("bpjs.antrol.cons_id.{$urlQL}", env('BPJS_ANTROL_CONS_ID_'  . $urlQL));
+        $secret    = config("bpjs.antrol.secret.{$urlQL}", env('BPJS_ANTROL_SECRET_'   . $urlQL));
+        $userKey   = config("bpjs.antrol.user_key.{$urlQL}", env('BPJS_ANTROL_USERKEY_'  . $urlQL));
         $timestamp = strval(time());
         $signature = base64_encode(hash_hmac('sha256', $consId . '&' . $timestamp, $secret, true));
 
-        $url = env('BPJS_BASE_URL', 'https://apijkn.bpjs-kesehatan.go.id/antreanrs') . $endpoint;
+        $baseUrl = config('bpjs.antrol.base_url', env('BPJS_BASE_URL', 'https://apijkn.bpjs-kesehatan.go.id/antreanrs'));
+        $url = $baseUrl . $endpoint;
 
         $startTime = microtime(true);
 
@@ -465,13 +468,14 @@ class BpjsHelper
                 'error'         => 'Parameter urlQL (cabang) kosong/tidak valid',
             ];
         }
-        $consId    = env('BPJS_ANTROL_CONS_ID_'  . $urlQL);
-        $secret    = env('BPJS_ANTROL_SECRET_'   . $urlQL);
-        $userKey   = env('BPJS_ANTROL_USERKEY_'  . $urlQL);
+        $consId    = config("bpjs.antrol.cons_id.{$urlQL}", env('BPJS_ANTROL_CONS_ID_'  . $urlQL));
+        $secret    = config("bpjs.antrol.secret.{$urlQL}", env('BPJS_ANTROL_SECRET_'   . $urlQL));
+        $userKey   = config("bpjs.antrol.user_key.{$urlQL}", env('BPJS_ANTROL_USERKEY_'  . $urlQL));
         $timestamp = strval(time());
         $signature = base64_encode(hash_hmac('sha256', $consId . '&' . $timestamp, $secret, true));
 
-        $url = env('BPJS_BASE_URL', 'https://apijkn.bpjs-kesehatan.go.id/antreanrs') . $endpoint;
+        $baseUrl = config('bpjs.antrol.base_url', env('BPJS_BASE_URL', 'https://apijkn.bpjs-kesehatan.go.id/antreanrs'));
+        $url = $baseUrl . $endpoint;
 
         $startTime = microtime(true);
 
