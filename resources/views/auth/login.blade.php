@@ -4,14 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login — Antrian BPJS Online</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('dist/img/favicon.ico') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
             --ink: #0f2930;
             --ink-soft: #486972;
-            --brand-teal: #117a8e;
-            --brand-teal-dark: #0c6273;
+            --brand-teal: #128298;
+            --brand-teal-dark: #0d697b;
             --brand-cyan: #229ab0;
             --teal-soft: #e6f6f9;
             --line: #cde5ea;
@@ -23,12 +24,18 @@
             margin: 0;
             min-height: 100vh;
             font-family: 'Inter', system-ui, sans-serif;
-            background-color: #eaf6f8;
+            background-color: #e8f6f8;
+            background-image:
+                radial-gradient(#bfe4ec 1.2px, transparent 1.2px),
+                radial-gradient(#d5eef3 1.2px, #e8f6f8 1.2px);
+            background-size: 32px 32px;
+            background-position: 0 0, 16px 16px;
             color: var(--ink);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 32px 20px;
+            padding: 24px 20px;
             overflow-x: hidden;
         }
 
@@ -39,57 +46,122 @@
             z-index: 0;
         }
         .bg-shape.circle-a {
-            width: 540px; height: 540px;
+            width: 560px; height: 560px;
             border-radius: 50%;
-            background: #d2eef3;
-            top: -170px; left: -130px;
+            background: #cdeef4;
+            top: -160px; left: -120px;
         }
         .bg-shape.circle-b {
-            width: 460px; height: 460px;
+            width: 500px; height: 500px;
             border-radius: 50%;
-            background: #fcebd0;
-            bottom: -180px; right: -110px;
+            background: #fdeac8;
+            bottom: -170px; right: -100px;
+        }
+        .bg-shape.circle-c {
+            width: 260px; height: 260px;
+            border-radius: 50%;
+            background: #d8f3ec;
+            top: 12%; right: 14%;
         }
         .bg-shape.ring {
-            width: 310px; height: 310px;
+            width: 320px; height: 320px;
             border-radius: 50%;
-            border: 2px solid #b5e1ea;
-            top: 10%; right: 8%;
+            border: 2px solid #9fd8e4;
+            top: 8%; right: 10%;
         }
-        .bg-shape.dots {
-            width: 136px; height: 136px;
-            bottom: 10%; left: 7%;
-            background-image: radial-gradient(#9fd6e2 1.8px, transparent 1.8px);
-            background-size: 14px 14px;
+        .bg-shape.ring-left {
+            width: 240px; height: 240px;
+            border-radius: 50%;
+            border: 2px dashed #eab308;
+            opacity: 0.35;
+            bottom: 10%; left: 10%;
+        }
+
+        /* Bar informasi atas di luar kartu agar ruang halaman terisi rapi */
+        .top-status-bar {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 960px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+            padding: 10px 18px;
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid #cde6ec;
+            border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(13, 98, 115, 0.06);
+            font-size: 0.76rem;
+            color: var(--ink-soft);
+        }
+        .top-status-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: var(--ink);
+        }
+        .top-status-left i {
+            color: var(--brand-teal);
+        }
+        .top-status-pills {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #eff9fb;
+            border: 1px solid #cce7ed;
+            font-size: 0.71rem;
+            font-weight: 600;
+            color: var(--brand-teal-dark);
+        }
+        .status-chip .pulse {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #10b981;
         }
 
         .auth-shell {
             position: relative;
             z-index: 1;
             display: grid;
-            grid-template-columns: 420px 460px;
+            grid-template-columns: 460px 500px;
             width: 100%;
-            max-width: 880px;
-            min-height: 590px;
+            max-width: 960px;
             background: #ffffff;
             border-radius: 18px;
             overflow: hidden;
-            border: 1px solid #d7ecf0;
+            border: 1px solid #cde5ea;
             box-shadow: 0 22px 55px rgba(13, 98, 115, 0.14), 0 3px 10px rgba(13, 98, 115, 0.06);
         }
 
-        /* Panel kiri — lebih cerah mengikuti warna biru-toska & emas logo QL */
+        /* Panel kiri — biru-toska cerah mengikuti warna logo QL */
         .brand-panel {
             position: relative;
             display: flex;
             flex-direction: column;
-            padding: 30px 30px 140px;
+            justify-content: flex-start;
+            padding: 28px 30px 115px;
             background-color: var(--brand-teal);
-            background-image: url('{{ asset('dist/img/login-bg.svg') }}');
+            background-image: url('{{ asset('dist/img/login-bg.svg') }}?v=2');
             background-repeat: no-repeat;
             background-position: bottom center;
             background-size: 100% auto;
             color: #ffffff;
+        }
+        .brand-top {
+            position: relative;
+            z-index: 1;
         }
         .brand-header {
             display: flex;
@@ -110,8 +182,8 @@
             gap: 5px;
             padding: 4px 10px;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.18);
-            border: 1px solid rgba(255, 255, 255, 0.28);
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.34);
             font-size: 0.68rem;
             font-weight: 600;
             letter-spacing: 0.03em;
@@ -125,8 +197,8 @@
             background: #6ee7b7;
         }
         .brand-panel h1 {
-            margin: 16px 0 3px;
-            font-size: 1.2rem;
+            margin: 14px 0 3px;
+            font-size: 1.24rem;
             font-weight: 700;
             letter-spacing: 0.01em;
         }
@@ -135,12 +207,12 @@
             font-size: 0.72rem;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.82);
+            color: rgba(255, 255, 255, 0.86);
         }
         .brand-divider {
-            width: 46px;
+            width: 48px;
             height: 3.5px;
-            margin: 16px 0;
+            margin: 14px 0;
             background: #fbbf24;
             border-radius: 2px;
         }
@@ -149,22 +221,20 @@
             margin: 0;
             padding: 0;
             display: grid;
-            gap: 10px;
-            position: relative;
-            z-index: 1;
+            gap: 9px;
         }
         .brand-points li {
             display: flex;
             align-items: flex-start;
             gap: 10px;
             font-size: 0.79rem;
-            line-height: 1.45;
-            color: rgba(255, 255, 255, 0.94);
+            line-height: 1.42;
+            color: rgba(255, 255, 255, 0.95);
         }
         .brand-points li i {
             font-size: 0.72rem;
             color: #fde68a;
-            background: rgba(255, 255, 255, 0.16);
+            background: rgba(255, 255, 255, 0.18);
             width: 20px;
             height: 20px;
             border-radius: 6px;
@@ -179,11 +249,11 @@
         .branch-showcase {
             position: relative;
             z-index: 1;
-            margin-top: 18px;
-            padding: 13px 14px;
+            margin-top: 14px;
+            padding: 12px 13px;
             border-radius: 12px;
-            background: rgba(10, 74, 88, 0.48);
-            border: 1px solid rgba(255, 255, 255, 0.22);
+            background: rgba(9, 71, 84, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.25);
         }
         .branch-showcase-title {
             display: flex;
@@ -194,13 +264,13 @@
             text-transform: uppercase;
             letter-spacing: 0.07em;
             color: #fde68a;
-            margin-bottom: 9px;
+            margin-bottom: 8px;
         }
         .branch-showcase-title span {
             font-weight: 400;
             text-transform: none;
             letter-spacing: 0;
-            color: rgba(255, 255, 255, 0.78);
+            color: rgba(255, 255, 255, 0.84);
             font-size: 0.66rem;
         }
         .branch-grid {
@@ -214,17 +284,17 @@
             gap: 8px;
             padding: 7px 9px;
             border-radius: 8px;
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.16);
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             color: #ffffff;
             font-size: 0.73rem;
             cursor: pointer;
-            transition: background 0.15s, border-color 0.15s, transform 0.1s;
+            transition: background 0.15s, border-color 0.15s;
             text-align: left;
             font-family: inherit;
         }
         .branch-chip:hover {
-            background: rgba(255, 255, 255, 0.22);
+            background: rgba(255, 255, 255, 0.24);
             border-color: #fde68a;
         }
         .branch-chip.active {
@@ -238,7 +308,7 @@
             font-weight: 700;
             padding: 2px 6px;
             border-radius: 5px;
-            background: rgba(251, 191, 36, 0.25);
+            background: rgba(251, 191, 36, 0.28);
             color: #fde68a;
             letter-spacing: 0.03em;
         }
@@ -247,24 +317,48 @@
             color: #ffffff;
         }
 
-        .brand-note {
-            position: absolute;
-            left: 30px;
-            right: 30px;
-            bottom: 14px;
-            z-index: 2;
+        /* Ringkasan alur Task ID di panel kiri bawah agar tidak ada ruang kosong */
+        .workflow-card {
+            position: relative;
+            z-index: 1;
+            margin-top: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: rgba(9, 71, 84, 0.52);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .workflow-title {
+            font-size: 0.66rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #b8f2ff;
+            margin-bottom: 6px;
+        }
+        .workflow-steps {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 0.68rem;
-            color: rgba(255, 255, 255, 0.88);
-            letter-spacing: 0.02em;
-            text-shadow: 0 1px 2px rgba(7, 45, 54, 0.5);
+            gap: 4px;
+            font-size: 0.67rem;
+            color: #ffffff;
+        }
+        .workflow-step {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.14);
+            padding: 3px 7px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+        .workflow-step strong {
+            color: #fde68a;
         }
 
         /* Panel form */
         .form-panel {
-            padding: 34px 38px 26px;
+            padding: 32px 38px 24px;
             display: flex;
             flex-direction: column;
             background: #ffffff;
@@ -280,7 +374,7 @@
             color: var(--brand-teal);
             font-size: 0.69rem;
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .form-panel h2 {
             margin: 0;
@@ -289,7 +383,7 @@
             color: var(--ink);
         }
         .form-panel .form-sub {
-            margin: 5px 0 18px;
+            margin: 4px 0 16px;
             font-size: 0.8rem;
             color: var(--ink-soft);
         }
@@ -301,13 +395,13 @@
             padding: 11px 13px;
             font-size: 0.76rem;
             color: #6b4e16;
-            margin-bottom: 18px;
+            margin-bottom: 16px;
         }
         .info-box-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
         }
         .info-box .info-title {
             font-weight: 700;
@@ -321,7 +415,7 @@
             font-family: inherit;
             font-size: 0.68rem;
             font-weight: 600;
-            padding: 2px 8px;
+            padding: 2px 9px;
             border-radius: 6px;
             cursor: pointer;
             transition: background 0.15s;
@@ -344,13 +438,13 @@
             border-radius: 10px;
             padding: 10px 12px;
             font-size: 0.78rem;
-            margin-bottom: 15px;
+            margin-bottom: 14px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .field { margin-bottom: 14px; }
+        .field { margin-bottom: 13px; }
         .field label {
             display: block;
             font-size: 0.7rem;
@@ -372,7 +466,7 @@
         .input-wrap input,
         .input-wrap select {
             width: 100%;
-            padding: 11px 14px 11px 40px;
+            padding: 10px 14px 10px 40px;
             border: 1.5px solid var(--line);
             border-radius: 9px;
             font-size: 0.89rem;
@@ -386,7 +480,7 @@
         .input-wrap select:focus {
             border-color: var(--brand-teal);
             background: #ffffff;
-            box-shadow: 0 0 0 3px rgba(17, 122, 142, 0.13);
+            box-shadow: 0 0 0 3px rgba(18, 130, 152, 0.13);
         }
         .input-wrap select {
             appearance: none;
@@ -409,32 +503,33 @@
             cursor: pointer;
             transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
             margin-top: 4px;
-            box-shadow: 0 6px 16px rgba(17, 122, 142, 0.24);
+            box-shadow: 0 6px 16px rgba(18, 130, 152, 0.24);
         }
         .btn-login:hover { background: var(--brand-teal-dark); }
         .btn-login:active { transform: translateY(1px); }
 
         /* Pengisi ruang bawah form: modul ringkas */
         .module-strip {
-            margin-top: 18px;
-            padding-top: 14px;
+            margin-top: 16px;
+            padding-top: 13px;
             border-top: 1px dashed #d7eaee;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 6px;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 7px;
         }
         .module-pill {
-            display: inline-flex;
+            display: flex;
             align-items: center;
+            justify-content: center;
             gap: 5px;
-            font-size: 0.7rem;
+            font-size: 0.69rem;
+            font-weight: 500;
             color: var(--ink-soft);
-            background: #f3fafb;
-            border: 1px solid #d9edf1;
-            padding: 4px 9px;
-            border-radius: 7px;
+            background: #f2fafc;
+            border: 1px solid #d5ebf0;
+            padding: 6px 8px;
+            border-radius: 8px;
+            text-align: center;
         }
         .module-pill i {
             color: var(--brand-teal);
@@ -445,82 +540,102 @@
             margin-top: auto;
             padding-top: 14px;
             font-size: 0.72rem;
-            color: #829ea6;
+            color: #7997a0;
             text-align: center;
         }
         .form-footer strong { color: var(--ink-soft); }
 
-        @media (max-width: 860px) {
-            body { padding: 20px 14px; }
+        @media (max-width: 920px) {
+            body { padding: 18px 14px; }
+            .top-status-bar { max-width: 440px; flex-direction: column; align-items: flex-start; }
             .auth-shell {
                 grid-template-columns: 1fr;
-                max-width: 430px;
-                min-height: 0;
+                max-width: 440px;
             }
             .brand-panel {
-                padding: 22px 24px 20px;
+                padding: 22px 24px 18px;
                 background-image: none;
             }
             .brand-logo { height: 44px; max-width: 65%; }
             .brand-panel h1 { margin-top: 12px; font-size: 1.05rem; }
             .brand-divider { margin: 12px 0; }
-            .brand-points, .branch-showcase, .brand-note { display: none; }
+            .brand-points, .workflow-card { display: none; }
             .form-panel { padding: 26px 24px 22px; }
-            .bg-shape.ring, .bg-shape.dots { display: none; }
+            .bg-shape.ring, .bg-shape.ring-left, .bg-shape.circle-c { display: none; }
         }
     </style>
 </head>
 <body>
     <div class="bg-shape circle-a"></div>
     <div class="bg-shape circle-b"></div>
+    <div class="bg-shape circle-c"></div>
     <div class="bg-shape ring"></div>
-    <div class="bg-shape dots"></div>
+    <div class="bg-shape ring-left"></div>
+
+    <div class="top-status-bar">
+        <div class="top-status-left">
+            <i class="fas fa-network-wired"></i>
+            <span>Integrasi SIMRS &amp; BPJS Kesehatan — Queen Latifa Healthcare</span>
+        </div>
+        <div class="top-status-pills">
+            <span class="status-chip"><span class="pulse"></span> Antrol WS Aktif</span>
+            <span class="status-chip"><span class="pulse"></span> VClaim V2 Encrypted</span>
+            <span class="status-chip"><i class="fas fa-code-branch"></i> 4 Unit Cabang</span>
+        </div>
+    </div>
 
     <div class="auth-shell">
         <aside class="brand-panel">
-            <div class="brand-header">
-                <img src="{{ asset('dist/img/logoqlheader.png') }}" alt="Logo Queen Latifa" class="brand-logo">
-                <span class="brand-badge"><span class="dot"></span> BPJS Ready</span>
-            </div>
-            <h1>Antrian BPJS Online</h1>
-            <p class="brand-sub">Queen Latifa Healthcare System</p>
-
-            <div class="brand-divider"></div>
-
-            <ul class="brand-points">
-                <li><i class="fas fa-check"></i><span>Antrean online terhubung langsung dengan BPJS Kesehatan.</span></li>
-                <li><i class="fas fa-check"></i><span>Kirim & pantau Kode Booking serta Task ID 1–7 per cabang.</span></li>
-                <li><i class="fas fa-check"></i><span>Verifikasi VClaim dan rekap kunjungan dalam satu tempat.</span></li>
-            </ul>
-
-            <div class="branch-showcase">
-                <div class="branch-showcase-title">
-                    <strong><i class="fas fa-hospital-alt"></i> Unit Layanan</strong>
-                    <span>Klik untuk pilih cabang</span>
+            <div class="brand-top">
+                <div class="brand-header">
+                    <img src="{{ asset('dist/img/logoqlheader.png') }}" alt="Logo Queen Latifa" class="brand-logo">
+                    <span class="brand-badge"><span class="dot"></span> BPJS Ready</span>
                 </div>
-                <div class="branch-grid">
-                    <button type="button" class="branch-chip" data-branch="QLJ">
-                        <span class="code">QLH</span>
-                        <span>Yogyakarta</span>
-                    </button>
-                    <button type="button" class="branch-chip" data-branch="QLKP">
-                        <span class="code">QLH</span>
-                        <span>Kulon Progo</span>
-                    </button>
-                    <button type="button" class="branch-chip" data-branch="QLTMG">
-                        <span class="code">QLH</span>
-                        <span>Temanggung</span>
-                    </button>
-                    <button type="button" class="branch-chip" data-branch="PUSAT">
-                        <span class="code">Pusat</span>
-                        <span>BPTI</span>
-                    </button>
-                </div>
-            </div>
+                <h1>Antrian BPJS Online</h1>
+                <p class="brand-sub">Queen Latifa Healthcare System</p>
 
-            <div class="brand-note">
-                <span>Sistem Internal · QL Group</span>
-                <span>Antrol &amp; VClaim v2</span>
+                <div class="brand-divider"></div>
+
+                <ul class="brand-points">
+                    <li><i class="fas fa-check"></i><span>Antrean online terhubung langsung dengan BPJS Kesehatan.</span></li>
+                    <li><i class="fas fa-check"></i><span>Kirim &amp; pantau Kode Booking serta Task ID 1–7 per cabang.</span></li>
+                    <li><i class="fas fa-check"></i><span>Verifikasi VClaim dan rekap kunjungan dalam satu tempat.</span></li>
+                </ul>
+
+                <div class="branch-showcase">
+                    <div class="branch-showcase-title">
+                        <strong><i class="fas fa-hospital-alt"></i> Unit Layanan</strong>
+                        <span>Klik untuk pilih cabang</span>
+                    </div>
+                    <div class="branch-grid">
+                        <button type="button" class="branch-chip" data-branch="QLJ">
+                            <span class="code">QLJ</span>
+                            <span>Yogyakarta</span>
+                        </button>
+                        <button type="button" class="branch-chip" data-branch="QLKP">
+                            <span class="code">QLKP</span>
+                            <span>Kulon Progo</span>
+                        </button>
+                        <button type="button" class="branch-chip" data-branch="QLTMG">
+                            <span class="code">QLTMG</span>
+                            <span>Temanggung</span>
+                        </button>
+                        <button type="button" class="branch-chip" data-branch="PUSAT">
+                            <span class="code">PUSAT</span>
+                            <span>Manajemen</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="workflow-card">
+                    <div class="workflow-title"><i class="fas fa-stream"></i> Alur Pemantauan Antrean</div>
+                    <div class="workflow-steps">
+                        <span class="workflow-step"><strong>1</strong> Booking</span>
+                        <span class="workflow-step"><strong>2</strong> Admisi</span>
+                        <span class="workflow-step"><strong>3</strong> Poli</span>
+                        <span class="workflow-step"><strong>4</strong> Farmasi</span>
+                    </div>
+                </div>
             </div>
         </aside>
 
