@@ -578,16 +578,17 @@ $(document).ready(function() {
                 '</div>';
 
             Swal.fire({
-                title: '<i class="fas fa-paper-plane me-2"></i> Kirim Ulang Kode Booking',
+                title: '',
                 width: 1150,
-                html: '<div class="text-start mb-3">' +
-                    '<div class="d-flex align-items-center mb-1">' +
-                    '<span class="badge bg-primary fs-6 me-2">Kode Booking</span>' +
-                    '<span class="fw-bold text-dark">' + kb + '</span>' +
+                html: '<div class="text-start mb-3" style="font-size:0.85rem;">' +
+                    '<div class="p-2 rounded mb-2" style="background:var(--color-primary); color:#fff; border:1px solid var(--color-primary-dark);">' +
+                    '<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">' +
+                    '<span><i class="fas fa-barcode me-1"></i> Kode Booking: <strong>' + kb + '</strong></span>' +
+                    '<span><i class="fas fa-user me-1"></i> No RM: <strong>' + norm + '</strong></span>' +
                     '</div>' +
-                    '<small class="text-muted">No RM: <strong>' + norm + '</strong></small>' +
-                    '</div>' + prevBar +
-                    '<div class="mt-3"><h6 class="fw-bold text-dark mb-2"><i class="fas fa-edit me-1"></i>Form Pengisian Ulang</h6></div>' +
+                    '</div>' +
+                    prevBar +
+                    '<div class="mt-3"><h6 class="fw-bold text-dark mb-2" style="font-size:0.9rem;"><i class="fas fa-edit me-1"></i>Form Pengisian Ulang</h6></div>' +
                     formHtml,
                 showCancelButton: true,
                 didOpen: () => {
