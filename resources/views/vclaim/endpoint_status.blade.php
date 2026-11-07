@@ -14,18 +14,6 @@
         <div class="vclaim-control-bar" style="padding:10px 14px; gap:8px; margin-bottom:12px; align-items:flex-end;">
             <div class="filter-group" style="gap:8px;">
                 <div>
-                    <label class="form-label mb-0" style="font-size:0.7rem;" for="endpointSearch">Cari</label>
-                    <input type="search" id="endpointSearch" class="form-control form-control-sm" placeholder="SEP, Poli…" style="width:140px;" autocomplete="off">
-                </div>
-                <div class="d-flex gap-2 align-items-end">
-                    <button type="button" id="btnStartAnalysis" class="btn btn-primary btn-sm" style="height:32px;padding:0 0.9rem;font-size:0.8rem;">
-                        <i class="fas fa-play me-1"></i> Analisa
-                    </button>
-                    <button type="button" id="btnCancelAnalysis" class="btn btn-secondary btn-sm" style="height:32px;padding:0 0.9rem;font-size:0.8rem;display:none;">
-                        <i class="fas fa-stop me-1"></i> Batal
-                    </button>
-                </div>
-                <div>
                     <label class="form-label mb-0" style="font-size:0.7rem;">Cabang</label>
                     <select id="selectQL" class="form-select form-select-sm" style="width:150px;">
                         <option value="">-- Pilih --</option>
@@ -39,6 +27,18 @@
                             <option value="{{ $ql }}">{{ $label }}</option>
                         @endforeach
                     </select>
+                </div>
+                <div class="d-flex gap-2 align-items-end">
+                    <button type="button" id="btnStartAnalysis" class="btn btn-primary btn-sm" style="height:32px;padding:0 0.9rem;font-size:0.8rem;">
+                        <i class="fas fa-play me-1"></i> Analisa
+                    </button>
+                    <button type="button" id="btnCancelAnalysis" class="btn btn-secondary btn-sm" style="height:32px;padding:0 0.9rem;font-size:0.8rem;display:none;">
+                        <i class="fas fa-stop me-1"></i> Batal
+                    </button>
+                </div>
+                <div>
+                    <label class="form-label mb-0" style="font-size:0.7rem;" for="endpointSearch">Cari</label>
+                    <input type="search" id="endpointSearch" class="form-control form-control-sm" placeholder="SEP, Poli…" style="width:140px;" autocomplete="off">
                 </div>
             </div>
         </div>
