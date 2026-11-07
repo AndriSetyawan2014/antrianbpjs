@@ -10,84 +10,78 @@
 @section('content')
 <div class="row g-3">
     <div class="col-12">
-        {{-- ══ Control Bar ══ --}}
-        <div class="vclaim-control-bar">
-            <div class="filter-group">
+        {{-- ══ Control Bar (compact) ══ --}}
+        <div class="vclaim-control-bar" style="padding:10px 14px; gap:8px; margin-bottom:12px;">
+            <div class="filter-group" style="gap:8px;">
                 <div>
-                    <label class="form-label">Cabang Queen Latifa</label>
-                    <select id="selectQL" class="form-select" style="width:200px;">
-                        <option value="">-- Pilih Cabang --</option>
+                    <label class="form-label mb-0" style="font-size:0.7rem;">Cabang</label>
+                    <select id="selectQL" class="form-select form-select-sm" style="width:150px;">
+                        <option value="">-- Pilih --</option>
                         @foreach($availableQLs as $ql)
                             @php
                                 $label = $ql;
-                                if ($ql === 'QLJ') $label = 'QL Yogyakarta';
-                                elseif ($ql === 'QLKP') $label = 'QL Kulon Progo';
-                                elseif ($ql === 'QLTMG') $label = 'QL Temanggung';
+                                if ($ql === 'QLJ') $label = 'Yogyakarta';
+                                elseif ($ql === 'QLKP') $label = 'Kulon Progo';
+                                elseif ($ql === 'QLTMG') $label = 'Temanggung';
                             @endphp
                             <option value="{{ $ql }}">{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
+                <div>
+                    <label class="form-label mb-0" style="font-size:0.7rem;" for="endpointSearch">Cari</label>
+                    <input type="search" id="endpointSearch" class="form-control form-control-sm" placeholder="SEP, Poli…" style="width:140px;" autocomplete="off">
+                </div>
+                <div class="endpoint-toolbar" role="group" aria-label="Filter status endpoint" style="align-self:flex-end;">
+                    <button type="button" class="btn-preset btn-sm" data-epfilter="ALL" aria-pressed="true" style="padding:2px 8px;font-size:0.7rem;">Semua</button>
+                    <button type="button" class="btn-preset btn-sm" data-epfilter="OK" aria-pressed="false" style="padding:2px 8px;font-size:0.7rem;">OK</button>
+                    <button type="button" class="btn-preset btn-sm" data-epfilter="ERR" aria-pressed="false" style="padding:2px 8px;font-size:0.7rem;">Err</button>
+                    <button type="button" class="btn-preset btn-sm" data-epfilter="PENDING" aria-pressed="false" style="padding:2px 8px;font-size:0.7rem;">Pending</button>
+                </div>
             </div>
             <div class="d-flex gap-2 align-items-end">
-                <button type="button" id="btnStartAnalysis" class="btn btn-primary btn-sm" style="height:38px;padding:0 1.2rem;">
-                    <i class="fas fa-play me-1"></i> Mulai Analisa
+                <button type="button" id="btnStartAnalysis" class="btn btn-primary btn-sm" style="height:32px;padding:0 0.9rem;font-size:0.8rem;">
+                    <i class="fas fa-play me-1"></i> Analisa
                 </button>
-                <button type="button" id="btnCancelAnalysis" class="btn btn-secondary btn-sm" style="height:38px;padding:0 1.2rem;display:none;">
+                <button type="button" id="btnCancelAnalysis" class="btn btn-secondary btn-sm" style="height:32px;padding:0 0.9rem;font-size:0.8rem;display:none;">
                     <i class="fas fa-stop me-1"></i> Batal
                 </button>
             </div>
         </div>
 
-        {{-- ══ Toolbar hasil (search + filter status) ══ --}}
-        <div class="vclaim-control-bar" style="margin-top:-8px;">
-            <div class="filter-group">
-                <div>
-                    <label class="form-label" for="endpointSearch">Cari endpoint</label>
-                    <input type="search" id="endpointSearch" class="form-control" placeholder="cth: SEP, Poli…" style="width:220px;" autocomplete="off">
-                </div>
-            </div>
-            <div class="endpoint-toolbar" role="group" aria-label="Filter status endpoint">
-                <button type="button" class="btn-preset" data-epfilter="ALL" aria-pressed="true">Semua</button>
-                <button type="button" class="btn-preset" data-epfilter="OK" aria-pressed="false">OK</button>
-                <button type="button" class="btn-preset" data-epfilter="ERR" aria-pressed="false">Error</button>
-                <button type="button" class="btn-preset" data-epfilter="PENDING" aria-pressed="false">Pending</button>
-            </div>
-        </div>
-
         {{-- ══ Dashboard ══ --}}
         <div id="appMonitor">
-            <div class="row mb-4 mt-2">
-                <div class="col-md-4 col-sm-12 mb-3">
-                    <div class="summary-card shadow-sm bg-white" style="border-radius:0.75rem; padding:20px; display:flex; align-items:center; gap:15px; border:1px solid #e5e7eb;">
-                        <div class="summary-icon d-flex align-items-center justify-content-center" style="width:50px; height:50px; border-radius:12px; font-size:1.4rem; background:#e0f2fe; color:#0284c7;">
+            <div class="row g-2 mb-2">
+                <div class="col-md-4 col-sm-12">
+                    <div class="summary-card shadow-sm bg-white" style="border-radius:0.5rem; padding:10px 12px; display:flex; align-items:center; gap:10px; border:1px solid #e5e7eb;">
+                        <div class="summary-icon d-flex align-items-center justify-content-center" style="width:34px; height:34px; border-radius:8px; font-size:1rem; background:#e0f2fe; color:#0284c7;">
                             <i class="fas fa-network-wired"></i>
                         </div>
                         <div>
-                            <div class="text-uppercase text-muted" style="font-size:0.7rem; font-weight:700; letter-spacing:0.05em;">Total Endpoint</div>
-                            <div id="totalEndpoints" style="font-size:1.5rem; font-weight:700; color:#111827; line-height:1.2;">0</div>
+                            <div class="text-uppercase text-muted" style="font-size:0.6rem; font-weight:700; letter-spacing:0.05em;">Total</div>
+                            <div id="totalEndpoints" style="font-size:1.1rem; font-weight:700; color:#111827; line-height:1.1;">0</div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 col-sm-6 mb-3">
-                    <div class="summary-card shadow-sm bg-white" style="border-radius:0.75rem; padding:20px; display:flex; align-items:center; gap:15px; border:1px solid #e5e7eb;">
-                        <div class="summary-icon d-flex align-items-center justify-content-center" style="width:50px; height:50px; border-radius:12px; font-size:1.4rem; background:#dcfce7; color:#16a34a;">
+                <div class="col-md-4 col-sm-6">
+                    <div class="summary-card shadow-sm bg-white" style="border-radius:0.5rem; padding:10px 12px; display:flex; align-items:center; gap:10px; border:1px solid #e5e7eb;">
+                        <div class="summary-icon d-flex align-items-center justify-content-center" style="width:34px; height:34px; border-radius:8px; font-size:1rem; background:#dcfce7; color:#16a34a;">
                             <i class="fas fa-check-circle"></i>
                         </div>
                         <div>
-                            <div class="text-uppercase text-muted" style="font-size:0.7rem; font-weight:700; letter-spacing:0.05em;">Status OK</div>
-                            <div id="countOk" style="font-size:1.5rem; font-weight:700; color:#111827; line-height:1.2;">0</div>
+                            <div class="text-uppercase text-muted" style="font-size:0.6rem; font-weight:700; letter-spacing:0.05em;">OK</div>
+                            <div id="countOk" style="font-size:1.1rem; font-weight:700; color:#111827; line-height:1.1;">0</div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 col-sm-6 mb-3">
-                    <div class="summary-card shadow-sm bg-white" style="border-radius:0.75rem; padding:20px; display:flex; align-items:center; gap:15px; border:1px solid #e5e7eb;">
-                        <div class="summary-icon d-flex align-items-center justify-content-center" style="width:50px; height:50px; border-radius:12px; font-size:1.4rem; background:#fee2e2; color:#dc2626;">
+                <div class="col-md-4 col-sm-6">
+                    <div class="summary-card shadow-sm bg-white" style="border-radius:0.5rem; padding:10px 12px; display:flex; align-items:center; gap:10px; border:1px solid #e5e7eb;">
+                        <div class="summary-icon d-flex align-items-center justify-content-center" style="width:34px; height:34px; border-radius:8px; font-size:1rem; background:#fee2e2; color:#dc2626;">
                             <i class="fas fa-times-circle"></i>
                         </div>
                         <div>
-                            <div class="text-uppercase text-muted" style="font-size:0.7rem; font-weight:700; letter-spacing:0.05em;">Status Error</div>
-                            <div id="countErr" style="font-size:1.5rem; font-weight:700; color:#111827; line-height:1.2;">0</div>
+                            <div class="text-uppercase text-muted" style="font-size:0.6rem; font-weight:700; letter-spacing:0.05em;">Error</div>
+                            <div id="countErr" style="font-size:1.1rem; font-weight:700; color:#111827; line-height:1.1;">0</div>
                         </div>
                     </div>
                 </div>
