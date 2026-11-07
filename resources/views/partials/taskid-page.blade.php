@@ -32,11 +32,11 @@
 
     @if(($exportMode ?? 'server') === 'server')
     <a href="{{ $exportUrl }}" class="btn-filter btn-success ms-2">
-        <i class="fas fa-file-excel"></i> Download Excel
+        <i class="fas fa-file-excel"></i> Download
     </a>
     @else
     <button id="download_excel_{{ $tableId }}" class="btn-filter btn-success ms-2">
-        <i class="fas fa-file-excel"></i> Download Excel
+        <i class="fas fa-file-excel"></i> Download
     </button>
     @endif
 </div>

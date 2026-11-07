@@ -127,7 +127,7 @@
                     <i class="fas fa-cloud-download-alt me-1"></i> Tarik Jadwal BPJS
                 </button>
                 <button type="button" id="btnDownloadExcel" class="btn btn-sm btn-success ms-1">
-                    <i class="fas fa-file-excel me-1"></i> Download Excel
+                    <i class="fas fa-file-excel me-1"></i> Download
                 </button>
             </div>
         </form>
