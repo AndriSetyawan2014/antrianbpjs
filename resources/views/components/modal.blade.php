@@ -36,14 +36,14 @@ $modalSize = $sizeMap[$size] ?? 'modal-md';
     <div class="modal-dialog {{ $modalSize }} modal-dialog-centered">
         <div class="modal-content border-0 shadow">
             {{-- Header --}}
-            <div class="modal-header {{ $headerClass ?? 'bg-' . ($title ? 'primary' : 'surface') . ' text-white' }}">
+            <div class="modal-header {{ $headerClass ?? ('bg-' . ($title ? 'primary' : 'surface') . ' ' . ($title ? 'text-white' : 'text-dark')) }}">
                 @if($title)
                     <h5 class="modal-title" id="{{ $id }}Label">
                         <i class="fas fa-info-circle me-2 opacity-75"></i>{{ $title }}
                     </h5>
                 @endif
                 @if($showClose)
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    <button type="button" class="btn-close {{ $title ? 'btn-close-white' : '' }}" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 @endif
             </div>
 
