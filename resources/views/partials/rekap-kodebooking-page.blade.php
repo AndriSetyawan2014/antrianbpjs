@@ -79,7 +79,6 @@
         </a>
     </form>
     <div class="date-presets" role="group" aria-label="Preset tanggal cepat">
-        <button type="button" class="btn-preset" data-preset="today">Hari ini</button>
         <button type="button" class="btn-preset" data-preset="yesterday">Kemarin</button>
         <button type="button" class="btn-preset" data-preset="week">7 hari</button>
         <button type="button" class="btn-preset" data-preset="month">Bulan ini</button>
