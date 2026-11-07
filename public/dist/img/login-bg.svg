@@ -1,75 +1,98 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Ilustrasi latar rumah sakit">
-  <defs>
-    <linearGradient id="base" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#0b2e38"/>
-      <stop offset="1" stop-color="#0d3641"/>
-    </linearGradient>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" preserveAspectRatio="xMidYMax slice" role="img" aria-label="Ilustrasi rumah sakit Queen Latifa">
+  <!-- Aksen lingkaran cerah di latar -->
+  <circle cx="680" cy="110" r="190" fill="#2296b0" opacity="0.35"/>
+  <circle cx="680" cy="110" r="130" fill="#38b2cc" opacity="0.22"/>
+  <circle cx="110" cy="220" r="140" fill="#1b88a0" opacity="0.28"/>
 
-  <!-- Latar solid -->
-  <rect width="1920" height="1080" fill="url(#base)"/>
+  <!-- Bukit / latar bawah berlapis cerah -->
+  <path d="M0 370 Q210 330 430 355 T800 345 L800 520 L0 520 Z" fill="#0d5f73" opacity="0.65"/>
+  <path d="M0 415 Q260 385 520 405 T800 390 L800 520 L0 520 Z" fill="#0a4f61" opacity="0.85"/>
 
-  <!-- Bentuk geometris datar (tanpa glow) -->
-  <circle cx="1700" cy="150" r="520" fill="#103d48" opacity="0.55"/>
-  <circle cx="1700" cy="150" r="360" fill="none" stroke="#4f8591" stroke-opacity="0.18" stroke-width="1.5"/>
-  <rect x="-120" y="720" width="900" height="420" fill="#0a2933" opacity="0.85"/>
+  <!-- Garis detak jantung (ECG) cerah -->
+  <path d="M0 250 H170 L192 250 L208 202 L228 296 L246 232 L260 250 H430 L448 250 L462 214 L480 284 L496 250 H640 L656 226 L672 268 L686 250 H800"
+        fill="none" stroke="#7ce0f4" stroke-opacity="0.55" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
 
-  <!-- Siluet rumah sakit (line art datar) -->
-  <g stroke="#78aab4" stroke-opacity="0.38" stroke-width="2" fill="none" stroke-linejoin="round">
-    <!-- gedung kiri -->
-    <rect x="120" y="700" width="300" height="380"/>
-    <rect x="168" y="640" width="96" height="60"/>
-    <rect x="300" y="672" width="80" height="28"/>
-    <!-- jendela -->
-    <g stroke-opacity="0.26" stroke-width="1.5">
-      <path d="M150 740h40M210 740h40M270 740h40M330 740h40M387 740h20"/>
-      <path d="M150 786h40M210 786h40M270 786h40M330 786h40M387 786h20"/>
-      <path d="M150 832h40M210 832h40M270 832h40M330 832h40M387 832h20"/>
-      <path d="M150 878h40M210 878h40M270 878h40M330 878h40M387 878h20"/>
-      <path d="M150 924h40M210 924h40M270 924h40M330 924h40M387 924h20"/>
-      <path d="M150 970h40M210 970h40M270 970h40M330 970h40M387 970h20"/>
-    </g>
-    <!-- pintu masuk -->
-    <path d="M236 1080v-70a34 34 0 0 1 68 0v70"/>
-
-    <!-- gedung kanan -->
-    <rect x="1590" y="730" width="330" height="350"/>
-    <rect x="1660" y="664" width="120" height="66"/>
-    <g stroke-opacity="0.26" stroke-width="1.5">
-      <path d="M1625 770h44M1695 770h44M1765 770h44M1835 770h44M1885 770h15"/>
-      <path d="M1625 816h44M1695 816h44M1765 816h44M1835 816h44M1885 816h15"/>
-      <path d="M1625 862h44M1695 862h44M1765 862h44M1835 862h44M1885 862h15"/>
-      <path d="M1625 908h44M1695 908h44M1765 908h44M1835 908h44M1885 908h15"/>
-      <path d="M1625 954h44M1695 954h44M1765 954h44M1835 954h44M1885 954h15"/>
-    </g>
+  <!-- Ilustrasi Gedung Rumah Sakit Utama (tengah-kiri) -->
+  <g stroke="#a8eefc" stroke-opacity="0.7" stroke-width="2" fill="#0f677c" fill-opacity="0.75" stroke-linejoin="round">
+    <!-- Gedung sayap kiri -->
+    <rect x="56" y="330" width="120" height="150" rx="4"/>
+    <!-- Gedung utama tengah -->
+    <rect x="176" y="276" width="188" height="204" rx="5"/>
+    <!-- Atap / menara palang medis -->
+    <rect x="232" y="236" width="76" height="40" rx="4"/>
+    <!-- Gedung sayap kanan -->
+    <rect x="364" y="316" width="136" height="164" rx="4"/>
+    <!-- Gedung klinik kanan -->
+    <rect x="540" y="344" width="190" height="136" rx="4"/>
+    <rect x="595" y="312" width="80" height="32" rx="3"/>
   </g>
 
-  <!-- Palang medis (satu aksen saja) -->
-  <g fill="#d9a24a" fill-opacity="0.75">
-    <rect x="206" y="656" width="20" height="48" rx="2"/>
-    <rect x="192" y="670" width="48" height="20" rx="2"/>
-    <rect x="1703" y="678" width="16" height="38" rx="2"/>
-    <rect x="1692" y="689" width="38" height="16" rx="2"/>
+  <!-- Jendela-jendela menyala (kuning hangat & sian cerah) -->
+  <g rx="2">
+    <!-- Jendela gedung utama -->
+    <rect x="200" y="302" width="24" height="18" rx="2" fill="#ffd166" fill-opacity="0.85"/>
+    <rect x="238" y="302" width="24" height="18" rx="2" fill="#8ce9f9" fill-opacity="0.65"/>
+    <rect x="276" y="302" width="24" height="18" rx="2" fill="#ffd166" fill-opacity="0.85"/>
+    <rect x="314" y="302" width="24" height="18" rx="2" fill="#8ce9f9" fill-opacity="0.65"/>
+
+    <rect x="200" y="334" width="24" height="18" rx="2" fill="#8ce9f9" fill-opacity="0.65"/>
+    <rect x="238" y="334" width="24" height="18" rx="2" fill="#ffd166" fill-opacity="0.85"/>
+    <rect x="276" y="334" width="24" height="18" rx="2" fill="#8ce9f9" fill-opacity="0.65"/>
+    <rect x="314" y="334" width="24" height="18" rx="2" fill="#ffd166" fill-opacity="0.85"/>
+
+    <rect x="200" y="366" width="24" height="18" rx="2" fill="#ffd166" fill-opacity="0.8"/>
+    <rect x="238" y="366" width="24" height="18" rx="2" fill="#8ce9f9" fill-opacity="0.65"/>
+    <rect x="276" y="366" width="24" height="18" rx="2" fill="#ffd166" fill-opacity="0.85"/>
+    <rect x="314" y="366" width="24" height="18" rx="2" fill="#8ce9f9" fill-opacity="0.65"/>
+
+    <!-- Jendela sayap kiri -->
+    <rect x="78" y="354" width="22" height="16" rx="2" fill="#8ce9f9" fill-opacity="0.6"/>
+    <rect x="112" y="354" width="22" height="16" rx="2" fill="#ffd166" fill-opacity="0.8"/>
+    <rect x="78" y="384" width="22" height="16" rx="2" fill="#ffd166" fill-opacity="0.8"/>
+    <rect x="112" y="384" width="22" height="16" rx="2" fill="#8ce9f9" fill-opacity="0.6"/>
+    <rect x="78" y="414" width="22" height="16" rx="2" fill="#8ce9f9" fill-opacity="0.6"/>
+    <rect x="112" y="414" width="22" height="16" rx="2" fill="#8ce9f9" fill-opacity="0.6"/>
+
+    <!-- Jendela sayap kanan -->
+    <rect x="386" y="342" width="22" height="16" rx="2" fill="#8ce9f9" fill-opacity="0.6"/>
+    <rect x="420" y="342" width="22" height="16" rx="2" fill="#ffd166" fill-opacity="0.85"/>
+    <rect x="454" y="342" width="22" height="16" rx="2" fill="#8ce9f9" fill-opacity="0.6"/>
+    <rect x="386" y="372" width="22" height="16" rx="2" fill="#ffd166" fill-opacity="0.8"/>
+    <rect x="420" y="372" width="22" height="16" rx="2" fill="#8ce9f9" fill-opacity="0.6"/>
+    <rect x="454" y="372" width="22" height="16" rx="2" fill="#ffd166" fill-opacity="0.8"/>
+    <rect x="386" y="402" width="22" height="16" rx="2" fill="#8ce9f9" fill-opacity="0.6"/>
+    <rect x="420" y="402" width="22" height="16" rx="2" fill="#8ce9f9" fill-opacity="0.6"/>
+    <rect x="454" y="402" width="22" height="16" rx="2" fill="#8ce9f9" fill-opacity="0.6"/>
+
+    <!-- Jendela gedung kanan -->
+    <rect x="566" y="368" width="26" height="16" rx="2" fill="#ffd166" fill-opacity="0.8"/>
+    <rect x="606" y="368" width="26" height="16" rx="2" fill="#8ce9f9" fill-opacity="0.6"/>
+    <rect x="646" y="368" width="26" height="16" rx="2" fill="#ffd166" fill-opacity="0.8"/>
+    <rect x="686" y="368" width="26" height="16" rx="2" fill="#8ce9f9" fill-opacity="0.6"/>
+    <rect x="566" y="398" width="26" height="16" rx="2" fill="#8ce9f9" fill-opacity="0.6"/>
+    <rect x="606" y="398" width="26" height="16" rx="2" fill="#ffd166" fill-opacity="0.85"/>
+    <rect x="646" y="398" width="26" height="16" rx="2" fill="#8ce9f9" fill-opacity="0.6"/>
+    <rect x="686" y="398" width="26" height="16" rx="2" fill="#ffd166" fill-opacity="0.8"/>
   </g>
 
-  <!-- Garis ECG tipis, tanpa efek glow -->
-  <path d="M0 690h300l26 0 14-44 18 84 16-40h190l24 0 12-22 14 22h250l22 0 16-52 20 96 18-44h212l22 0 14-18 14 18h300l26 0 14-38 18 70 14-32h180"
-        fill="none" stroke="#78aab4" stroke-opacity="0.30" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Pintu masuk utama (kubah hangat) -->
+  <path d="M242 480 V432 A28 28 0 0 1 298 432 V480 Z" fill="#ffd166" fill-opacity="0.9" stroke="#ffffff" stroke-opacity="0.7" stroke-width="1.5"/>
 
-  <!-- Detail kecil: titik & plus -->
-  <g fill="#78aab4" fill-opacity="0.22">
-    <circle cx="620" cy="250" r="3"/>
-    <circle cx="700" cy="290" r="2.5"/>
-    <circle cx="1280" cy="220" r="3"/>
-    <circle cx="1340" cy="270" r="2.5"/>
-    <circle cx="1000" cy="330" r="2.5"/>
-  </g>
-  <g fill="none" stroke="#78aab4" stroke-opacity="0.18" stroke-width="1.5">
-    <path d="M560 520h16M568 512v16"/>
-    <path d="M1250 560h14M1257 553v14"/>
-    <path d="M1420 380h12M1426 374v12"/>
+  <!-- Palang medis oranye-emas khas Queen Latifa -->
+  <g fill="#f9a826">
+    <rect x="263" y="242" width="14" height="30" rx="2"/>
+    <rect x="255" y="250" width="30" height="14" rx="2"/>
+    <rect x="629" y="317" width="12" height="24" rx="2"/>
+    <rect x="623" y="323" width="24" height="12" rx="2"/>
   </g>
 
-  <!-- Garis horizon -->
-  <rect x="0" y="1076" width="1920" height="4" fill="#08242c"/>
+  <!-- Garis tanah -->
+  <line x1="20" y1="480" x2="780" y2="480" stroke="#8ce9f9" stroke-opacity="0.5" stroke-width="2"/>
+
+  <!-- Ornamen plus medis kecil -->
+  <g stroke="#b6f2fd" stroke-opacity="0.55" stroke-width="2" stroke-linecap="round">
+    <path d="M96 190h12M102 184v12"/>
+    <path d="M520 170h14M527 163v14"/>
+    <path d="M716 240h12M722 234v12"/>
+  </g>
 </svg>
