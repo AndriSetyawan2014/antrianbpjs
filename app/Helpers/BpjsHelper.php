@@ -246,7 +246,16 @@ class BpjsHelper
     {
         $urlQL = strtoupper(trim((string) $urlQL));
         if ($urlQL === '') {
-            $urlQL = 'QLJ';
+            return [
+                'success'       => false,
+                'http_code'     => 400,
+                'message_code'  => 400,
+                'message'       => 'Parameter urlQL (cabang) kosong/tidak valid',
+                'response_time' => 0,
+                'request'       => ['method' => 'GET', 'url' => null, 'headers' => []],
+                'response'      => 'urlQL kosong/tidak valid',
+                'error'         => 'Parameter urlQL (cabang) kosong/tidak valid',
+            ];
         }
         $consId    = env('BPJS_VCLAIM_CONS_ID_'  . $urlQL);
         $secret    = env('BPJS_VCLAIM_SECRET_'   . $urlQL);
@@ -356,7 +365,16 @@ class BpjsHelper
     {
         $urlQL = strtoupper(trim((string) $urlQL));
         if ($urlQL === '') {
-            $urlQL = 'QLJ';
+            return [
+                'success'       => false,
+                'http_code'     => 400,
+                'message_code'  => 400,
+                'message'       => 'Parameter urlQL (cabang) kosong/tidak valid',
+                'response_time' => 0,
+                'request'       => ['method' => 'GET', 'url' => null, 'headers' => []],
+                'response'      => 'urlQL kosong/tidak valid',
+                'error'         => 'Parameter urlQL (cabang) kosong/tidak valid',
+            ];
         }
         $consId    = env('BPJS_ANTROL_CONS_ID_'  . $urlQL);
         $secret    = env('BPJS_ANTROL_SECRET_'   . $urlQL);
@@ -436,7 +454,16 @@ class BpjsHelper
     {
         $urlQL = strtoupper(trim((string) $urlQL));
         if ($urlQL === '') {
-            $urlQL = 'QLJ';
+            return [
+                'success'       => false,
+                'http_code'     => 400,
+                'message_code'  => 400,
+                'message'       => 'Parameter urlQL (cabang) kosong/tidak valid',
+                'response_time' => 0,
+                'request'       => ['method' => 'POST', 'url' => null, 'headers' => []],
+                'response'      => 'urlQL kosong/tidak valid',
+                'error'         => 'Parameter urlQL (cabang) kosong/tidak valid',
+            ];
         }
         $consId    = env('BPJS_ANTROL_CONS_ID_'  . $urlQL);
         $secret    = env('BPJS_ANTROL_SECRET_'   . $urlQL);
