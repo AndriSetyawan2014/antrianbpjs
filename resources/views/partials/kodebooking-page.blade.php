@@ -619,8 +619,8 @@ $(document).ready(function() {
                 cancelButtonColor: '#6c757d',
                 buttonsStyling: false,
                 customClass: {
-                    confirmButton: 'btn btn-primary btn-sm px-4',
-                    cancelButton: 'btn btn-outline-secondary btn-sm px-4'
+                    confirmButton: 'btn btn-primary px-5 py-2 fs-6',
+                    cancelButton: 'btn btn-outline-secondary px-5 py-2 fs-6'
                 },
                 preConfirm: () => {
                     var payloadText = document.getElementById('resendPayload') ? document.getElementById('resendPayload').value : '';
