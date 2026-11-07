@@ -13,7 +13,7 @@ class EnsureLogin
         $path = trim($request->path(), '/');
         $allowed = ['login', 'logout', 'api']; // allow API (external) if needed
 
-        if (in_array($path, $allowed, true) || str_starts_with($path, 'login/') || str_starts_with($path, 'logout/')) {
+        if (in_array($path, $allowed, true) || strpos($path, 'login/') === 0 || strpos($path, 'logout/') === 0) {
             return $next($request);
         }
 
