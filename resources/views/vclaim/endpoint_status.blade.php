@@ -214,11 +214,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="card-body">
                         <div class="data-row">
-                            <span class="data-label">HTTP</span>
-                            <span class="data-value">${ep.http}</span>
+                            <span class="data-label">Ping Endpoint</span>
+                            <span class="data-value">${Number(ep.http) === 200 ? 'Berhasil' : 'Gagal (' + (ep.http || '-') + ')'}</span>
                         </div>
                         <div class="data-row">
-                            <span class="data-label">MESSAGE</span>
+                            <span class="data-label">Response BPJS</span>
                             <span class="data-value">${ep.message}</span>
                         </div>
                     </div>
