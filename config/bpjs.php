@@ -37,4 +37,16 @@ return [
             'QLTMG' => env('BPJS_ANTROL_USERKEY_QLTMG'),
         ],
     ],
+    'vclaim_kode_ppk' => [
+        'QLJ'   => env('BPJS_VCLAIM_KODEPPK_QLJ'),
+        'QLKP'  => env('BPJS_VCLAIM_KODEPPK_QLKP'),
+        'QLTMG' => env('BPJS_VCLAIM_KODEPPK_QLTMG'),
+    ],
+    'antrol_sirs' => [
+        'base_url' => [
+            'QLJ'   => env('BPJS_ANTROL_SIRS_URL_QLJ'),
+            'QLKP'  => env('BPJS_ANTROL_SIRS_URL_QLKP'),
+            'QLTMG' => env('BPJS_ANTROL_SIRS_URL_QLTMG'),
+        ],
+    ],
 ];

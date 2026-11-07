@@ -53,7 +53,7 @@ class SyncVclaimKunjunganJob implements ShouldQueue
                 return;
             }
 
-            $kodePPK  = env('BPJS_VCLAIM_KODEPPK_' . $this->urlQL);
+            $kodePPK  = config('bpjs.vclaim_kode_ppk.' . $this->urlQL, env('BPJS_VCLAIM_KODEPPK_' . $this->urlQL));
             $syncedAt = Carbon::now();
 
             // ── BULK UPSERT: 1 query untuk semua records (vs N×2 query sebelumnya) ──

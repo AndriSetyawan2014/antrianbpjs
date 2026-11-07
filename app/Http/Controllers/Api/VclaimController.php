@@ -70,7 +70,7 @@ class VclaimController extends Controller
                             'finished_at' => now(),
                         ]);
                     } else {
-                        $kodePPK = env('BPJS_VCLAIM_KODEPPK_' . $urlQL);
+                        $kodePPK = config('bpjs.vclaim_kode_ppk.' . $urlQL, env('BPJS_VCLAIM_KODEPPK_' . $urlQL));
                         
                         $upsertData = [];
                         foreach ($data['sep'] as $sep) {

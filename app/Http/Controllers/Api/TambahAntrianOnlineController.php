@@ -34,7 +34,7 @@ class TambahAntrianOnlineController extends Controller
             ], 422);
         }
 
-        $baseUrl = env('BPJS_ANTROL_SIRS_URL_' . $urlQL);
+        $baseUrl = config("bpjs.antrol_sirs.base_url.{$urlQL}", env('BPJS_ANTROL_SIRS_URL_' . $urlQL));
         if (empty($baseUrl)) {
             return response()->json([
                 'metadata' => [

@@ -18,7 +18,7 @@ class BpjsHelper
 
     public static function getRequest($urlQL, $endpoint, array $params = [])
     {
-        $baseUrl = env('BPJS_ANTROL_SIRS_URL_' . $urlQL);
+        $baseUrl = config("bpjs.antrol_sirs.base_url.{$urlQL}", env('BPJS_ANTROL_SIRS_URL_' . $urlQL));
         if (empty($baseUrl)) {
             Log::error('[BpjsHelper::getRequest] Base URL tidak di-set untuk QL=' . $urlQL);
             return null;
@@ -51,7 +51,8 @@ class BpjsHelper
 
     public static function postRequest($urlQL, $endpoint, array $data = [])
     {
-        $url = env('BPJS_ANTROL_SIRS_URL_' . $urlQL) . $endpoint;
+        $baseUrl = config("bpjs.antrol_sirs.base_url.{$urlQL}", env('BPJS_ANTROL_SIRS_URL_' . $urlQL));
+        $url = $baseUrl . $endpoint;
 
         $timestamp = strval(time());
         $consId    = env('BPJS_ANTROL_SIRS_CONS_ID');
@@ -79,16 +80,17 @@ class BpjsHelper
 
     public static function postRequestDirect($urlQL, $endpoint, array $data = [])
     {
-        $consId    = env('BPJS_ANTROL_CONS_ID_'  . $urlQL);
-        $secret    = env('BPJS_ANTROL_SECRET_'   . $urlQL);
-        $userKey   = env('BPJS_ANTROL_USERKEY_'  . $urlQL);
+        $consId    = config("bpjs.antrol.cons_id.{$urlQL}", env('BPJS_ANTROL_CONS_ID_'  . $urlQL));
+        $secret    = config("bpjs.antrol.secret.{$urlQL}", env('BPJS_ANTROL_SECRET_'   . $urlQL));
+        $userKey   = config("bpjs.antrol.user_key.{$urlQL}", env('BPJS_ANTROL_USERKEY_'  . $urlQL));
         $timestamp = strval(time());
         
         $signature = base64_encode(hash_hmac('sha256', $consId . '&' . $timestamp, $secret, true));
 
         Log::info("DEBUG_SIGNATURE [BpjsHelper::postRequestDirect] QL: {$urlQL}, ConsId: {$consId}, Timestamp: {$timestamp}, SecretPrefix: " . substr($secret, 0, 3));
 
-        $url = env('BPJS_BASE_URL', 'https://apijkn.bpjs-kesehatan.go.id/antreanrs') . $endpoint;
+        $baseUrl = config('bpjs.antrol.base_url', env('BPJS_BASE_URL', 'https://apijkn.bpjs-kesehatan.go.id/antreanrs'));
+        $url = $baseUrl . $endpoint;
 
         Log::info('[BpjsHelper::postRequestDirect] Sending DIRECT POST to: ' . $url, [
             'payload' => $data
@@ -188,14 +190,15 @@ class BpjsHelper
 
     public static function getVclaimDataKunjungan($urlQL, $tanggal, $jnsPelayanan = 2)
     {
-        $consId    = env('BPJS_VCLAIM_CONS_ID_'  . $urlQL);
-        $secret    = env('BPJS_VCLAIM_SECRET_'   . $urlQL);
-        $userKey   = env('BPJS_VCLAIM_USERKEY_'  . $urlQL);
+        $consId    = config("bpjs.vclaim.cons_id.{$urlQL}", env('BPJS_VCLAIM_CONS_ID_'  . $urlQL));
+        $secret    = config("bpjs.vclaim.secret.{$urlQL}", env('BPJS_VCLAIM_SECRET_'   . $urlQL));
+        $userKey   = config("bpjs.vclaim.user_key.{$urlQL}", env('BPJS_VCLAIM_USERKEY_'  . $urlQL));
         $timestamp = strval(time());
         $signature = base64_encode(hash_hmac('sha256', $consId . '&' . $timestamp, $secret, true));
 
         $endpoint = "/Monitoring/Kunjungan/Tanggal/{$tanggal}/JnsPelayanan/{$jnsPelayanan}";
-        $url = env('BPJS_VCLAIM_BASE_URL', 'https://apijkn.bpjs-kesehatan.go.id/vclaim-rest') . $endpoint;
+        $baseUrl = config('bpjs.vclaim.base_url', env('BPJS_VCLAIM_BASE_URL', 'https://apijkn.bpjs-kesehatan.go.id/vclaim-rest'));
+        $url = $baseUrl . $endpoint;
 
         Log::info("[BpjsHelper::getVclaimDataKunjungan] GET {$urlQL} → {$url}");
 
