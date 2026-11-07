@@ -312,8 +312,8 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await fetch(pingUrl);
             const data = await response.json();
-            // HTTP 200 + message code 1/200/201/202/204/208 = BPJS UP
-            const validCodes = [1, 200, 201, 202, 204, 208];
+            // BPJS UP hanya jika HTTP 200 dan metaData code 200 (sukses)
+            const validCodes = [200]; // Hanya metaData code 200 = sukses (BPJS)
             ep.status = (data.success && data.http_code == 200 && validCodes.includes(parseInt(data.message_code))) ? 'OK' : 'ERR';
             ep.http = data.http_code || '-';
             ep.message = (data.message_code !== null && data.message_code !== undefined) ? data.message_code : '-';
