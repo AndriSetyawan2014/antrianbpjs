@@ -269,7 +269,7 @@ class BpjsHelper
 
         $requestInfo = [
             'method'  => 'GET',
-            'url'     => $url,
+            'url'     => $url . '?urlQL=' . $urlQL,
             'headers' => [
                 'Accept'       => 'application/json',
                 'Content-Type' => 'application/json; charset=utf-8',
@@ -388,7 +388,7 @@ class BpjsHelper
 
         $requestInfo = [
             'method'  => 'GET',
-            'url'     => $url,
+            'url'     => $url . '?urlQL=' . $urlQL,
             'headers' => [
                 'Accept'       => 'application/json',
                 'Content-Type' => 'application/json',
@@ -477,7 +477,7 @@ class BpjsHelper
 
         $requestInfo = [
             'method'  => 'POST',
-            'url'     => $url,
+            'url'     => $url . '?urlQL=' . $urlQL,
             'headers' => [
                 'Accept'       => 'application/json',
                 'Content-Type' => 'application/json',
