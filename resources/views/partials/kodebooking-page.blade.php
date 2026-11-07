@@ -136,7 +136,7 @@
         <button type="button" class="btn-preset" data-preset="month">Bulan ini</button>
     </div>
     <button type="button" class="btn-filter btn-secondary ms-auto" id="btnHideDup" title="Sembunyikan baris berpesan 'Terdapat duplikasi Kode Booking' (dianggap sudah berhasil)">
-        <i class="fas fa-eye-slash me-1"></i> <span>Sembunyikan Dup</span>
+        <i class="fas fa-eye-slash me-1"></i> <span>Hide Duplikasi</span>
     </button>
     <button type="button" class="btn-filter btn-warning ms-2" id="btnResendBatch" title="Kirim Ulang Semua Kode Booking Pending/Error pada rentang tanggal ini">
         <i class="fas fa-sync-alt me-1"></i> Re-Upload Pending/Error
@@ -328,7 +328,7 @@ $(document).ready(function() {
         var $b = $('#btnHideDup');
         $b.toggleClass('btn-primary', hideDup).toggleClass('btn-secondary', !hideDup);
         $b.find('i').attr('class', 'fas me-1 ' + (hideDup ? 'fa-eye' : 'fa-eye-slash'));
-        $b.find('span').text(hideDup ? 'Tampilkan Dup' : 'Sembunyikan Dup');
+        $b.find('span').text(hideDup ? 'Show Duplikasi' : 'Hide Duplikasi');
     }
     $('#btnHideDup').on('click', function () {
         hideDup = !hideDup;
