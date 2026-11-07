@@ -587,6 +587,25 @@ $(document).ready(function() {
                     '<div class="mt-3"><h6 class="fw-bold text-dark mb-2"><i class="fas fa-edit me-1"></i>Form Pengisian Ulang</h6></div>' +
                     formHtml,
                 showCancelButton: true,
+                didOpen: () => {
+                    var ta = document.getElementById('resendPayload');
+                    if (ta && !ta.value.trim()) {
+                        try { ta.value = JSON.stringify(r, null, 2); } catch (e) {}
+                    }
+                    var btn = document.getElementById('btnToggleJson');
+                    var box = document.getElementById('jsonRawBox');
+                    if (btn && box) {
+                        btn.addEventListener('click', function () {
+                            if (box.style.display === 'none' || !box.style.display) {
+                                box.style.display = 'block';
+                                btn.innerHTML = '<i class="fas fa-eye-slash me-1"></i> Sembunyikan JSON';
+                            } else {
+                                box.style.display = 'none';
+                                btn.innerHTML = '<i class="fas fa-code me-1"></i> Edit JSON';
+                            }
+                        });
+                    }
+                },
                 confirmButtonText: '<i class="fas fa-paper-plane me-1"></i> Kirim ke BPJS',
                 cancelButtonText: 'Batal',
                 confirmButtonColor: '#0f4c5c',
