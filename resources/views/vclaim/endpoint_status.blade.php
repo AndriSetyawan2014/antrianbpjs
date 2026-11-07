@@ -349,8 +349,8 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await fetch(pingUrl);
             const data = await response.json();
-            // BPJS UP jika endpoint merespons HTTP 200 (terhubung & autentikasi OK)
-            const isUp = data.success && Number(data.http_code) === 200;
+            // BPJS OK hanya jika HTTP 200 dan BPJS metaData code 200
+            const isUp = data.success && Number(data.http_code) === 200 && Number(data.message_code) === 200;
             ep.status = isUp ? 'OK' : 'ERR';
             ep.http = data.http_code || '-';
             ep.message = (data.message_code !== null && data.message_code !== undefined) ? data.message_code : '-';
