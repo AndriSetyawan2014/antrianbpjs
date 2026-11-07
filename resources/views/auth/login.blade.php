@@ -500,20 +500,20 @@
                 </div>
                 <div class="branch-grid">
                     <button type="button" class="branch-chip" data-branch="QLJ">
-                        <span class="code">QLJ</span>
+                        <span class="code">QLH</span>
                         <span>Yogyakarta</span>
                     </button>
                     <button type="button" class="branch-chip" data-branch="QLKP">
-                        <span class="code">QLKP</span>
+                        <span class="code">QLH</span>
                         <span>Kulon Progo</span>
                     </button>
                     <button type="button" class="branch-chip" data-branch="QLTMG">
-                        <span class="code">QLTMG</span>
+                        <span class="code">QLH</span>
                         <span>Temanggung</span>
                     </button>
                     <button type="button" class="branch-chip" data-branch="PUSAT">
-                        <span class="code">PUSAT</span>
-                        <span>Manajemen</span>
+                        <span class="code">Pusat</span>
+                        <span>BPTI</span>
                     </button>
                 </div>
             </div>
