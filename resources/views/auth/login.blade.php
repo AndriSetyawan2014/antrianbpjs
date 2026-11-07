@@ -130,6 +130,12 @@
             </div>
         </div>
 
+        <div class="info-box" style="background:#eef2f5; border:1px solid #d1d5db; border-radius:10px; padding:10px 12px; font-size:0.78rem; color:#4b5563; margin-bottom:16px;">
+            <div style="font-weight:600; color:#111827; margin-bottom:4px;"><i class="fas fa-info-circle me-1"></i> Info Login</div>
+            <div>Username: <strong>Queen Latifa</strong></div>
+            <div>Password: <strong>Hospital@2026</strong></div>
+        </div>
+
         @if ($errors->any())
             <div class="error">
                 <i class="fas fa-exclamation-circle"></i>
@@ -151,6 +157,19 @@
                 <div class="input-wrap">
                     <i class="fas fa-lock"></i>
                     <input type="password" id="password" name="password" placeholder="Masukkan password" autocomplete="current-password" required>
+                </div>
+            </div>
+            <div class="field">
+                <label for="branch">Cabang</label>
+                <div class="input-wrap">
+                    <i class="fas fa-building"></i>
+                    <select id="branch" name="branch" required style="width:100%; padding:12px 14px 12px 40px; border:1.5px solid #d1d5db; border-radius:12px; font-size:0.95rem; background:#f9fafb; outline:none; appearance:none;">
+                        <option value="">-- Pilih Cabang --</option>
+                        <option value="QLJ" {{ old('branch') === 'QLJ' ? 'selected' : '' }}>QLH Yogyakarta</option>
+                        <option value="QLKP" {{ old('branch') === 'QLKP' ? 'selected' : '' }}>QLH Kulon Progo</option>
+                        <option value="QLTMG" {{ old('branch') === 'QLTMG' ? 'selected' : '' }}>QLH Temanggung</option>
+                        <option value="PUSAT" {{ old('branch') === 'PUSAT' ? 'selected' : '' }}>PUSAT</option>
+                    </select>
                 </div>
             </div>
             <button type="submit" class="btn-login">

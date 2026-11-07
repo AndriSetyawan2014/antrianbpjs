@@ -20,14 +20,17 @@ class AuthController extends Controller
         $request->validate([
             'username' => 'required|string',
             'password' => 'required|string',
+            'branch'   => 'required|string|in:QLJ,QLKP,QLTMG,PUSAT',
         ]);
 
         $username = $request->input('username');
         $password = $request->input('password');
+        $branch   = $request->input('branch');
 
         if ($username === 'Queen Latifa' && $password === 'Hospital@2026') {
             Session::put('logged_in', true);
             Session::put('username', $username);
+            Session::put('branch', $branch);
             return redirect()->intended(route('dashboard'));
         }
 
