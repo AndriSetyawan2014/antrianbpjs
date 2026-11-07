@@ -340,6 +340,30 @@ $(document).ready(function() {
     refreshHideBtn();
     dtMain.draw();
 
+    function updateKodebookingRow(kb, code, msg, res) {
+        var $btn = $table.find('button.btn-resend-kb[data-kodebooking="' + kb.replace(/"/g, '\\"') + '"]').first();
+        if (!$btn.length) return;
+        var $tr = $btn.closest('tr');
+        var row = dtMain.row($tr);
+        if (!row.length) return;
+
+        var badgeClass = (code == 200 || code == 208) ? 'badge-success' : (code == 0 ? 'badge-warning' : 'badge-danger');
+        var badgeLabel = (code == 200 ? '✓ 200 OK' : (code == 0 ? '⏳ Pending' : '✗ Err ' + code));
+        var safeMsg = $('<div>').text(msg).html();
+
+        var data = row.data();
+        data[4] = '<span class="status-badge ' + badgeClass + '">' + badgeLabel + '</span>';
+        data[5] = safeMsg;
+        row.data(data).draw(false);
+
+        var $newTr = $(row.node());
+        var respStr = '';
+        try { respStr = JSON.stringify((res && res.response) ? res.response : res); } catch (e) { respStr = String((res && res.response) ? res.response : res); }
+        $newTr.find('.btn-resend-kb').attr('data-response', respStr);
+        $newTr.find('td').eq(7).find('button.btn-json-view').attr('data-json', respStr);
+        $newTr.find('td').eq(7).find('button.btn-json-view').attr('data-title', 'Response — ' + kb);
+    }
+
     $table.on('click', '.btn-resend-kb', function() {
         var $btnRow = $(this);
         var kb = $(this).data('kodebooking');
@@ -653,13 +677,13 @@ $(document).ready(function() {
                                     text: msg,
                                     timer: 3000,
                                     timerProgressBar: true
-                                }).then(() => location.reload());
+                                }).then(() => updateKodebookingRow(kb, code, msg, res));
                             } else {
                                 Swal.fire({
                                     icon: 'warning',
                                     title: 'Respon BPJS (Code ' + code + ')',
                                     text: msg
-                                }).then(() => location.reload());
+                                }).then(() => updateKodebookingRow(kb, code, msg, res));
                             }
                         },
                         error: function(xhr) {
