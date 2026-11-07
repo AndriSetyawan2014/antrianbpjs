@@ -16,12 +16,12 @@
         {{-- ══ Control Bar (2 kolom) ══ --}}
         <div class="row g-2 mb-2">
             {{-- Kiri: cabang, analisa, batal --}}
-            <div class="col-md-6">
+            <div class="col-md-5">
                 <div class="vclaim-control-bar h-100" style="padding:10px 14px; gap:8px; margin-bottom:0; align-items:flex-end;">
-                    <div class="filter-group" style="gap:8px;">
-                        <div>
+                    <div class="filter-group" style="gap:8px; flex-wrap:wrap;">
+                        <div style="flex:1; min-width:120px;">
                             <label class="form-label mb-0" style="font-size:0.7rem;">Cabang</label>
-                            <select id="selectQL" class="form-select form-select-sm" style="width:150px;">
+                            <select id="selectQL" class="form-select form-select-sm" style="width:100%;">
                                 <option value="">-- Pilih --</option>
                                 @foreach($availableQLs as $ql)
                                     @php
@@ -46,7 +46,7 @@
                 </div>
             </div>
             {{-- Kanan: cari + total/OK/Error --}}
-            <div class="col-md-6">
+            <div class="col-md-7">
                 <div class="vclaim-control-bar h-100" style="padding:10px 14px; gap:8px; margin-bottom:0; align-items:flex-end; flex-wrap:wrap;">
                     <div class="filter-group" style="gap:8px; flex:1;">
                         <div>
