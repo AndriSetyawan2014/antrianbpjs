@@ -54,32 +54,32 @@
                             <input type="search" id="endpointSearch" class="form-control form-control-sm" placeholder="SEP, Poli…" style="width:140px;" autocomplete="off">
                         </div>
                     </div>
-                    <div class="d-flex gap-2">
-                        <div class="summary-card shadow-sm bg-white" style="border-radius:0.5rem; padding:6px 10px; display:flex; align-items:center; gap:8px; border:1px solid #e5e7eb;">
-                            <div class="summary-icon d-flex align-items-center justify-content-center" style="width:26px; height:26px; border-radius:6px; font-size:0.8rem; background:#e0f2fe; color:#0284c7;">
+                    <div class="d-flex gap-2 flex-wrap" style="flex:1;">
+                        <div class="summary-card shadow-sm bg-white" style="border-radius:0.5rem; padding:10px 14px; display:flex; align-items:center; gap:10px; border:1px solid #e5e7eb; flex:1; min-width:110px;">
+                            <div class="summary-icon d-flex align-items-center justify-content-center" style="width:34px; height:34px; border-radius:8px; font-size:1rem; background:#e0f2fe; color:#0284c7;">
                                 <i class="fas fa-network-wired"></i>
                             </div>
                             <div>
-                                <div class="text-uppercase text-muted" style="font-size:0.55rem; font-weight:700; letter-spacing:0.05em;">Total</div>
-                                <div id="totalEndpoints" style="font-size:0.95rem; font-weight:700; color:#111827; line-height:1;">0</div>
+                                <div class="text-uppercase text-muted" style="font-size:0.6rem; font-weight:700; letter-spacing:0.05em;">Total</div>
+                                <div id="totalEndpoints" style="font-size:1.1rem; font-weight:700; color:#111827; line-height:1.1;">0</div>
                             </div>
                         </div>
-                        <div class="summary-card shadow-sm bg-white" style="border-radius:0.5rem; padding:6px 10px; display:flex; align-items:center; gap:8px; border:1px solid #e5e7eb;">
-                            <div class="summary-icon d-flex align-items-center justify-content-center" style="width:26px; height:26px; border-radius:6px; font-size:0.8rem; background:#dcfce7; color:#16a34a;">
+                        <div class="summary-card shadow-sm bg-white" style="border-radius:0.5rem; padding:10px 14px; display:flex; align-items:center; gap:10px; border:1px solid #e5e7eb; flex:1; min-width:110px;">
+                            <div class="summary-icon d-flex align-items-center justify-content-center" style="width:34px; height:34px; border-radius:8px; font-size:1rem; background:#dcfce7; color:#16a34a;">
                                 <i class="fas fa-check-circle"></i>
                             </div>
                             <div>
-                                <div class="text-uppercase text-muted" style="font-size:0.55rem; font-weight:700; letter-spacing:0.05em;">OK</div>
-                                <div id="countOk" style="font-size:0.95rem; font-weight:700; color:#111827; line-height:1;">0</div>
+                                <div class="text-uppercase text-muted" style="font-size:0.6rem; font-weight:700; letter-spacing:0.05em;">OK</div>
+                                <div id="countOk" style="font-size:1.1rem; font-weight:700; color:#111827; line-height:1.1;">0</div>
                             </div>
                         </div>
-                        <div class="summary-card shadow-sm bg-white" style="border-radius:0.5rem; padding:6px 10px; display:flex; align-items:center; gap:8px; border:1px solid #e5e7eb;">
-                            <div class="summary-icon d-flex align-items-center justify-content-center" style="width:26px; height:26px; border-radius:6px; font-size:0.8rem; background:#fee2e2; color:#dc2626;">
+                        <div class="summary-card shadow-sm bg-white" style="border-radius:0.5rem; padding:10px 14px; display:flex; align-items:center; gap:10px; border:1px solid #e5e7eb; flex:1; min-width:110px;">
+                            <div class="summary-icon d-flex align-items-center justify-content-center" style="width:34px; height:34px; border-radius:8px; font-size:1rem; background:#fee2e2; color:#dc2626;">
                                 <i class="fas fa-times-circle"></i>
                             </div>
                             <div>
-                                <div class="text-uppercase text-muted" style="font-size:0.55rem; font-weight:700; letter-spacing:0.05em;">Error</div>
-                                <div id="countErr" style="font-size:0.95rem; font-weight:700; color:#111827; line-height:1;">0</div>
+                                <div class="text-uppercase text-muted" style="font-size:0.6rem; font-weight:700; letter-spacing:0.05em;">Error</div>
+                                <div id="countErr" style="font-size:1.1rem; font-weight:700; color:#111827; line-height:1.1;">0</div>
                             </div>
                         </div>
                     </div>
