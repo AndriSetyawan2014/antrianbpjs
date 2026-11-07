@@ -388,10 +388,12 @@ $(document).ready(function() {
             }
             var pOk = (pc == 200 || pc == 208);
             pMsg = $('<div>').text(pMsg).html();
-            var prevBar = '<div class="resend-prev ' + (pOk ? 'ok' : 'err') + '" title="' + pMsg.replace(/"/g, '&quot;') + '">' +
+            var prevBar = '<div class="resend-prev ' + (pOk ? 'ok' : 'err') + ' text-center" title="' + pMsg.replace(/"/g, '&quot;') + '">' +
+                '<div class="d-flex align-items-center justify-content-center gap-2 mb-1">' +
                 '<span class="resend-prev-label">Status</span>' +
                 '<span class="resend-prev-code">' + pc + '</span>' +
-                '<span class="resend-prev-msg">' + pMsg.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span></div>';
+                '</div>' +
+                '<div class="resend-prev-msg text-start" style="font-size:0.75rem; max-height:120px; overflow:auto;">' + pMsg.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div></div>';
 
             var r = res.response || {};
             var jampraktek = r.jampraktek || '';
@@ -581,9 +583,9 @@ $(document).ready(function() {
                 title: '',
                 width: 1150,
                 html: '<div class="text-start mb-3" style="font-size:0.85rem;">' +
-                    '<div class="p-2 rounded mb-2" style="background:var(--color-primary); color:#fff; border:1px solid var(--color-primary-dark);">' +
+                    '<div class="p-2 rounded mb-2 text-center" style="background:var(--color-primary); color:#fff; border:1px solid var(--color-primary-dark);">' +
                     '<div class="fw-bold mb-1" style="font-size:0.95rem;"><i class="fas fa-paper-plane me-2"></i>Kirim Ulang Kode Booking</div>' +
-                    '<div class="d-flex align-items-center justify-content-between flex-wrap gap-2" style="font-size:0.85rem;">' +
+                    '<div class="d-flex align-items-center justify-content-center flex-wrap gap-3" style="font-size:0.85rem;">' +
                     '<span><i class="fas fa-barcode me-1"></i> Kode Booking: <strong>' + kb + '</strong></span>' +
                     '<span><i class="fas fa-user me-1"></i> No RM: <strong>' + norm + '</strong></span>' +
                     '</div>' +
