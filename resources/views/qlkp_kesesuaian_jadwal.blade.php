@@ -121,7 +121,7 @@
                     <i class="fas fa-undo me-1"></i> Reset
                 </a>
             </div>
-            <div class="col-auto ms-auto d-flex gap-1 flex-wrap align-items-center">
+            <div class="col-auto ms-auto d-flex gap-1 align-items-center flex-nowrap">
                 <button type="button" class="btn btn-sm btn-outline-secondary btn-preset" data-preset="today">Hari ini</button>
                 <button type="button" class="btn btn-sm btn-outline-secondary btn-preset" data-preset="month">Bulan ini</button>
                 <button type="button" id="btnSyncJadwalBpjs" class="btn btn-sm btn-info text-white ms-1" title="Tarik jadwal dokter resmi HFIS dari server BPJS Antrol">
