@@ -72,6 +72,12 @@
                     <i class="fas fa-user"></i>
                     <span>Admin</span>
                 </div>
+                <form method="POST" action="{{ route('logout') }}" style="margin:0;">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </form>
             </div>
         </header>
 

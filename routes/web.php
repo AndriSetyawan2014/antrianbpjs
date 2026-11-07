@@ -10,6 +10,7 @@ use App\Exports\QltmgDataKodebookingExport;
 use App\Exports\QltmgTaskIdExport;
 use App\Http\Controllers\WABlastController;
 use App\Http\Controllers\Api\VclaimController;
+use App\Http\Controllers\AuthController;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\DataKodebooking;
 use App\Models\data_taskid;
@@ -23,6 +24,11 @@ use App\Models\data_taskid;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+// Auth
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // dashboard
 Route::match(['get', 'head'], '/', [AntrianController::class, 'index'])->name('dashboard.index');
