@@ -574,7 +574,7 @@ $(document).ready(function() {
                 '</div>' +
                 '<div id="jsonRawBox" style="display:none;" class="mb-2 p-2 bg-dark text-light rounded border border-secondary">' +
                 '  <label class="form-label fw-bold text-xs text-white mb-1">JSON Request</label>' +
-                '  <textarea id="resendPayload" class="form-control form-control-sm bg-black text-white border-0" rows="4" spellcheck="false"></textarea>' +
+                '  <textarea id="resendPayload" class="form-control form-control-sm bg-black text-white border-0" rows="10" spellcheck="false"></textarea>' +
                 '</div>';
 
             Swal.fire({
