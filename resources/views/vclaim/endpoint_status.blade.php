@@ -11,7 +11,15 @@
 <div class="row g-3">
     <div class="col-12">
         {{-- ══ Control Bar (compact) ══ --}}
-        <div class="vclaim-control-bar" style="padding:10px 14px; gap:8px; margin-bottom:12px;">
+        <div class="vclaim-control-bar" style="padding:10px 14px; gap:8px; margin-bottom:12px; align-items:flex-end;">
+            <div class="d-flex gap-2 align-items-end">
+                <button type="button" id="btnStartAnalysis" class="btn btn-primary btn-sm" style="height:32px;padding:0 0.9rem;font-size:0.8rem;">
+                    <i class="fas fa-play me-1"></i> Analisa
+                </button>
+                <button type="button" id="btnCancelAnalysis" class="btn btn-secondary btn-sm" style="height:32px;padding:0 0.9rem;font-size:0.8rem;display:none;">
+                    <i class="fas fa-stop me-1"></i> Batal
+                </button>
+            </div>
             <div class="filter-group" style="gap:8px;">
                 <div>
                     <label class="form-label mb-0" style="font-size:0.7rem;">Cabang</label>
@@ -32,20 +40,6 @@
                     <label class="form-label mb-0" style="font-size:0.7rem;" for="endpointSearch">Cari</label>
                     <input type="search" id="endpointSearch" class="form-control form-control-sm" placeholder="SEP, Poli…" style="width:140px;" autocomplete="off">
                 </div>
-                <div class="endpoint-toolbar" role="group" aria-label="Filter status endpoint" style="align-self:flex-end;">
-                    <button type="button" class="btn-preset btn-sm" data-epfilter="ALL" aria-pressed="true" style="padding:2px 8px;font-size:0.7rem;">Semua</button>
-                    <button type="button" class="btn-preset btn-sm" data-epfilter="OK" aria-pressed="false" style="padding:2px 8px;font-size:0.7rem;">OK</button>
-                    <button type="button" class="btn-preset btn-sm" data-epfilter="ERR" aria-pressed="false" style="padding:2px 8px;font-size:0.7rem;">Err</button>
-                    <button type="button" class="btn-preset btn-sm" data-epfilter="PENDING" aria-pressed="false" style="padding:2px 8px;font-size:0.7rem;">Pending</button>
-                </div>
-            </div>
-            <div class="d-flex gap-2 align-items-end">
-                <button type="button" id="btnStartAnalysis" class="btn btn-primary btn-sm" style="height:32px;padding:0 0.9rem;font-size:0.8rem;">
-                    <i class="fas fa-play me-1"></i> Analisa
-                </button>
-                <button type="button" id="btnCancelAnalysis" class="btn btn-secondary btn-sm" style="height:32px;padding:0 0.9rem;font-size:0.8rem;display:none;">
-                    <i class="fas fa-stop me-1"></i> Batal
-                </button>
             </div>
         </div>
 
