@@ -244,6 +244,10 @@ class BpjsHelper
      */
     public static function pingVclaimGetEndpoint($urlQL, $endpoint)
     {
+        $urlQL = strtoupper(trim((string) $urlQL));
+        if ($urlQL === '') {
+            $urlQL = 'QLJ';
+        }
         $consId    = env('BPJS_VCLAIM_CONS_ID_'  . $urlQL);
         $secret    = env('BPJS_VCLAIM_SECRET_'   . $urlQL);
         $userKey   = env('BPJS_VCLAIM_USERKEY_'  . $urlQL);
@@ -350,6 +354,10 @@ class BpjsHelper
      */
     public static function pingAntrolGetEndpoint($urlQL, $endpoint)
     {
+        $urlQL = strtoupper(trim((string) $urlQL));
+        if ($urlQL === '') {
+            $urlQL = 'QLJ';
+        }
         $consId    = env('BPJS_ANTROL_CONS_ID_'  . $urlQL);
         $secret    = env('BPJS_ANTROL_SECRET_'   . $urlQL);
         $userKey   = env('BPJS_ANTROL_USERKEY_'  . $urlQL);
@@ -426,6 +434,10 @@ class BpjsHelper
      */
     public static function pingAntrolPostEndpoint($urlQL, $endpoint, $data)
     {
+        $urlQL = strtoupper(trim((string) $urlQL));
+        if ($urlQL === '') {
+            $urlQL = 'QLJ';
+        }
         $consId    = env('BPJS_ANTROL_CONS_ID_'  . $urlQL);
         $secret    = env('BPJS_ANTROL_SECRET_'   . $urlQL);
         $userKey   = env('BPJS_ANTROL_USERKEY_'  . $urlQL);
