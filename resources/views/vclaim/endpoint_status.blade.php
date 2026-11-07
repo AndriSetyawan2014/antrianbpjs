@@ -10,6 +10,9 @@
 @section('content')
 <div class="row g-3">
     <div class="col-12">
+        <div id="branchAlert" class="alert alert-warning py-2 px-3 mb-2" style="display:none; font-size:0.85rem;">
+            <i class="fas fa-exclamation-triangle me-2"></i> Silakan pilih Cabang Queen Latifa terlebih dahulu.
+        </div>
         {{-- ══ Control Bar (2 kolom) ══ --}}
         <div class="row g-2 mb-2">
             {{-- Kiri: cabang, analisa, batal --}}
@@ -358,10 +361,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const ql = selectQL.value;
         const qlText = selectQL.options[selectQL.selectedIndex].text;
         if (!ql) {
-            (window.showGlobalToast || alert)('Silakan pilih Cabang Queen Latifa terlebih dahulu.', 'warning');
+            const alertEl = document.getElementById('branchAlert');
+            if (alertEl) {
+                alertEl.style.display = 'block';
+                clearTimeout(window._branchAlertTimer);
+                window._branchAlertTimer = setTimeout(function () { alertEl.style.display = 'none'; }, 4000);
+            }
+            selectQL.classList.add('is-invalid');
             selectQL.focus();
             return;
         }
+        selectQL.classList.remove('is-invalid');
 
         analysisCancelled = false;
         setRunning(true);
