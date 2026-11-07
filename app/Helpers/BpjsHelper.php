@@ -226,164 +226,17 @@ class BpjsHelper
 
     public static function getVclaimPesertaNik($urlQL, $nik, $tanggal)
     {
-        $consId    = env('BPJS_VCLAIM_CONS_ID_'  . $urlQL);
-        $secret    = env('BPJS_VCLAIM_SECRET_'   . $urlQL);
-        $userKey   = env('BPJS_VCLAIM_USERKEY_'  . $urlQL);
-        $timestamp = strval(time());
-        $signature = base64_encode(hash_hmac('sha256', $consId . '&' . $timestamp, $secret, true));
-
-        $endpoint = "/Peserta/nik/{$nik}/tglSEP/{$tanggal}";
-        $url = env('BPJS_VCLAIM_BASE_URL', 'https://apijkn.bpjs-kesehatan.go.id/vclaim-rest') . $endpoint;
-
-        $startTime = microtime(true);
-
-        try {
-            $response = Http::timeout(30)
-                ->connectTimeout(15)
-                ->withHeaders([
-                    'Accept'       => 'application/json',
-                    'Content-Type' => 'application/json; charset=utf-8',
-                    'X-cons-id'    => $consId,
-                    'X-timestamp'  => $timestamp,
-                    'X-signature'  => $signature,
-                    'user_key'     => $userKey,
-                ])->get($url);
-
-            $endTime = microtime(true);
-            $responseTimeMs = round(($endTime - $startTime) * 1000);
-
-            $body = $response->body();
-            $decryptedBody = self::decryptResponse($consId, $secret, $timestamp, $body);
-            $decoded = json_decode($decryptedBody, true);
-            
-            $metaCode = $decoded['metaData']['code'] ?? ($decoded['metadata']['code'] ?? $response->status());
-
-            return [
-                'success'       => true,
-                'http_code'     => $response->status(),
-                'message_code'  => $metaCode,
-                'response_time' => $responseTimeMs,
-            ];
-        } catch (\Exception $e) {
-            $endTime = microtime(true);
-            $responseTimeMs = round(($endTime - $startTime) * 1000);
-            
-            return [
-                'success'       => false,
-                'http_code'     => 500,
-                'message_code'  => 500,
-                'response_time' => $responseTimeMs,
-                'error'         => $e->getMessage()
-            ];
-        }
+        return self::pingVclaimGetEndpoint($urlQL, "/Peserta/nik/{$nik}/tglSEP/{$tanggal}");
     }
 
     public static function getVclaimRujukan($urlQL, $noRujukan)
     {
-        $consId    = env('BPJS_VCLAIM_CONS_ID_'  . $urlQL);
-        $secret    = env('BPJS_VCLAIM_SECRET_'   . $urlQL);
-        $userKey   = env('BPJS_VCLAIM_USERKEY_'  . $urlQL);
-        $timestamp = strval(time());
-        $signature = base64_encode(hash_hmac('sha256', $consId . '&' . $timestamp, $secret, true));
-
-        $endpoint = "/Rujukan/{$noRujukan}";
-        $url = env('BPJS_VCLAIM_BASE_URL', 'https://apijkn.bpjs-kesehatan.go.id/vclaim-rest') . $endpoint;
-
-        $startTime = microtime(true);
-
-        try {
-            $response = Http::timeout(30)
-                ->connectTimeout(15)
-                ->withHeaders([
-                    'Accept'       => 'application/json',
-                    'Content-Type' => 'application/json; charset=utf-8',
-                    'X-cons-id'    => $consId,
-                    'X-timestamp'  => $timestamp,
-                    'X-signature'  => $signature,
-                    'user_key'     => $userKey,
-                ])->get($url);
-
-            $endTime = microtime(true);
-            $responseTimeMs = round(($endTime - $startTime) * 1000);
-
-            $body = $response->body();
-            $decryptedBody = self::decryptResponse($consId, $secret, $timestamp, $body);
-            $decoded = json_decode($decryptedBody, true);
-            
-            $metaCode = $decoded['metaData']['code'] ?? ($decoded['metadata']['code'] ?? $response->status());
-
-            return [
-                'success'       => true,
-                'http_code'     => $response->status(),
-                'message_code'  => $metaCode,
-                'response_time' => $responseTimeMs,
-            ];
-        } catch (\Exception $e) {
-            $endTime = microtime(true);
-            $responseTimeMs = round(($endTime - $startTime) * 1000);
-            
-            return [
-                'success'       => false,
-                'http_code'     => 500,
-                'message_code'  => 500,
-                'response_time' => $responseTimeMs,
-                'error'         => $e->getMessage()
-            ];
-        }
+        return self::pingVclaimGetEndpoint($urlQL, "/Rujukan/{$noRujukan}");
     }
 
     public static function getVclaimRujukanByNoKartu($urlQL, $noKartu)
     {
-        $consId    = env('BPJS_VCLAIM_CONS_ID_'  . $urlQL);
-        $secret    = env('BPJS_VCLAIM_SECRET_'   . $urlQL);
-        $userKey   = env('BPJS_VCLAIM_USERKEY_'  . $urlQL);
-        $timestamp = strval(time());
-        $signature = base64_encode(hash_hmac('sha256', $consId . '&' . $timestamp, $secret, true));
-
-        $endpoint = "/Rujukan/Peserta/{$noKartu}";
-        $url = env('BPJS_VCLAIM_BASE_URL', 'https://apijkn.bpjs-kesehatan.go.id/vclaim-rest') . $endpoint;
-
-        $startTime = microtime(true);
-
-        try {
-            $response = Http::timeout(30)
-                ->connectTimeout(15)
-                ->withHeaders([
-                    'Accept'       => 'application/json',
-                    'Content-Type' => 'application/json; charset=utf-8',
-                    'X-cons-id'    => $consId,
-                    'X-timestamp'  => $timestamp,
-                    'X-signature'  => $signature,
-                    'user_key'     => $userKey,
-                ])->get($url);
-
-            $endTime = microtime(true);
-            $responseTimeMs = round(($endTime - $startTime) * 1000);
-
-            $body = $response->body();
-            $decryptedBody = self::decryptResponse($consId, $secret, $timestamp, $body);
-            $decoded = json_decode($decryptedBody, true);
-            
-            $metaCode = $decoded['metaData']['code'] ?? ($decoded['metadata']['code'] ?? $response->status());
-
-            return [
-                'success'       => true,
-                'http_code'     => $response->status(),
-                'message_code'  => $metaCode,
-                'response_time' => $responseTimeMs,
-            ];
-        } catch (\Exception $e) {
-            $endTime = microtime(true);
-            $responseTimeMs = round(($endTime - $startTime) * 1000);
-            
-            return [
-                'success'       => false,
-                'http_code'     => 500,
-                'message_code'  => 500,
-                'response_time' => $responseTimeMs,
-                'error'         => $e->getMessage()
-            ];
-        }
+        return self::pingVclaimGetEndpoint($urlQL, "/Rujukan/Peserta/{$noKartu}");
     }
 
     /**
@@ -401,6 +254,19 @@ class BpjsHelper
 
         $startTime = microtime(true);
 
+        $requestInfo = [
+            'method'  => 'GET',
+            'url'     => $url,
+            'headers' => [
+                'Accept'       => 'application/json',
+                'Content-Type' => 'application/json; charset=utf-8',
+                'X-cons-id'    => $consId,
+                'X-timestamp'  => $timestamp,
+                'X-signature'  => $signature,
+                'user_key'     => $userKey,
+            ],
+        ];
+
         try {
             $response = Http::timeout(30)
                 ->connectTimeout(15)
@@ -421,23 +287,30 @@ class BpjsHelper
             $decoded = json_decode($decryptedBody, true);
             
             $metaCode = $decoded['metaData']['code'] ?? ($decoded['metadata']['code'] ?? $response->status());
+            $metaMessage = $decoded['metaData']['message'] ?? ($decoded['metadata']['message'] ?? null);
 
             return [
-                'success'       => true,
-                'http_code'     => $response->status(),
-                'message_code'  => $metaCode,
-                'response_time' => $responseTimeMs,
+                'success'        => true,
+                'http_code'      => $response->status(),
+                'message_code'   => $metaCode,
+                'message'        => $metaMessage,
+                'response_time'  => $responseTimeMs,
+                'request'        => $requestInfo,
+                'response'       => $decryptedBody,
             ];
         } catch (\Exception $e) {
             $endTime = microtime(true);
             $responseTimeMs = round(($endTime - $startTime) * 1000);
             
             return [
-                'success'       => false,
-                'http_code'     => 500,
-                'message_code'  => 500,
-                'response_time' => $responseTimeMs,
-                'error'         => $e->getMessage()
+                'success'        => false,
+                'http_code'      => 500,
+                'message_code'   => 500,
+                'message'        => $e->getMessage(),
+                'response_time'  => $responseTimeMs,
+                'request'        => $requestInfo,
+                'response'       => $e->getMessage(),
+                'error'          => $e->getMessage()
             ];
         }
     }
@@ -487,6 +360,19 @@ class BpjsHelper
 
         $startTime = microtime(true);
 
+        $requestInfo = [
+            'method'  => 'GET',
+            'url'     => $url,
+            'headers' => [
+                'Accept'       => 'application/json',
+                'Content-Type' => 'application/json',
+                'X-cons-id'    => $consId,
+                'X-timestamp'  => $timestamp,
+                'X-signature'  => $signature,
+                'user_key'     => $userKey,
+            ],
+        ];
+
         try {
             $response = Http::timeout(30)
                 ->connectTimeout(15)
@@ -507,23 +393,30 @@ class BpjsHelper
             $decoded = json_decode($decryptedBody, true);
             
             $metaCode = $decoded['metaData']['code'] ?? ($decoded['metadata']['code'] ?? $response->status());
+            $metaMessage = $decoded['metaData']['message'] ?? ($decoded['metadata']['message'] ?? null);
 
             return [
-                'success'       => true,
-                'http_code'     => $response->status(),
-                'message_code'  => $metaCode,
-                'response_time' => $responseTimeMs,
+                'success'        => true,
+                'http_code'      => $response->status(),
+                'message_code'   => $metaCode,
+                'message'        => $metaMessage,
+                'response_time'  => $responseTimeMs,
+                'request'        => $requestInfo,
+                'response'       => $decryptedBody,
             ];
         } catch (\Exception $e) {
             $endTime = microtime(true);
             $responseTimeMs = round(($endTime - $startTime) * 1000);
             
             return [
-                'success'       => false,
-                'http_code'     => 500,
-                'message_code'  => 500,
-                'response_time' => $responseTimeMs,
-                'error'         => $e->getMessage()
+                'success'        => false,
+                'http_code'      => 500,
+                'message_code'   => 500,
+                'message'        => $e->getMessage(),
+                'response_time'  => $responseTimeMs,
+                'request'        => $requestInfo,
+                'response'       => $e->getMessage(),
+                'error'          => $e->getMessage()
             ];
         }
     }
@@ -542,6 +435,20 @@ class BpjsHelper
         $url = env('BPJS_BASE_URL', 'https://apijkn.bpjs-kesehatan.go.id/antreanrs') . $endpoint;
 
         $startTime = microtime(true);
+
+        $requestInfo = [
+            'method'  => 'POST',
+            'url'     => $url,
+            'headers' => [
+                'Accept'       => 'application/json',
+                'Content-Type' => 'application/json',
+                'X-cons-id'    => $consId,
+                'X-timestamp'  => $timestamp,
+                'X-signature'  => $signature,
+                'user_key'     => $userKey,
+            ],
+            'body'    => $data,
+        ];
 
         try {
             $response = Http::timeout(30)
@@ -563,23 +470,30 @@ class BpjsHelper
             $decoded = json_decode($decryptedBody, true);
             
             $metaCode = $decoded['metaData']['code'] ?? ($decoded['metadata']['code'] ?? $response->status());
+            $metaMessage = $decoded['metaData']['message'] ?? ($decoded['metadata']['message'] ?? null);
 
             return [
-                'success'       => true,
-                'http_code'     => $response->status(),
-                'message_code'  => $metaCode,
-                'response_time' => $responseTimeMs,
+                'success'        => true,
+                'http_code'      => $response->status(),
+                'message_code'   => $metaCode,
+                'message'        => $metaMessage,
+                'response_time'  => $responseTimeMs,
+                'request'        => $requestInfo,
+                'response'       => $decryptedBody,
             ];
         } catch (\Exception $e) {
             $endTime = microtime(true);
             $responseTimeMs = round(($endTime - $startTime) * 1000);
             
             return [
-                'success'       => false,
-                'http_code'     => 500,
-                'message_code'  => 500,
-                'response_time' => $responseTimeMs,
-                'error'         => $e->getMessage()
+                'success'        => false,
+                'http_code'      => 500,
+                'message_code'   => 500,
+                'message'        => $e->getMessage(),
+                'response_time'  => $responseTimeMs,
+                'request'        => $requestInfo,
+                'response'       => $e->getMessage(),
+                'error'          => $e->getMessage()
             ];
         }
     }

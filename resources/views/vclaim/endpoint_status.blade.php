@@ -103,6 +103,21 @@
         </div>
     </div>
 </div>
+
+    {{-- Modal Request/Response --}}
+    <div class="modal fade" id="epDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="epDetailTitle">Detail</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <pre id="epDetailContent" style="white-space: pre-wrap; word-break: break-word; font-size: 0.8rem;"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -216,6 +231,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="progress-bar ${bgClass}" style="width: ${progressWidth}%;"></div>
                         </div>
                     </div>
+                    <div class="card-actions mt-2 d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="showEpDetail('request','${ep.name}')">Request</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="showEpDetail('response','${ep.name}')">Response</button>
+                    </div>
                 </div>
             `;
             grid.insertAdjacentHTML('beforeend', cardHTML);
@@ -229,6 +248,24 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     initCards();
+
+    window.showEpDetail = function (type, name) {
+        const d = (window.epData && window.epData[name]) || {};
+        const raw = type === 'request' ? d.request : d.response;
+        let text = '';
+        if (raw === null || raw === undefined) {
+            text = '(tidak ada data)';
+        } else if (typeof raw === 'string') {
+            try { text = JSON.stringify(JSON.parse(raw), null, 2); }
+            catch (e) { text = raw; }
+        } else {
+            text = JSON.stringify(raw, null, 2);
+        }
+        document.getElementById('epDetailTitle').textContent = (type === 'request' ? 'Request' : 'Response') + ' — ' + name;
+        document.getElementById('epDetailContent').textContent = text;
+        const modal = new bootstrap.Modal(document.getElementById('epDetailModal'));
+        modal.show();
+    };
 
     // Search + filter status (client-side)
     const epSearch = document.getElementById('endpointSearch');
@@ -318,6 +355,10 @@ document.addEventListener('DOMContentLoaded', function() {
             ep.http = data.http_code || '-';
             ep.message = (data.message_code !== null && data.message_code !== undefined) ? data.message_code : '-';
             ep.time = data.response_time || 0;
+            ep.request = data.request || null;
+            ep.response = data.response || null;
+            window.epData = window.epData || {};
+            window.epData[ep.name] = { request: ep.request, response: ep.response };
         } catch (err) {
             ep.status = 'ERR'; ep.http = 500; ep.message = 'Fetch Error'; ep.time = 0;
         }
