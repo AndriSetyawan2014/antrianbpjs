@@ -18,8 +18,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 24px 16px;
             color: #111827;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
         }
         .orb {
             position: absolute;
@@ -38,29 +40,63 @@
             position: relative;
             width: 100%;
             max-width: 420px;
-            padding: 40px 36px;
-            background: rgba(255, 255, 255, 0.92);
+            padding: 0;
+            background: rgba(255, 255, 255, 0.96);
             backdrop-filter: blur(18px);
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255,255,255,0.4);
+            overflow: hidden;
             z-index: 2;
         }
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 28px;
+        .brand-band {
+            position: relative;
+            padding: 26px 24px 22px;
+            text-align: center;
+            background:
+                radial-gradient(420px 160px at 50% -40%, rgba(56, 189, 248, 0.35), transparent 70%),
+                linear-gradient(135deg, #0a3a46 0%, #0f4c5c 55%, #1e6a7a 100%);
+            border-bottom: 3px solid #f59e0b;
         }
-        .brand-icon {
-            width: 48px; height: 48px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, #0f4c5c, #1e6a7a);
-            display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: 20px;
-            box-shadow: 0 8px 20px rgba(15, 76, 92, 0.35);
+        .brand-band::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 26px 26px;
+            pointer-events: none;
         }
-        .brand-text h1 { margin: 0; font-size: 1.25rem; font-weight: 700; color: #111827; }
-        .brand-text p { margin: 0; font-size: 0.8rem; color: #6b7280; }
+        .brand-band img {
+            position: relative;
+            z-index: 1;
+            height: 64px;
+            width: auto;
+            max-width: 88%;
+            object-fit: contain;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
+        }
+        .brand-band h1 {
+            position: relative;
+            z-index: 1;
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.01em;
+        }
+        .brand-band p {
+            position: relative;
+            z-index: 1;
+            margin: 2px 0 0;
+            font-size: 0.76rem;
+            color: rgba(255, 255, 255, 0.75);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .login-body {
+            padding: 24px 32px 28px;
+        }
         .field { margin-bottom: 18px; }
         .field label { display: block; font-size: 0.75rem; font-weight: 600; color: #4b5563; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
         .input-wrap { position: relative; }
@@ -122,14 +158,13 @@
     <div class="orb two"></div>
 
     <div class="login-card">
-        <div class="brand" style="flex-direction:column; text-align:center; gap:6px;">
-            <img src="{{ asset('dist/img/logoqlheader.png') }}" alt="Logo Queen Latifa" style="height:64px; width:auto; object-fit:contain; margin-bottom:6px;">
-            <div class="brand-text">
-                <h1>Antrian BPJS Online</h1>
-                <p>Queen Latifa Healthcare System</p>
-            </div>
+        <div class="brand-band">
+            <img src="{{ asset('dist/img/logoqlheader.png') }}" alt="Logo Queen Latifa">
+            <h1>Antrian BPJS Online</h1>
+            <p>Queen Latifa Healthcare System</p>
         </div>
 
+        <div class="login-body">
         <div class="info-box" style="background:#eef2f5; border:1px solid #d1d5db; border-radius:10px; padding:10px 12px; font-size:0.78rem; color:#4b5563; margin-bottom:16px;">
             <div style="font-weight:600; color:#111827; margin-bottom:4px;"><i class="fas fa-info-circle me-1"></i> Info Login</div>
             <div>Username: <strong>Queen Latifa</strong></div>
@@ -179,6 +214,7 @@
 
         <div class="footer">
             &copy; {{ date('Y') }} <strong>Queen Latifa</strong> · Sistem Antrian BPJS
+        </div>
         </div>
     </div>
 </body>
