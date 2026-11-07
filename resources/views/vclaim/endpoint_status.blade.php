@@ -10,72 +10,74 @@
 @section('content')
 <div class="row g-3">
     <div class="col-12">
-        {{-- ══ Control Bar (compact) ══ --}}
-        <div class="vclaim-control-bar" style="padding:10px 14px; gap:8px; margin-bottom:12px; align-items:flex-end;">
-            <div class="filter-group" style="gap:8px;">
-                <div>
-                    <label class="form-label mb-0" style="font-size:0.7rem;">Cabang</label>
-                    <select id="selectQL" class="form-select form-select-sm" style="width:150px;">
-                        <option value="">-- Pilih --</option>
-                        @foreach($availableQLs as $ql)
-                            @php
-                                $label = $ql;
-                                if ($ql === 'QLJ') $label = 'Yogyakarta';
-                                elseif ($ql === 'QLKP') $label = 'Kulon Progo';
-                                elseif ($ql === 'QLTMG') $label = 'Temanggung';
-                            @endphp
-                            <option value="{{ $ql }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="d-flex gap-2 align-items-end">
-                    <button type="button" id="btnStartAnalysis" class="btn btn-primary btn-sm" style="height:32px;padding:0 0.9rem;font-size:0.8rem;">
-                        <i class="fas fa-play me-1"></i> Analisa
-                    </button>
-                    <button type="button" id="btnCancelAnalysis" class="btn btn-secondary btn-sm" style="height:32px;padding:0 0.9rem;font-size:0.8rem;display:none;">
-                        <i class="fas fa-stop me-1"></i> Batal
-                    </button>
-                </div>
-                <div>
-                    <label class="form-label mb-0" style="font-size:0.7rem;" for="endpointSearch">Cari</label>
-                    <input type="search" id="endpointSearch" class="form-control form-control-sm" placeholder="SEP, Poli…" style="width:140px;" autocomplete="off">
+        {{-- ══ Control Bar (2 kolom) ══ --}}
+        <div class="row g-2 mb-2">
+            {{-- Kiri: cabang, analisa, batal --}}
+            <div class="col-md-6">
+                <div class="vclaim-control-bar h-100" style="padding:10px 14px; gap:8px; margin-bottom:0; align-items:flex-end;">
+                    <div class="filter-group" style="gap:8px;">
+                        <div>
+                            <label class="form-label mb-0" style="font-size:0.7rem;">Cabang</label>
+                            <select id="selectQL" class="form-select form-select-sm" style="width:150px;">
+                                <option value="">-- Pilih --</option>
+                                @foreach($availableQLs as $ql)
+                                    @php
+                                        $label = $ql;
+                                        if ($ql === 'QLJ') $label = 'Yogyakarta';
+                                        elseif ($ql === 'QLKP') $label = 'Kulon Progo';
+                                        elseif ($ql === 'QLTMG') $label = 'Temanggung';
+                                    @endphp
+                                    <option value="{{ $ql }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="d-flex gap-2 align-items-end">
+                            <button type="button" id="btnStartAnalysis" class="btn btn-primary btn-sm" style="height:32px;padding:0 0.9rem;font-size:0.8rem;">
+                                <i class="fas fa-play me-1"></i> Analisa
+                            </button>
+                            <button type="button" id="btnCancelAnalysis" class="btn btn-secondary btn-sm" style="height:32px;padding:0 0.9rem;font-size:0.8rem;display:none;">
+                                <i class="fas fa-stop me-1"></i> Batal
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        {{-- ══ Dashboard ══ --}}
-        <div id="appMonitor">
-            <div class="row g-2 mb-2">
-                <div class="col-md-4 col-sm-12">
-                    <div class="summary-card shadow-sm bg-white" style="border-radius:0.5rem; padding:10px 12px; display:flex; align-items:center; gap:10px; border:1px solid #e5e7eb;">
-                        <div class="summary-icon d-flex align-items-center justify-content-center" style="width:34px; height:34px; border-radius:8px; font-size:1rem; background:#e0f2fe; color:#0284c7;">
-                            <i class="fas fa-network-wired"></i>
-                        </div>
+            {{-- Kanan: cari + total/OK/Error --}}
+            <div class="col-md-6">
+                <div class="vclaim-control-bar h-100" style="padding:10px 14px; gap:8px; margin-bottom:0; align-items:flex-end; flex-wrap:wrap;">
+                    <div class="filter-group" style="gap:8px; flex:1;">
                         <div>
-                            <div class="text-uppercase text-muted" style="font-size:0.6rem; font-weight:700; letter-spacing:0.05em;">Total</div>
-                            <div id="totalEndpoints" style="font-size:1.1rem; font-weight:700; color:#111827; line-height:1.1;">0</div>
+                            <label class="form-label mb-0" style="font-size:0.7rem;" for="endpointSearch">Cari</label>
+                            <input type="search" id="endpointSearch" class="form-control form-control-sm" placeholder="SEP, Poli…" style="width:140px;" autocomplete="off">
                         </div>
                     </div>
-                </div>
-                <div class="col-md-4 col-sm-6">
-                    <div class="summary-card shadow-sm bg-white" style="border-radius:0.5rem; padding:10px 12px; display:flex; align-items:center; gap:10px; border:1px solid #e5e7eb;">
-                        <div class="summary-icon d-flex align-items-center justify-content-center" style="width:34px; height:34px; border-radius:8px; font-size:1rem; background:#dcfce7; color:#16a34a;">
-                            <i class="fas fa-check-circle"></i>
+                    <div class="d-flex gap-2">
+                        <div class="summary-card shadow-sm bg-white" style="border-radius:0.5rem; padding:6px 10px; display:flex; align-items:center; gap:8px; border:1px solid #e5e7eb;">
+                            <div class="summary-icon d-flex align-items-center justify-content-center" style="width:26px; height:26px; border-radius:6px; font-size:0.8rem; background:#e0f2fe; color:#0284c7;">
+                                <i class="fas fa-network-wired"></i>
+                            </div>
+                            <div>
+                                <div class="text-uppercase text-muted" style="font-size:0.55rem; font-weight:700; letter-spacing:0.05em;">Total</div>
+                                <div id="totalEndpoints" style="font-size:0.95rem; font-weight:700; color:#111827; line-height:1;">0</div>
+                            </div>
                         </div>
-                        <div>
-                            <div class="text-uppercase text-muted" style="font-size:0.6rem; font-weight:700; letter-spacing:0.05em;">OK</div>
-                            <div id="countOk" style="font-size:1.1rem; font-weight:700; color:#111827; line-height:1.1;">0</div>
+                        <div class="summary-card shadow-sm bg-white" style="border-radius:0.5rem; padding:6px 10px; display:flex; align-items:center; gap:8px; border:1px solid #e5e7eb;">
+                            <div class="summary-icon d-flex align-items-center justify-content-center" style="width:26px; height:26px; border-radius:6px; font-size:0.8rem; background:#dcfce7; color:#16a34a;">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div>
+                                <div class="text-uppercase text-muted" style="font-size:0.55rem; font-weight:700; letter-spacing:0.05em;">OK</div>
+                                <div id="countOk" style="font-size:0.95rem; font-weight:700; color:#111827; line-height:1;">0</div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="col-md-4 col-sm-6">
-                    <div class="summary-card shadow-sm bg-white" style="border-radius:0.5rem; padding:10px 12px; display:flex; align-items:center; gap:10px; border:1px solid #e5e7eb;">
-                        <div class="summary-icon d-flex align-items-center justify-content-center" style="width:34px; height:34px; border-radius:8px; font-size:1rem; background:#fee2e2; color:#dc2626;">
-                            <i class="fas fa-times-circle"></i>
-                        </div>
-                        <div>
-                            <div class="text-uppercase text-muted" style="font-size:0.6rem; font-weight:700; letter-spacing:0.05em;">Error</div>
-                            <div id="countErr" style="font-size:1.1rem; font-weight:700; color:#111827; line-height:1.1;">0</div>
+                        <div class="summary-card shadow-sm bg-white" style="border-radius:0.5rem; padding:6px 10px; display:flex; align-items:center; gap:8px; border:1px solid #e5e7eb;">
+                            <div class="summary-icon d-flex align-items-center justify-content-center" style="width:26px; height:26px; border-radius:6px; font-size:0.8rem; background:#fee2e2; color:#dc2626;">
+                                <i class="fas fa-times-circle"></i>
+                            </div>
+                            <div>
+                                <div class="text-uppercase text-muted" style="font-size:0.55rem; font-weight:700; letter-spacing:0.05em;">Error</div>
+                                <div id="countErr" style="font-size:0.95rem; font-weight:700; color:#111827; line-height:1;">0</div>
+                            </div>
                         </div>
                     </div>
                 </div>
