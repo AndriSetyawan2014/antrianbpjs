@@ -707,8 +707,7 @@ public function rekapKodeBooking(Request $request)
             ->leftJoin('data_kodebooking as dk', 'dt.kodebooking', '=', 'dk.kodebooking')
             ->select(
                 'dt.id', 'dt.kodebooking', 'dt.taskid', 'dt.waktu', 'dt.idpendaftaran', 'dt.jam', 'dt.code', 'dt.message', 'dt.tanggal', 'dt.request', 'dt.response', 'dt.reupload', 'dt.created_by', 'dt.updated_by',
-                DB::raw("COALESCE(NULLIF(dk.norm, ''), dt.norm) as norm"),
-                'dk.tanggalperiksa',
+                'dk.norm', 'dk.tanggalperiksa',
                 'dk.namadokter', 'dk.namaunit as namapoli', 'dk.jammulai', 'dk.jamakhir'
             );
 
@@ -886,8 +885,7 @@ public function qlkp_datakodebooking(Request $request)
         ->leftJoin('qlkp_data_kodebooking as dk', 'dt.kodebooking', '=', 'dk.kodebooking')
         ->select(
             'dt.id', 'dt.kodebooking', 'dt.taskid', 'dt.waktu', 'dt.idpendaftaran', 'dt.jam', 'dt.code', 'dt.message', 'dt.tanggal', 'dt.request', 'dt.response', 'dt.reupload', 'dt.created_by', 'dt.updated_by',
-            DB::raw("COALESCE(NULLIF(dk.norm, ''), dt.norm) as norm"),
-            'dk.tanggalperiksa',
+            'dk.norm', 'dk.tanggalperiksa',
             'dk.namadokter', 'dk.namaunit as namapoli', 'dk.jammulai', 'dk.jamakhir'
         );
 
@@ -1518,8 +1516,7 @@ public function qlkp_datakodebooking(Request $request)
             ->leftJoin('qltmg_data_kodebooking as dk', 'dt.kodebooking', '=', 'dk.kodebooking')
             ->select(
                 'dt.id', 'dt.kodebooking', 'dt.taskid', 'dt.waktu', 'dt.idpendaftaran', 'dt.jam', 'dt.code', 'dt.message', 'dt.tanggal', 'dt.request', 'dt.response', 'dt.reupload', 'dt.created_by', 'dt.updated_by',
-                DB::raw("COALESCE(NULLIF(dk.norm, ''), dt.norm) as norm"),
-                'dk.tanggalperiksa',
+                'dk.norm', 'dk.tanggalperiksa',
                 'dk.namadokter', 'dk.namaunit as namapoli', 'dk.jammulai', 'dk.jamakhir'
             );
 

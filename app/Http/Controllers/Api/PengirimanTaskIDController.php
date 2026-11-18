@@ -215,7 +215,7 @@ class PengirimanTaskIDController extends Controller
         return [
             'id' => $record->id,
             'kodebooking' => $record->kodebooking,
-            'norm' => (!empty($kbInfo->norm) ? $kbInfo->norm : ($record->norm ?? '-')),
+            'norm' => (!empty($kbInfo->norm) ? $kbInfo->norm : '-'),
             'tanggalperiksa' => $kbInfo->tanggalperiksa ?? ($record->tanggal ?? '-'),
             'taskid' => $record->taskid,
             'waktu' => $record->waktu,
