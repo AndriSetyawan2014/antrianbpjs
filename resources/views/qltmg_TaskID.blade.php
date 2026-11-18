@@ -10,6 +10,8 @@
     'items' => $qltmg_TaskID,
     'startDate' => $startDate ?? request('start_date', date('Y-m-d')),
     'endDate' => $endDate ?? request('end_date', date('Y-m-d')),
+    'messageFilter' => $messageFilter ?? request('message', ''),
+    'messageOptions' => $messageOptions ?? [],
     'tableId' => 'qltmg_table',
     'urlQL' => 'QLTMG',
 ])

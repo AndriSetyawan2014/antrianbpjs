@@ -28,14 +28,41 @@
 }
 </style>
 
+@php
+    $activeMessageFilter = $messageFilter ?? request('message', '');
+    $messageList = $messageOptions ?? [];
+    if ($activeMessageFilter !== '' && $activeMessageFilter !== '__EMPTY__' && !in_array($activeMessageFilter, $messageList, true)) {
+        array_unshift($messageList, $activeMessageFilter);
+    }
+    $rekapRoutesMap = [
+        'QLJ' => 'rekap_taskid',
+        'QLKP' => 'qlkp_rekap_taskid',
+        'QLTMG' => 'qltmg_rekap_taskid',
+    ];
+    $rekapRouteName = $rekapRoutesMap[$urlQL ?? 'QLJ'] ?? 'rekap_taskid';
+@endphp
+
 {{-- Filter Card --}}
-<div class="filter-card" style="flex-wrap: nowrap; overflow-x: auto;">
+<div class="filter-card" style="flex-wrap: wrap; gap: 8px; align-items: center;">
     <i class="fas fa-filter" style="color:var(--color-primary); flex-shrink:0;"></i>
     <form method="GET" action="{{ $filterAction }}" style="display:contents;">
         <label for="start_date">Dari:</label>
         <input type="date" id="start_date" name="start_date" value="{{ $startDate }}">
         <label for="end_date">Sampai:</label>
         <input type="date" id="end_date" name="end_date" value="{{ $endDate }}">
+        <label for="message_filter">Pesan:</label>
+        <select id="message_filter" name="message" style="min-width: 190px; max-width: 300px; height: 34px; font-size: 0.82rem; padding: 4px 8px; border-radius: 6px; border: 1px solid #d1d5db;" onchange="this.form.submit()">
+            <option value="" {{ $activeMessageFilter === '' ? 'selected' : '' }}>-- Semua Pesan --</option>
+            <option value="__EMPTY__" {{ $activeMessageFilter === '__EMPTY__' ? 'selected' : '' }}>(Kosong / Tanpa Pesan)</option>
+            @foreach($messageList as $msgOpt)
+                <option value="{{ $msgOpt }}" {{ (string) $activeMessageFilter === (string) $msgOpt ? 'selected' : '' }}>
+                    {{ \Illuminate\Support\Str::limit($msgOpt, 60) }}
+                </option>
+            @endforeach
+        </select>
+        @if(request('from_rekap'))
+            <input type="hidden" name="from_rekap" value="1">
+        @endif
         <button type="submit" class="btn-filter btn-primary">
             <i class="fas fa-search"></i> Filter
         </button>
@@ -58,6 +85,13 @@
     <button id="download_excel_{{ $tableId }}" class="btn-filter btn-success ms-2">
         <i class="fas fa-file-excel"></i> Download
     </button>
+    @endif
+
+    @if($activeMessageFilter !== '' || request('from_rekap'))
+    <a href="{{ route($rekapRouteName, ['start_date' => $startDate, 'end_date' => $endDate]) }}"
+       class="btn-filter btn-secondary ms-auto">
+        <i class="fas fa-arrow-left"></i> Kembali ke Rekap
+    </a>
     @endif
 </div>
 
@@ -94,7 +128,9 @@
                 $rawResp = $item->response ?? '';
                 $rawReq = $item->request ?? '';
                 $idPend = $item->idpendaftaran ?? '';
-                $msg = json_decode($rawResp)->metadata->message ?? ($item->message ?? '');
+                $msg = ($item->message !== null && $item->message !== '')
+                    ? $item->message
+                    : (json_decode($rawResp)->metadata->message ?? '');
                 $createdBy = !empty($item->created_by) ? $item->created_by : 'Sync SIMRS';
                 $updatedBy = $item->updated_by ?? null;
                 $isAutoGen = stripos($createdBy, 'Auto') !== false;

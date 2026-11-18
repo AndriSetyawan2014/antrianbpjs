@@ -42,19 +42,24 @@
     </thead>
     <tbody>
         @php
-            $startDate = request('start_date', date('Y-m-d'));
-            $endDate = request('end_date', date('Y-m-d'));
+            $startDate = $startDate ?? request('start_date', date('Y-m-d'));
+            $endDate = $endDate ?? request('end_date', date('Y-m-d'));
             $counter = 1;
             $grandTotal = 0;
         @endphp
         @foreach($items as $row)
-        @php $grandTotal += (int) $row->total; @endphp
+        @php
+            $grandTotal += (int) $row->total;
+            $isEmptyMsg = ($row->message === null || $row->message === '');
+            $msgParam = $isEmptyMsg ? '__EMPTY__' : $row->message;
+            $msgLabel = $isEmptyMsg ? '(Kosong / Tanpa Pesan)' : $row->message;
+        @endphp
         <tr>
             <td>{{ $counter++ }}</td>
             <td>
-                <a href="{{ route($detailRoute, ['message' => $row->message, 'start_date' => $startDate, 'end_date' => $endDate]) }}"
+                <a href="{{ route($detailRoute, ['message' => $msgParam, 'start_date' => $startDate, 'end_date' => $endDate, 'from_rekap' => 1]) }}"
                    style="color:var(--color-info); font-weight:500;">
-                    <i class="fas fa-search me-1" style="font-size:11px;"></i>{{ $row->message }}
+                    <i class="fas fa-search me-1" style="font-size:11px;"></i>{{ $msgLabel }}
                 </a>
             </td>
             <td class="text-center">

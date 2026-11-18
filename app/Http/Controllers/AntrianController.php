@@ -696,70 +696,92 @@ public function rekapKodeBooking(Request $request)
 
     // Method untuk TaskID tetap ada
     public function TaskID(Request $request)
-{
-    data_taskid::ensureAuditColumnsExist();
-    $messageFilter = $request->input('message');
-    $startDate = $request->input('start_date', date('Y-m-d')); // Default to today
-    $endDate = $request->input('end_date', date('Y-m-d')); // Default to today
+    {
+        data_taskid::ensureAuditColumnsExist();
+        $messageFilter = $request->input('message');
+        $filterDate = $request->input('filter_date');
+        $startDate = $request->input('start_date', date('Y-m-d')); // Default to today
+        $endDate = $request->input('end_date', date('Y-m-d')); // Default to today
 
-    $TaskID = DB::table('data_taskids as dt')
-        ->leftJoin('data_kodebooking as dk', 'dt.kodebooking', '=', 'dk.kodebooking')
-        ->select(
-            'dt.id', 'dt.kodebooking', 'dt.taskid', 'dt.waktu', 'dt.idpendaftaran', 'dt.jam', 'dt.code', 'dt.message', 'dt.tanggal', 'dt.request', 'dt.response', 'dt.reupload', 'dt.created_by', 'dt.updated_by',
-            'dk.namadokter', 'dk.namaunit as namapoli', 'dk.jammulai', 'dk.jamakhir'
-        );
+        $TaskID = DB::table('data_taskids as dt')
+            ->leftJoin('data_kodebooking as dk', 'dt.kodebooking', '=', 'dk.kodebooking')
+            ->select(
+                'dt.id', 'dt.kodebooking', 'dt.taskid', 'dt.waktu', 'dt.idpendaftaran', 'dt.jam', 'dt.code', 'dt.message', 'dt.tanggal', 'dt.request', 'dt.response', 'dt.reupload', 'dt.created_by', 'dt.updated_by',
+                'dk.namadokter', 'dk.namaunit as namapoli', 'dk.jammulai', 'dk.jamakhir'
+            );
 
-    if ($messageFilter) {
-        $TaskID->where('dt.message', 'like', '%' . $messageFilter . '%');
+        if ($messageFilter !== null && $messageFilter !== '') {
+            if ($messageFilter === '__EMPTY__') {
+                $TaskID->where(function ($q) {
+                    $q->whereNull('dt.message')->orWhere('dt.message', '=', '');
+                });
+            } else {
+                $TaskID->where('dt.message', '=', $messageFilter);
+            }
+        }
+
+        if ($filterDate) {
+            $TaskID->where('dt.tanggal', '=', $filterDate);
+        } elseif ($startDate && $endDate) {
+            $TaskID->whereBetween('dt.tanggal', [$startDate, $endDate]);
+        } elseif ($startDate) {
+            $TaskID->where('dt.tanggal', '>=', $startDate);
+        } elseif ($endDate) {
+            $TaskID->where('dt.tanggal', '<=', $endDate);
+        } else {
+            $TaskID->where('dt.tanggal', '=', date('Y-m-d'));
+        }
+
+        $TaskID->orderBy('dt.kodebooking', 'asc')->orderBy('dt.taskid', 'asc');
+        $TaskID = $TaskID->get()->unique('id')->values();
+
+        $messageOptions = DB::table('data_taskids')
+            ->whereBetween('tanggal', [$startDate, $endDate])
+            ->whereNotNull('message')
+            ->where('message', '!=', '')
+            ->distinct()
+            ->orderBy('message')
+            ->pluck('message')
+            ->toArray();
+
+        return view('TaskID', compact('TaskID', 'startDate', 'endDate', 'filterDate', 'messageFilter', 'messageOptions'));
     }
 
-    if ($startDate && $endDate) {
-        $TaskID->whereBetween('dt.tanggal', [$startDate, $endDate]);
-    } elseif ($startDate) {
-        $TaskID->where('dt.tanggal', '>=', $startDate);
-    } elseif ($endDate) {
-        $TaskID->where('dt.tanggal', '<=', $endDate);
-    } else {
-        // Default to show data for today if no date is selected
-        $TaskID->where('dt.tanggal', '=', date('Y-m-d'));
+    public function rekapTaskId(Request $request)
+    {
+        if ($request->filled('message')) {
+            return $this->TaskID($request);
+        }
+
+        // Ambil nilai start_date dan end_date dari request
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        // Validasi format tanggal jika diberikan
+        if ($startDate && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $startDate)) {
+            return redirect()->back()->with('error', 'Format start date tidak valid.');
+        }
+        if ($endDate && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $endDate)) {
+            return redirect()->back()->with('error', 'Format end date tidak valid.');
+        }
+
+        // Jika start_date atau end_date tidak diberikan, default ke hari ini
+        if (!$startDate) {
+            $startDate = Carbon::now()->toDateString();
+        }
+        if (!$endDate) {
+            $endDate = Carbon::now()->toDateString();
+        }
+
+        // Query untuk rekap data berdasarkan rentang tanggal per message
+        $TaskID = data_taskid::select(DB::raw('message, COUNT(*) as total'))
+            ->whereBetween('tanggal', [$startDate, $endDate])
+            ->groupBy('message')
+            ->orderByDesc('total')
+            ->get();
+
+        return view('rekap_taskid', compact('TaskID', 'startDate', 'endDate'));
     }
-
-    $TaskID->orderBy('dt.kodebooking', 'asc')->orderBy('dt.taskid', 'asc');
-    $TaskID = $TaskID->get()->unique('id')->values();
-
-    return view('TaskID', compact('TaskID', 'startDate', 'endDate'));
-}
-
-public function rekapTaskId(Request $request)
-{
-    // Ambil nilai start_date dan end_date dari request
-    $startDate = $request->input('start_date');
-    $endDate = $request->input('end_date');
-
-    // Validasi format tanggal jika diberikan
-    if ($startDate && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $startDate)) {
-        return redirect()->back()->with('error', 'Format start date tidak valid.');
-    }
-    if ($endDate && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $endDate)) {
-        return redirect()->back()->with('error', 'Format end date tidak valid.');
-    }
-
-    // Jika start_date atau end_date tidak diberikan, default ke hari ini
-    if (!$startDate) {
-        $startDate = Carbon::now()->toDateString();
-    }
-    if (!$endDate) {
-        $endDate = Carbon::now()->toDateString();
-    }
-
-    // Query untuk rekap data berdasarkan rentang tanggal
-    $TaskID = data_taskid::select(DB::raw('tanggal, message, COUNT(*) as total'))
-        ->whereBetween('tanggal', [$startDate, $endDate]) // Filter rentang tanggal
-        ->groupBy('tanggal', 'message')
-        ->get();
-
-    return view('rekap_taskid', compact('TaskID', 'startDate', 'endDate'));
-}
 
 public function qlkp_datakodebooking(Request $request)
 {
@@ -866,8 +888,14 @@ public function qlkp_datakodebooking(Request $request)
         );
 
     // Filter berdasarkan message yang sesuai
-    if ($messageFilter) {
-        $qlkp_TaskID->where('dt.message', 'like', "%{$messageFilter}%");
+    if ($messageFilter !== null && $messageFilter !== '') {
+        if ($messageFilter === '__EMPTY__') {
+            $qlkp_TaskID->where(function ($q) {
+                $q->whereNull('dt.message')->orWhere('dt.message', '=', '');
+            });
+        } else {
+            $qlkp_TaskID->where('dt.message', '=', $messageFilter);
+        }
     }
 
     // Filter berdasarkan filter_date yang dipilih di halaman Rekap Task ID
@@ -888,9 +916,20 @@ public function qlkp_datakodebooking(Request $request)
 
     // Ambil data sesuai filter
     $qlkp_TaskID = $qlkp_TaskID->get()->unique('id')->values();
+
+    $messageOptions = DB::table('qlkp_data_taskids')
+        ->whereBetween('tanggal', [$startDate, $endDate])
+        ->whereNotNull('message')
+        ->where('message', '!=', '')
+        ->distinct()
+        ->orderBy('message')
+        ->pluck('message')
+        ->toArray();
+
     // Kirimkan data ke view qlkp_TaskID
-    return view('qlkp_TaskID', compact
-    ('qlkp_TaskID', 'startDate', 'endDate', 'filterDate'));
+    return view('qlkp_TaskID', compact(
+        'qlkp_TaskID', 'startDate', 'endDate', 'filterDate', 'messageFilter', 'messageOptions'
+    ));
     }
 
     private function ensureBpjsJadwalTableExists()
@@ -1329,37 +1368,42 @@ public function qlkp_datakodebooking(Request $request)
     }
 
     public function qlkp_rekap_taskid(Request $request)
-{
-    // Ambil nilai start_date dan end_date dari request
-    $startDate = $request->input('start_date');
-    $endDate = $request->input('end_date');
+    {
+        if ($request->filled('message')) {
+            return $this->qlkp_TaskID($request);
+        }
 
-    // Validasi format tanggal jika diberikan
-    if ($startDate && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $startDate)) {
-        return redirect()->back()->with('error', 'Format start date tidak valid.');
-    }
-    if ($endDate && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $endDate)) {
-        return redirect()->back()->with('error', 'Format end date tidak valid.');
-    }
+        // Ambil nilai start_date dan end_date dari request
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
 
-    // Jika start_date atau end_date tidak diberikan, default ke hari ini
-    if (!$startDate) {
-        $startDate = Carbon::now()->toDateString();
-    }
-    if (!$endDate) {
-        $endDate = Carbon::now()->toDateString();
-    }
+        // Validasi format tanggal jika diberikan
+        if ($startDate && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $startDate)) {
+            return redirect()->back()->with('error', 'Format start date tidak valid.');
+        }
+        if ($endDate && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $endDate)) {
+            return redirect()->back()->with('error', 'Format end date tidak valid.');
+        }
 
-    // Query untuk rekap data berdasarkan rentang tanggal (menggunakan tabel qlkp_data_taskids)
-    $qlkp_TaskID = DB::table('qlkp_data_taskids')
-        ->select(DB::raw('tanggal, message, COUNT(*) as total'))
-        ->whereBetween('tanggal', [$startDate, $endDate]) // Filter rentang tanggal
-        ->groupBy('tanggal', 'message')
-        ->get();
+        // Jika start_date atau end_date tidak diberikan, default ke hari ini
+        if (!$startDate) {
+            $startDate = Carbon::now()->toDateString();
+        }
+        if (!$endDate) {
+            $endDate = Carbon::now()->toDateString();
+        }
 
-    // Mengirimkan data ke view
-    return view('qlkp_rekap_taskid', compact('qlkp_TaskID', 'startDate', 'endDate'));
-}
+        // Query untuk rekap data berdasarkan rentang tanggal per message (menggunakan tabel qlkp_data_taskids)
+        $qlkp_TaskID = DB::table('qlkp_data_taskids')
+            ->select(DB::raw('message, COUNT(*) as total'))
+            ->whereBetween('tanggal', [$startDate, $endDate])
+            ->groupBy('message')
+            ->orderByDesc('total')
+            ->get();
+
+        // Mengirimkan data ke view
+        return view('qlkp_rekap_taskid', compact('qlkp_TaskID', 'startDate', 'endDate'));
+    }
 
     public function showJson(Request $request)
     {
@@ -1473,8 +1517,14 @@ public function qlkp_datakodebooking(Request $request)
                 'dk.namadokter', 'dk.namaunit as namapoli', 'dk.jammulai', 'dk.jamakhir'
             );
 
-        if ($messageFilter) {
-            $qltmg_TaskID->where('dt.message', 'like', "%{$messageFilter}%");
+        if ($messageFilter !== null && $messageFilter !== '') {
+            if ($messageFilter === '__EMPTY__') {
+                $qltmg_TaskID->where(function ($q) {
+                    $q->whereNull('dt.message')->orWhere('dt.message', '=', '');
+                });
+            } else {
+                $qltmg_TaskID->where('dt.message', '=', $messageFilter);
+            }
         }
 
         if ($filterDate) {
@@ -1491,11 +1541,25 @@ public function qlkp_datakodebooking(Request $request)
 
         $qltmg_TaskID->orderBy('dt.kodebooking', 'asc')->orderBy('dt.taskid', 'asc');
         $qltmg_TaskID = $qltmg_TaskID->get()->unique('id')->values();
-        return view('qltmg_TaskID', compact('qltmg_TaskID', 'startDate', 'endDate', 'filterDate'));
+
+        $messageOptions = DB::table('qltmg_data_taskids')
+            ->whereBetween('tanggal', [$startDate, $endDate])
+            ->whereNotNull('message')
+            ->where('message', '!=', '')
+            ->distinct()
+            ->orderBy('message')
+            ->pluck('message')
+            ->toArray();
+
+        return view('qltmg_TaskID', compact('qltmg_TaskID', 'startDate', 'endDate', 'filterDate', 'messageFilter', 'messageOptions'));
     }
 
     public function qltmg_rekap_taskid(Request $request)
     {
+        if ($request->filled('message')) {
+            return $this->qltmg_TaskID($request);
+        }
+
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
 
@@ -1517,6 +1581,7 @@ public function qlkp_datakodebooking(Request $request)
             ->select(DB::raw('message, COUNT(*) as total'))
             ->whereBetween('tanggal', [$startDate, $endDate])
             ->groupBy('message')
+            ->orderByDesc('total')
             ->get();
 
         return view('qltmg_rekap_taskid', compact('qltmg_TaskID', 'startDate', 'endDate'));
