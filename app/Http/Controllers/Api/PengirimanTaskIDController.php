@@ -104,12 +104,81 @@ class PengirimanTaskIDController extends Controller
             ], 422);
         }
 
-        // FORCE RESET: Pastikan record untuk kodebooking ini ditandai untuk diproses ulang
         $data_taskID_model = (new data_taskid())->setTableByQL($urlQL);
-        $data_taskID_model->where('kodebooking', $kodebooking)->update(['reupload' => 1]);
-        Log::info("[$urlQL] Force re-run for kodebooking: $kodebooking. Reset reupload=1.");
 
-        $syncRes = $this->taskID_otomatis($urlQL, null, $kodebooking);
+        // Cek apakah pada kodebooking ini ada informasi "TaskId terakhir N" (misal: "TaskId terakhir 3")
+        $existingRows = $data_taskID_model->newQuery()
+            ->where('kodebooking', $kodebooking)
+            ->orderBy('taskid', 'asc')
+            ->get();
+
+        $maxLastTaskFromMsg = 0;
+        foreach ($existingRows as $er) {
+            $msgStr = (string) ($er->message ?? '');
+            if (preg_match('/TaskId terakhir\s*(\d+)/i', $msgStr, $m)) {
+                $detectedLast = (int) $m[1];
+                if ($detectedLast > $maxLastTaskFromMsg) {
+                    $maxLastTaskFromMsg = $detectedLast;
+                }
+            }
+        }
+
+        if ($maxLastTaskFromMsg === 99) {
+            // Jika sudah TaskId terakhir 99 (batal), semua tidak perlu dikirim lagi
+            $data_taskID_model->newQuery()
+                ->where('kodebooking', $kodebooking)
+                ->update(['reupload' => 0]);
+        } elseif ($maxLastTaskFromMsg >= 3) {
+            // Jika ada info "TaskId terakhir 3" (atau N >= 3), maka Task ID 1 dan Task ID 2 (serta <= N) tidak perlu dikirim lagi (reupload = 0)
+            $data_taskID_model->newQuery()
+                ->where('kodebooking', $kodebooking)
+                ->where('taskid', '<=', $maxLastTaskFromMsg)
+                ->update(['reupload' => 0]);
+
+            // Hanya task setelahnya (> N) yang belum sukses (code != 200/208) yang di-set reupload = 1
+            $data_taskID_model->newQuery()
+                ->where('kodebooking', $kodebooking)
+                ->where('taskid', '>', $maxLastTaskFromMsg)
+                ->whereNotIn('code', [200, 208])
+                ->update(['reupload' => 1]);
+        } else {
+            // Reset reupload = 1 hanya untuk task yang belum sukses (code != 200/208),
+            // atau jika semua sudah 200/208 namun operator meminta sync ulang, cek yang belum terkirim
+            $hasPendingOrFailed = $existingRows->contains(function ($r) {
+                return !in_array((int) ($r->code ?? 0), [200, 208], true);
+            });
+
+            if ($hasPendingOrFailed) {
+                $data_taskID_model->newQuery()
+                    ->where('kodebooking', $kodebooking)
+                    ->where(function ($q) {
+                        $q->whereNull('code')
+                          ->orWhereNotIn('code', [200, 208]);
+                    })
+                    ->update(['reupload' => 1]);
+            } else {
+                $data_taskID_model->newQuery()
+                    ->where('kodebooking', $kodebooking)
+                    ->update(['reupload' => 1]);
+            }
+        }
+
+        Log::info("[$urlQL] Sync ulang untuk kodebooking: $kodebooking (maxLastTaskFromMsg={$maxLastTaskFromMsg}).");
+
+        // Jalankan taskID_otomatis (tanpa dispatch queue karena akan dieksekusi langsung di bawah) untuk auto-generate task yang kosong & validasi aturan
+        $this->taskID_otomatis($urlQL, null, $kodebooking, false);
+
+        // Eksekusi langsung secara sekuensial untuk kodebooking ini agar hasil langsung terlihat di tabel
+        $pendingForKb = $data_taskID_model->newQuery()
+            ->where('kodebooking', $kodebooking)
+            ->where('reupload', 1)
+            ->orderBy('taskid', 'asc')
+            ->get();
+
+        foreach ($pendingForKb as $taskRow) {
+            $this->taskID_single_arr($urlQL, $taskRow->toArray(), $data_taskID_model);
+        }
+
         $rawRows = (new data_taskid())->setTableByQL($urlQL)
             ->where('kodebooking', $kodebooking)
             ->orderBy('taskid', 'asc')
@@ -120,10 +189,13 @@ class PengirimanTaskIDController extends Controller
             $updatedRows[] = $this->enrichTaskIdRow($urlQL, $r);
         }
 
-        $payload = $syncRes instanceof \Illuminate\Http\JsonResponse ? $syncRes->getData(true) : [];
-        $payload['updated_rows'] = $updatedRows;
-
-        return response()->json($payload);
+        return response()->json([
+            'metadata' => [
+                'code' => 200,
+                'message' => "Sinkronisasi ulang Task ID untuk kode booking {$kodebooking} selesai diproses.",
+            ],
+            'updated_rows' => $updatedRows,
+        ]);
     }
 
     private function enrichTaskIdRow(string $urlQL, $record): array
@@ -434,7 +506,7 @@ class PengirimanTaskIDController extends Controller
         }
     }
 
-    public function taskID_otomatis($urlQL = 'QLJ', $tanggal = null, $kodebooking = null)
+    public function taskID_otomatis($urlQL = 'QLJ', $tanggal = null, $kodebooking = null, bool $dispatchToQueue = true)
     {
         set_time_limit(10000);
         
@@ -699,6 +771,37 @@ class PengirimanTaskIDController extends Controller
                 }
 
                 foreach ($allTasksByKb as $kbKey => $tMap) {
+                    // Cek jika ada info "TaskId terakhir 3" (atau "TaskId terakhir N") pada kodebooking ini -> set Task 1 & 2 (serta <= N) menjadi reupload = 0
+                    $detectedLastTask = 0;
+                    foreach ($tMap as $tRow) {
+                        $tMsg = (string) ($tRow->message ?? '');
+                        if (preg_match('/TaskId terakhir\s*(\d+)/i', $tMsg, $mLast)) {
+                            $numLast = (int) $mLast[1];
+                            if ($numLast > $detectedLastTask) {
+                                $detectedLastTask = $numLast;
+                            }
+                        }
+                    }
+                    if ($detectedLastTask === 99) {
+                        $data_taskID_model->newQuery()
+                            ->where('kodebooking', $kbKey)
+                            ->where('reupload', 1)
+                            ->update(['reupload' => 0]);
+                        continue;
+                    } elseif ($detectedLastTask >= 3) {
+                        $data_taskID_model->newQuery()
+                            ->where('kodebooking', $kbKey)
+                            ->whereIn('taskid', [1, 2, 3])
+                            ->where('taskid', '<=', $detectedLastTask)
+                            ->where('reupload', 1)
+                            ->update(['reupload' => 0]);
+                        foreach ([1, 2, 3] as $doneTid) {
+                            if ($doneTid <= $detectedLastTask && isset($tMap[$doneTid])) {
+                                $tMap[$doneTid]->reupload = 0;
+                            }
+                        }
+                    }
+
                     // Jika hanya pembatalan (Task 99) tanpa task pelayanan aktif
                     if (isset($tMap[99]) && !isset($tMap[3]) && !isset($tMap[4]) && !isset($tMap[5])) {
                         $allowedTasksByKb[$kbKey] = [99];
@@ -783,7 +886,7 @@ class PengirimanTaskIDController extends Controller
             $totalRecords = count($dataArray);
             if (empty($dataArray)) {
                 Log::info("[taskID_otomatis - $urlQL] No data found to process. Skipping dispatch.");
-            } else {
+            } elseif ($dispatchToQueue) {
                 $batchSize = 30;
                 $chunks = array_chunk($dataArray, $batchSize);
                 $totalJobs = count($chunks);
@@ -1097,9 +1200,24 @@ class PengirimanTaskIDController extends Controller
                 $taskIDData['message'] = $meta['message'] ?? null;
                 Log::info("[taskID_single_arr - $urlQL] BPJS_RESPONSE: {$data['kodebooking']} Task {$data['taskid']} -> Code: " . ($taskIDData['code'] ?? 'null') . ", Message: " . ($taskIDData['message'] ?? 'null'));
 
+                $msgRespText = (string) ($meta['message'] ?? '');
+                $lastTaskFromResp = 0;
+                if (preg_match('/TaskId terakhir\s*(\d+)/i', $msgRespText, $mRespLast)) {
+                    $lastTaskFromResp = (int) $mRespLast[1];
+                }
+
+                // Jika ada info "TaskId terakhir 3" (atau >= 3), maka Task ID 1 dan Task ID 2 (serta <= N) tidak perlu dikirim lagi (reupload = 0)
+                if ($lastTaskFromResp >= 3 && $lastTaskFromResp !== 99) {
+                    $model->newQuery()
+                        ->where('kodebooking', $kodebooking)
+                        ->where('taskid', '<=', $lastTaskFromResp)
+                        ->update(['reupload' => 0]);
+                }
+
                 if (
                     in_array($meta['code'], [200, 208]) ||
-                    ($meta['message'] ?? '') === 'TaskId terakhir 99'
+                    $msgRespText === 'TaskId terakhir 99' ||
+                    ($lastTaskFromResp > 0 && (int) $data['taskid'] <= $lastTaskFromResp)
                 ) {
                     $taskIDData['reupload'] = 0;
                 } else {
