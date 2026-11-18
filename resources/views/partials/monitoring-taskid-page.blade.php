@@ -23,9 +23,11 @@
 
     $countTotalAll = $evalSummary['countTotalAll'] ?? 0;
     $countLengkap = $evalSummary['countLengkap'] ?? 0;
+    $countLengkapTanpa12 = $evalSummary['countLengkapTanpa12'] ?? 0;
     $countLengkap15 = $evalSummary['countLengkap15'] ?? 0;
     $countLengkap17 = $evalSummary['countLengkap17'] ?? 0;
-    $countLengkap99 = $evalSummary['countLengkap99'] ?? 0;
+    $countLengkap35 = $evalSummary['countLengkap35'] ?? 0;
+    $countLengkap37 = $evalSummary['countLengkap37'] ?? 0;
     $countTidakLengkap = $evalSummary['countTidakLengkap'] ?? 0;
 
     $avg2to4 = $evalSummary['avg2to4'] ?? null;
@@ -61,13 +63,15 @@
         <span class="text-muted small">–</span>
         <input type="date" id="end_date" name="end_date" value="{{ $endDate }}" style="width: 132px; height: 32px; font-size: 0.76rem; padding: 4px 8px;" title="Sampai tanggal">
 
-        <select id="kelengkapan" name="kelengkapan" style="width: 195px; height: 32px; font-size: 0.76rem; padding: 4px 8px;" onchange="this.form.submit()">
-            <option value="" {{ $kelengkapanFilter === '' ? 'selected' : '' }}>Semua ({{ number_format($countTotalAll) }})</option>
-            <option value="lengkap" {{ $kelengkapanFilter === 'lengkap' ? 'selected' : '' }}>Lengkap ({{ number_format($countLengkap) }})</option>
-            <option value="tidak_lengkap" {{ $kelengkapanFilter === 'tidak_lengkap' ? 'selected' : '' }}>Tidak Lengkap ({{ number_format($countTidakLengkap) }})</option>
-            <option value="t1_5" {{ $kelengkapanFilter === 't1_5' ? 'selected' : '' }}>↳ T1–5 ({{ number_format($countLengkap15) }})</option>
-            <option value="t1_7" {{ $kelengkapanFilter === 't1_7' ? 'selected' : '' }}>↳ T1–7 ({{ number_format($countLengkap17) }})</option>
-            <option value="batal_99" {{ $kelengkapanFilter === 'batal_99' ? 'selected' : '' }}>↳ Batal 99 ({{ number_format($countLengkap99) }})</option>
+        <select id="kelengkapan" name="kelengkapan" style="width: 225px; height: 32px; font-size: 0.76rem; padding: 4px 8px;" onchange="this.form.submit()">
+            <option value="" {{ $kelengkapanFilter === '' ? 'selected' : '' }}>Semua Antrian ({{ number_format($countTotalAll) }})</option>
+            <option value="lengkap" {{ $kelengkapanFilter === 'lengkap' ? 'selected' : '' }}>1. Lengkap ({{ number_format($countLengkap) }})</option>
+            <option value="t1_5" {{ $kelengkapanFilter === 't1_5' ? 'selected' : '' }}>&nbsp;&nbsp;↳ Terkirim T1–5 ({{ number_format($countLengkap15) }})</option>
+            <option value="t1_7" {{ $kelengkapanFilter === 't1_7' ? 'selected' : '' }}>&nbsp;&nbsp;↳ Terkirim T1–7 ({{ number_format($countLengkap17) }})</option>
+            <option value="t3_5" {{ $kelengkapanFilter === 't3_5' ? 'selected' : '' }}>&nbsp;&nbsp;↳ Terkirim T3–5 ({{ number_format($countLengkap35) }})</option>
+            <option value="t3_7" {{ $kelengkapanFilter === 't3_7' ? 'selected' : '' }}>&nbsp;&nbsp;↳ Terkirim T3–7 ({{ number_format($countLengkap37) }})</option>
+            <option value="lengkap_tanpa_12" {{ $kelengkapanFilter === 'lengkap_tanpa_12' ? 'selected' : '' }}>2. Lengkap tanpa T1,2 ({{ number_format($countLengkapTanpa12) }})</option>
+            <option value="tidak_lengkap" {{ $kelengkapanFilter === 'tidak_lengkap' ? 'selected' : '' }}>3. Tidak Lengkap ({{ number_format($countTidakLengkap) }})</option>
         </select>
 
         <input type="text" name="q" value="{{ $searchQuery }}" placeholder="Cari Booking / RM / Dokter..." style="width: 185px; height: 32px; font-size: 0.76rem; padding: 4px 10px;">
@@ -158,14 +162,21 @@
                 <div class="d-flex gap-1 flex-wrap">
                     <a href="{{ $filterAction }}?start_date={{ $startDate }}&end_date={{ $endDate }}&kelengkapan=lengkap&q={{ urlencode($searchQuery) }}&per_page={{ $perPage }}"
                        class="badge text-decoration-none {{ $kelengkapanFilter === 'lengkap' ? 'bg-success text-white' : 'bg-success-subtle text-success border border-success' }}"
-                       style="font-size: 0.68rem;"
-                       title="T1-5: {{ $countLengkap15 }} | T1-7: {{ $countLengkap17 }} | Batal 99: {{ $countLengkap99 }}">
-                        ✓ Lengkap: {{ number_format($countLengkap) }}
+                       style="font-size: 0.66rem;"
+                       title="1. Lengkap — T1–5: {{ $countLengkap15 }} | T1–7: {{ $countLengkap17 }} | T3–5: {{ $countLengkap35 }} | T3–7: {{ $countLengkap37 }}">
+                        1. Lengkap: {{ number_format($countLengkap) }}
+                    </a>
+                    <a href="{{ $filterAction }}?start_date={{ $startDate }}&end_date={{ $endDate }}&kelengkapan=lengkap_tanpa_12&q={{ urlencode($searchQuery) }}&per_page={{ $perPage }}"
+                       class="badge text-decoration-none {{ $kelengkapanFilter === 'lengkap_tanpa_12' ? 'bg-info text-dark' : 'bg-info-subtle text-info border border-info' }}"
+                       style="font-size: 0.66rem;"
+                       title="2. Lengkap tanpa TaskID 1, 2 — T3–5: {{ $countLengkap35 }} | T3–7: {{ $countLengkap37 }}">
+                        2. Tanpa T1,2: {{ number_format($countLengkapTanpa12) }}
                     </a>
                     <a href="{{ $filterAction }}?start_date={{ $startDate }}&end_date={{ $endDate }}&kelengkapan=tidak_lengkap&q={{ urlencode($searchQuery) }}&per_page={{ $perPage }}"
                        class="badge text-decoration-none {{ $kelengkapanFilter === 'tidak_lengkap' ? 'bg-danger text-white' : 'bg-danger-subtle text-danger border border-danger' }}"
-                       style="font-size: 0.68rem;">
-                        ✗ Tidak: {{ number_format($countTidakLengkap) }}
+                       style="font-size: 0.66rem;"
+                       title="3. Tidak Lengkap (selain kondisi di atas)">
+                        3. Tidak: {{ number_format($countTidakLengkap) }}
                     </a>
                     @if($kelengkapanFilter !== '')
                         <a href="{{ $filterAction }}?start_date={{ $startDate }}&end_date={{ $endDate }}&q={{ urlencode($searchQuery) }}&per_page={{ $perPage }}"
@@ -214,7 +225,8 @@
                     }
                     $evalRow = $rowMetaMap[$kb->kodebooking] ?? [
                         'is_lengkap' => false,
-                        'status_label' => 'Antrian Tidak Lengkap',
+                        'is_lengkap_tanpa_12' => false,
+                        'status_label' => 'Tidak Lengkap',
                         'd24' => null,
                         'd34' => null,
                     ];
@@ -225,7 +237,11 @@
                         <strong>{{ $kb->kodebooking }}</strong>
                         <span class="text-muted small ms-1">({{ $tgl }})</span>
                         <div class="mt-1 mb-1">
-                            @if($evalRow['is_lengkap'])
+                            @if(!empty($evalRow['is_lengkap_tanpa_12']))
+                                <span class="badge bg-info text-dark" style="font-size: 0.68rem;">
+                                    <i class="fas fa-check-circle me-1"></i>{{ $evalRow['status_label'] }}
+                                </span>
+                            @elseif($evalRow['is_lengkap'])
                                 <span class="badge bg-success" style="font-size: 0.68rem;">
                                     <i class="fas fa-check-circle me-1"></i>{{ $evalRow['status_label'] }}
                                 </span>
@@ -250,16 +266,28 @@
                         <td>
                             @if($taskData)
                                 @php
-                                    $msg = strtolower($taskData->message ?? '');
-                                    if (str_contains($msg, 'success') || str_contains($msg, 'ok')) {
+                                    $msg = strtolower(trim((string) ($taskData->message ?? '')));
+                                    $tCode = (int) ($taskData->code ?? 0);
+                                    $tReupload = (int) ($taskData->reupload ?? 1);
+                                    $isRejectedLast = str_contains($msg, 'taskid terakhir');
+                                    $isLocalPending = ($tReupload === 1 && $tCode === 0)
+                                        || str_contains($msg, 'menunggu')
+                                        || str_contains($msg, 'antrean')
+                                        || ($tCode === 0 && $msg === '');
+                                    if (
+                                        !$isRejectedLast
+                                        && !$isLocalPending
+                                        && $tReupload === 0
+                                        && ($tCode === 200 || $tCode === 208 || str_contains($msg, 'success') || str_contains($msg, 'ok') || str_contains($msg, 'sudah ada'))
+                                    ) {
                                         $color = '#28a745';
-                                        $title = 'Success: ' . $taskData->message;
-                                    } elseif (str_contains($msg, 'antrean') || $msg == '') {
+                                        $title = 'Terkirim: ' . ($taskData->message ?: 'OK');
+                                    } elseif ($isLocalPending) {
                                         $color = '#fd7e14';
-                                        $title = 'Pending/Queue';
+                                        $title = 'Belum Terkirim (Server Lokal): ' . ($taskData->message ?: 'Menunggu Sinkronisasi');
                                     } else {
                                         $color = '#dc3545';
-                                        $title = 'Error: ' . $taskData->message;
+                                        $title = 'Belum Terkirim / Error: ' . ($taskData->message ?: ('Code ' . $tCode));
                                     }
                                 @endphp
                                 <span class="badge" style="background-color: {{ $color }};" title="{{ $title }}">

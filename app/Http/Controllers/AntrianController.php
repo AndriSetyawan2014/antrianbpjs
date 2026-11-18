@@ -223,7 +223,7 @@ class AntrianController extends Controller
         // 2. Ambil data_taskid menggunakan subquery (tanpa ribuan binding parameter di whereIn)
         $taskids = $kodebookings->isNotEmpty()
             ? DB::table($cfg['task_table'])
-                ->select('kodebooking', 'taskid', 'waktu', 'jam', 'message', 'tanggal')
+                ->select('kodebooking', 'taskid', 'waktu', 'jam', 'code', 'message', 'reupload', 'tanggal')
                 ->whereIn('kodebooking', function ($q) use ($cfg, $start_date, $end_date) {
                     $q->select('kodebooking')
                       ->from($cfg['kb_table'])
@@ -236,6 +236,42 @@ class AntrianController extends Controller
         foreach ($taskids as $t) {
             $groupedTasks[$t->kodebooking][$t->taskid] = $t;
         }
+
+        // Helper cek apakah suatu Task ID sudah terkirim ke BPJS
+        // Jika TaskID belum terkirim (baru tersimpan di server lokal / reupload=1 / code=0) maka belum dihitung
+        $isTaskTerkirim = static function ($task): bool {
+            if (!$task) {
+                return false;
+            }
+            if ((int) ($task->reupload ?? 1) === 1) {
+                return false;
+            }
+            $code = (int) ($task->code ?? 0);
+            if ($code === 0 || $code === 201) {
+                return false;
+            }
+            $msg = strtolower(trim((string) ($task->message ?? '')));
+            if (
+                $msg === '' ||
+                strpos($msg, 'taskid terakhir') !== false ||
+                strpos($msg, 'menunggu') !== false ||
+                strpos($msg, 'antrean') !== false ||
+                strpos($msg, 'skipped') !== false
+            ) {
+                return false;
+            }
+            if ($code === 200 || $code === 208) {
+                return true;
+            }
+            if (
+                strpos($msg, 'ok') !== false ||
+                strpos($msg, 'success') !== false ||
+                strpos($msg, 'sudah ada') !== false
+            ) {
+                return true;
+            }
+            return false;
+        };
 
         // Helper konversi waktu task ke detik epoch
         $getTaskSec = static function ($task): ?float {
@@ -256,11 +292,23 @@ class AntrianController extends Controller
         };
 
         // 3. Evaluasi kelengkapan & waktu tunggu di sisi server untuk seluruh rentang tanggal
+        // Aturan Kelengkapan Antrian:
+        // 1. Lengkap:
+        //    - terkirim TaskID 3, 4, 5
+        //    - terkirim TaskID 3, 4, 5, 6, 7
+        //    - terkirim TaskID 1, 2, 3, 4, 5
+        //    - terkirim TaskID 1, 2, 3, 4, 5, 6, 7
+        // 2. Lengkap tanpa TaskID 1, 2:
+        //    - terkirim TaskID 3, 4, 5 (tanpa TaskID 1, 2 lengkap)
+        //    - terkirim TaskID 3, 4, 5, 6, 7 (tanpa TaskID 1, 2 lengkap)
+        // 3. Tidak Lengkap: selain kondisi di atas
         $countTotalAll = 0;
         $countLengkap = 0;
+        $countLengkapTanpa12 = 0;
         $countLengkap15 = 0;
         $countLengkap17 = 0;
-        $countLengkap99 = 0;
+        $countLengkap35 = 0;
+        $countLengkap37 = 0;
         $countTidakLengkap = 0;
 
         $rowMetaMap = [];
@@ -274,49 +322,73 @@ class AntrianController extends Controller
             $kbCode = $kb->kodebooking;
             $tMap = $groupedTasks[$kbCode] ?? [];
 
-            $has1to5 = isset($tMap[1], $tMap[2], $tMap[3], $tMap[4], $tMap[5]);
-            $has6 = isset($tMap[6]);
-            $has7 = isset($tMap[7]);
-            $has99 = isset($tMap[99]);
+            $sent1 = $isTaskTerkirim($tMap[1] ?? null);
+            $sent2 = $isTaskTerkirim($tMap[2] ?? null);
+            $sent3 = $isTaskTerkirim($tMap[3] ?? null);
+            $sent4 = $isTaskTerkirim($tMap[4] ?? null);
+            $sent5 = $isTaskTerkirim($tMap[5] ?? null);
+            $sent6 = $isTaskTerkirim($tMap[6] ?? null);
+            $sent7 = $isTaskTerkirim($tMap[7] ?? null);
+
+            // TaskID yang belum terkirim (baru tersimpan di server lokal) tidak dihitung
+            $sent1and2 = ($sent1 && $sent2);
+            $sent3to5 = ($sent3 && $sent4 && $sent5);
+            $sent6and7 = ($sent6 && $sent7);
+            $noSent6and7 = (!$sent6 && !$sent7);
 
             $isLengkap = false;
+            $isLengkapTanpa12 = false;
             $subType = 'tidak_lengkap';
-            $statusLabel = 'Antrian Tidak Lengkap';
+            $statusLabel = 'Tidak Lengkap';
 
-            if ($has99) {
+            if ($sent3to5 && $sent6and7) {
                 $isLengkap = true;
-                $subType = 'batal_99';
-                $statusLabel = 'Antrian Lengkap (Batal 99)';
-                $countLengkap99++;
-            } elseif ($has1to5 && $has6 && $has7) {
+                if ($sent1and2) {
+                    $subType = 't1_7';
+                    $statusLabel = 'Lengkap (T1–7)';
+                    $countLengkap17++;
+                } else {
+                    $isLengkapTanpa12 = true;
+                    $subType = 't3_7';
+                    $statusLabel = 'Lengkap tanpa T1,2 (T3–7)';
+                    $countLengkap37++;
+                }
+            } elseif ($sent3to5 && $noSent6and7) {
                 $isLengkap = true;
-                $subType = 't1_7';
-                $statusLabel = 'Antrian Lengkap (T1–7)';
-                $countLengkap17++;
-            } elseif ($has1to5 && !$has6 && !$has7) {
-                $isLengkap = true;
-                $subType = 't1_5';
-                $statusLabel = 'Antrian Lengkap (T1–5)';
-                $countLengkap15++;
+                if ($sent1and2) {
+                    $subType = 't1_5';
+                    $statusLabel = 'Lengkap (T1–5)';
+                    $countLengkap15++;
+                } else {
+                    $isLengkapTanpa12 = true;
+                    $subType = 't3_5';
+                    $statusLabel = 'Lengkap tanpa T1,2 (T3–5)';
+                    $countLengkap35++;
+                }
             }
 
             $countTotalAll++;
             if ($isLengkap) {
                 $countLengkap++;
+                if ($isLengkapTanpa12) {
+                    $countLengkapTanpa12++;
+                }
             } else {
                 $countTidakLengkap++;
             }
 
             if (!isset($rowMetaMap[$kbCode])) {
-                $s2 = $getTaskSec($tMap[2] ?? null);
-                $s3 = $getTaskSec($tMap[3] ?? null);
-                $s4 = $getTaskSec($tMap[4] ?? null);
+                // Hanya hitung waktu tunggu dari Task ID yang sudah terkirim ke BPJS
+                $s2 = $sent2 ? $getTaskSec($tMap[2] ?? null) : null;
+                $s3 = $sent3 ? $getTaskSec($tMap[3] ?? null) : null;
+                $s4 = $sent4 ? $getTaskSec($tMap[4] ?? null) : null;
 
                 $d24 = ($s2 !== null && $s4 !== null && $s4 >= $s2) ? ($s4 - $s2) : null;
                 $d34 = ($s3 !== null && $s4 !== null && $s4 >= $s3) ? ($s4 - $s3) : null;
 
                 $rowMetaMap[$kbCode] = [
                     'is_lengkap' => $isLengkap,
+                    'is_lengkap_tanpa_12' => $isLengkapTanpa12,
                     'sub_type' => $subType,
                     'status_label' => $statusLabel,
                     'd24' => $d24,
@@ -327,9 +399,11 @@ class AntrianController extends Controller
             $matchFilter = true;
             if ($kelengkapanFilter === 'lengkap') {
                 $matchFilter = $isLengkap;
+            } elseif ($kelengkapanFilter === 'lengkap_tanpa_12') {
+                $matchFilter = $isLengkapTanpa12;
             } elseif ($kelengkapanFilter === 'tidak_lengkap') {
                 $matchFilter = !$isLengkap;
-            } elseif (in_array($kelengkapanFilter, ['t1_5', 't1_7', 'batal_99'], true)) {
+            } elseif (in_array($kelengkapanFilter, ['t1_5', 't1_7', 't3_5', 't3_7'], true)) {
                 $matchFilter = ($subType === $kelengkapanFilter);
             }
 
@@ -359,9 +433,11 @@ class AntrianController extends Controller
         $evalSummary = [
             'countTotalAll' => $countTotalAll,
             'countLengkap' => $countLengkap,
+            'countLengkapTanpa12' => $countLengkapTanpa12,
             'countLengkap15' => $countLengkap15,
             'countLengkap17' => $countLengkap17,
-            'countLengkap99' => $countLengkap99,
+            'countLengkap35' => $countLengkap35,
+            'countLengkap37' => $countLengkap37,
             'countTidakLengkap' => $countTidakLengkap,
             'avg2to4' => $avg2to4,
             'avg3to4' => $avg3to4,
