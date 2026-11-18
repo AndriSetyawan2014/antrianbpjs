@@ -18,6 +18,11 @@
     'tableId' => $tableId ?? 'monitoring_taskid_table',
     'urlQL' => $urlQL ?? 'QLJ',
     'kodebookings' => $kodebookings,
-    'groupedTasks' => $groupedTasks
+    'groupedTasks' => $groupedTasks,
+    'rowMetaMap' => $rowMetaMap ?? [],
+    'evalSummary' => $evalSummary ?? [],
+    'kelengkapanFilter' => $kelengkapanFilter ?? request('kelengkapan', ''),
+    'searchQuery' => $searchQuery ?? request('q', ''),
+    'perPage' => $perPage ?? (int) request('per_page', 50),
 ])
 @endsection

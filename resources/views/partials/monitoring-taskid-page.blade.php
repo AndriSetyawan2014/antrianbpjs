@@ -1,25 +1,10 @@
-{{-- Partial: halaman Monitoring Task ID --}}
+{{-- Partial: halaman Monitoring Task ID (Optimized Server-Side Pagination) --}}
 {{-- Page header dihandle oleh layout via @section('page_title') --}}
 
 @php
-    $kelengkapanFilter = request('kelengkapan', '');
-
-    $getTaskSec = function ($task) {
-        if (!$task) return null;
-        if (!empty($task->waktu) && is_numeric($task->waktu)) {
-            $w = (float) $task->waktu;
-            return $w > 100000000000 ? ($w / 1000.0) : $w;
-        }
-        if (!empty($task->tanggal) && !empty($task->jam)) {
-            $ts = strtotime($task->tanggal . ' ' . $task->jam);
-            return $ts !== false ? (float) $ts : null;
-        }
-        if (!empty($task->waktu) && is_string($task->waktu)) {
-            $ts = strtotime($task->waktu);
-            return $ts !== false ? (float) $ts : null;
-        }
-        return null;
-    };
+    $kelengkapanFilter = $kelengkapanFilter ?? request('kelengkapan', '');
+    $searchQuery = $searchQuery ?? request('q', '');
+    $perPage = $perPage ?? (int) request('per_page', 50);
 
     $formatDuration = function ($seconds) {
         if ($seconds === null) return '-';
@@ -36,135 +21,36 @@
         return sprintf('%s%d mnt %d dtk', $prefix, $mins, $remSec);
     };
 
-    $countTotalAll = 0;
-    $countLengkap = 0;
-    $countLengkap15 = 0;
-    $countLengkap17 = 0;
-    $countLengkap99 = 0;
-    $countTidakLengkap = 0;
+    $countTotalAll = $evalSummary['countTotalAll'] ?? 0;
+    $countLengkap = $evalSummary['countLengkap'] ?? 0;
+    $countLengkap15 = $evalSummary['countLengkap15'] ?? 0;
+    $countLengkap17 = $evalSummary['countLengkap17'] ?? 0;
+    $countLengkap99 = $evalSummary['countLengkap99'] ?? 0;
+    $countTidakLengkap = $evalSummary['countTidakLengkap'] ?? 0;
 
-    $rowMetaMap = [];
-    $filteredKodebookings = [];
+    $avg2to4 = $evalSummary['avg2to4'] ?? null;
+    $avg3to4 = $evalSummary['avg3to4'] ?? null;
+    $avgCombined = $evalSummary['avgCombined'] ?? null;
+    $count2to4 = $evalSummary['count2to4'] ?? 0;
+    $count3to4 = $evalSummary['count3to4'] ?? 0;
+    $countBoth = $evalSummary['countBoth'] ?? 0;
 
-    foreach ($kodebookings as $kb) {
-        $kbCode = $kb->kodebooking;
-        $tMap = $groupedTasks[$kbCode] ?? [];
-
-        $has1to5 = isset($tMap[1], $tMap[2], $tMap[3], $tMap[4], $tMap[5]);
-        $has6 = isset($tMap[6]);
-        $has7 = isset($tMap[7]);
-        $has99 = isset($tMap[99]);
-
-        $isLengkap = false;
-        $subType = 'tidak_lengkap';
-        $statusLabel = 'Antrian Tidak Lengkap';
-
-        if ($has99) {
-            $isLengkap = true;
-            $subType = 'batal_99';
-            $statusLabel = 'Antrian Lengkap (Batal 99)';
-            $countLengkap99++;
-        } elseif ($has1to5 && $has6 && $has7) {
-            $isLengkap = true;
-            $subType = 't1_7';
-            $statusLabel = 'Antrian Lengkap (T1–7)';
-            $countLengkap17++;
-        } elseif ($has1to5 && !$has6 && !$has7) {
-            $isLengkap = true;
-            $subType = 't1_5';
-            $statusLabel = 'Antrian Lengkap (T1–5)';
-            $countLengkap15++;
-        }
-
-        $countTotalAll++;
-        if ($isLengkap) {
-            $countLengkap++;
-        } else {
-            $countTidakLengkap++;
-        }
-
-        $s2 = $getTaskSec($tMap[2] ?? null);
-        $s3 = $getTaskSec($tMap[3] ?? null);
-        $s4 = $getTaskSec($tMap[4] ?? null);
-
-        $d24 = ($s2 !== null && $s4 !== null && $s4 >= $s2) ? ($s4 - $s2) : null;
-        $d34 = ($s3 !== null && $s4 !== null && $s4 >= $s3) ? ($s4 - $s3) : null;
-
-        $rowMetaMap[$kbCode] = [
-            'is_lengkap' => $isLengkap,
-            'sub_type' => $subType,
-            'status_label' => $statusLabel,
-            'd24' => $d24,
-            'd34' => $d34,
-        ];
-
-        $matchFilter = true;
-        if ($kelengkapanFilter === 'lengkap') {
-            $matchFilter = $isLengkap;
-        } elseif ($kelengkapanFilter === 'tidak_lengkap') {
-            $matchFilter = !$isLengkap;
-        } elseif (in_array($kelengkapanFilter, ['t1_5', 't1_7', 'batal_99'], true)) {
-            $matchFilter = ($subType === $kelengkapanFilter);
-        }
-
-        if ($matchFilter) {
-            $filteredKodebookings[] = $kb;
-        }
-    }
-
-    $diffs2to4 = [];
-    $diffs3to4 = [];
-    $diffsBoth = [];
-    $evaluatedKbSet = [];
-
-    foreach ($filteredKodebookings as $kb) {
-        $kbCode = $kb->kodebooking;
-        if (isset($evaluatedKbSet[$kbCode])) {
-            continue;
-        }
-        $evaluatedKbSet[$kbCode] = true;
-
-        $meta = $rowMetaMap[$kbCode] ?? null;
-        if (!$meta) continue;
-
-        $d24 = $meta['d24'];
-        $d34 = $meta['d34'];
-
-        if ($d24 !== null) {
-            $diffs2to4[] = $d24;
-        }
-        if ($d34 !== null) {
-            $diffs3to4[] = $d34;
-        }
-        if ($d24 !== null && $d34 !== null) {
-            $diffsBoth[] = ($d24 + $d34) / 2.0;
-        }
-    }
-
-    $avg2to4 = count($diffs2to4) > 0 ? (array_sum($diffs2to4) / count($diffs2to4)) : null;
-    $avg3to4 = count($diffs3to4) > 0 ? (array_sum($diffs3to4) / count($diffs3to4)) : null;
-
-    if (count($diffsBoth) > 0) {
-        $avgCombined = array_sum($diffsBoth) / count($diffsBoth);
-    } elseif ($avg2to4 !== null && $avg3to4 !== null) {
-        $avgCombined = ($avg2to4 + $avg3to4) / 2.0;
-    } else {
-        $avgCombined = $avg2to4 ?? $avg3to4;
-    }
+    $isPaginated = $kodebookings instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator;
+    $firstItemNumber = $isPaginated ? ($kodebookings->firstItem() ?? 1) : 1;
 @endphp
 
 {{-- Filter Card --}}
 <div class="filter-card" style="flex-wrap: wrap; gap: 8px;">
     <div class="btn-group me-2" role="group" aria-label="Pilih Cabang QL">
-        <a href="{{ url('/monitoring_taskid') }}?start_date={{ $startDate }}&end_date={{ $endDate }}&kelengkapan={{ $kelengkapanFilter }}"
+        <a href="{{ url('/monitoring_taskid') }}?start_date={{ $startDate }}&end_date={{ $endDate }}&kelengkapan={{ $kelengkapanFilter }}&per_page={{ $perPage }}"
            class="btn btn-sm {{ ($urlQL ?? 'QLJ') === 'QLJ' ? 'btn-primary' : 'btn-outline-primary' }}">
             <i class="fas fa-hospital me-1"></i> QLJ (Yogyakarta)
         </a>
-        <a href="{{ url('/qlkp_monitoring_taskid') }}?start_date={{ $startDate }}&end_date={{ $endDate }}&kelengkapan={{ $kelengkapanFilter }}"
+        <a href="{{ url('/qlkp_monitoring_taskid') }}?start_date={{ $startDate }}&end_date={{ $endDate }}&kelengkapan={{ $kelengkapanFilter }}&per_page={{ $perPage }}"
            class="btn btn-sm {{ ($urlQL ?? 'QLJ') === 'QLKP' ? 'btn-primary' : 'btn-outline-primary' }}">
             <i class="fas fa-hospital me-1"></i> QLKP (Kulon Progo)
         </a>
-        <a href="{{ url('/qltmg_monitoring_taskid') }}?start_date={{ $startDate }}&end_date={{ $endDate }}&kelengkapan={{ $kelengkapanFilter }}"
+        <a href="{{ url('/qltmg_monitoring_taskid') }}?start_date={{ $startDate }}&end_date={{ $endDate }}&kelengkapan={{ $kelengkapanFilter }}&per_page={{ $perPage }}"
            class="btn btn-sm {{ ($urlQL ?? 'QLJ') === 'QLTMG' ? 'btn-primary' : 'btn-outline-primary' }}">
             <i class="fas fa-hospital me-1"></i> QLTMG (Temanggung)
         </a>
@@ -178,13 +64,21 @@
         <input type="date" id="end_date" name="end_date" value="{{ $endDate }}">
 
         <label for="kelengkapan">Status:</label>
-        <select id="kelengkapan" name="kelengkapan" style="width: 210px;" onchange="this.form.submit()">
-            <option value="" {{ $kelengkapanFilter === '' ? 'selected' : '' }}>Semua Antrian ({{ $countTotalAll }})</option>
-            <option value="lengkap" {{ $kelengkapanFilter === 'lengkap' ? 'selected' : '' }}>Antrian Lengkap ({{ $countLengkap }})</option>
-            <option value="tidak_lengkap" {{ $kelengkapanFilter === 'tidak_lengkap' ? 'selected' : '' }}>Antrian Tidak Lengkap ({{ $countTidakLengkap }})</option>
-            <option value="t1_5" {{ $kelengkapanFilter === 't1_5' ? 'selected' : '' }}>↳ Lengkap: Task ID 1–5 ({{ $countLengkap15 }})</option>
-            <option value="t1_7" {{ $kelengkapanFilter === 't1_7' ? 'selected' : '' }}>↳ Lengkap: Task ID 1–7 ({{ $countLengkap17 }})</option>
-            <option value="batal_99" {{ $kelengkapanFilter === 'batal_99' ? 'selected' : '' }}>↳ Lengkap: Batal 99 ({{ $countLengkap99 }})</option>
+        <select id="kelengkapan" name="kelengkapan" style="width: 215px;" onchange="this.form.submit()">
+            <option value="" {{ $kelengkapanFilter === '' ? 'selected' : '' }}>Semua Antrian ({{ number_format($countTotalAll) }})</option>
+            <option value="lengkap" {{ $kelengkapanFilter === 'lengkap' ? 'selected' : '' }}>Antrian Lengkap ({{ number_format($countLengkap) }})</option>
+            <option value="tidak_lengkap" {{ $kelengkapanFilter === 'tidak_lengkap' ? 'selected' : '' }}>Antrian Tidak Lengkap ({{ number_format($countTidakLengkap) }})</option>
+            <option value="t1_5" {{ $kelengkapanFilter === 't1_5' ? 'selected' : '' }}>↳ Lengkap: Task ID 1–5 ({{ number_format($countLengkap15) }})</option>
+            <option value="t1_7" {{ $kelengkapanFilter === 't1_7' ? 'selected' : '' }}>↳ Lengkap: Task ID 1–7 ({{ number_format($countLengkap17) }})</option>
+            <option value="batal_99" {{ $kelengkapanFilter === 'batal_99' ? 'selected' : '' }}>↳ Lengkap: Batal 99 ({{ number_format($countLengkap99) }})</option>
+        </select>
+
+        <input type="text" name="q" value="{{ $searchQuery }}" placeholder="Cari Kode Booking / RM / Dokter / Poli..." style="width: 230px;">
+
+        <select name="per_page" style="width: 110px;" onchange="this.form.submit()" title="Jumlah baris per halaman">
+            @foreach([25, 50, 100, 250] as $pp)
+                <option value="{{ $pp }}" {{ (int)$perPage === $pp ? 'selected' : '' }}>{{ $pp }} / hal</option>
+            @endforeach
         </select>
 
         <button type="submit" class="btn-filter btn-primary">
@@ -203,25 +97,34 @@
 </div>
 
 {{-- Filter Cepat Kelengkapan Antrian --}}
-<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-    <a href="{{ $filterAction }}?start_date={{ $startDate }}&end_date={{ $endDate }}"
-       class="btn btn-sm {{ $kelengkapanFilter === '' ? 'btn-dark' : 'btn-outline-secondary' }}">
-        <i class="fas fa-layer-group me-1"></i> Semua Antrian
-        <span class="badge bg-secondary ms-1">{{ $countTotalAll }}</span>
-    </a>
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <a href="{{ $filterAction }}?start_date={{ $startDate }}&end_date={{ $endDate }}&q={{ urlencode($searchQuery) }}&per_page={{ $perPage }}"
+           class="btn btn-sm {{ $kelengkapanFilter === '' ? 'btn-dark' : 'btn-outline-secondary' }}">
+            <i class="fas fa-layer-group me-1"></i> Semua Antrian
+            <span class="badge bg-secondary ms-1">{{ number_format($countTotalAll) }}</span>
+        </a>
 
-    <a href="{{ $filterAction }}?start_date={{ $startDate }}&end_date={{ $endDate }}&kelengkapan=lengkap"
-       class="btn btn-sm {{ $kelengkapanFilter === 'lengkap' ? 'btn-success' : 'btn-outline-success' }}">
-        <i class="fas fa-check-circle me-1"></i> Antrian Lengkap
-        <span class="badge bg-success text-white ms-1">{{ $countLengkap }}</span>
-        <small class="ms-1 opacity-75">(T1–5: {{ $countLengkap15 }} | T1–7: {{ $countLengkap17 }} | Batal 99: {{ $countLengkap99 }})</small>
-    </a>
+        <a href="{{ $filterAction }}?start_date={{ $startDate }}&end_date={{ $endDate }}&kelengkapan=lengkap&q={{ urlencode($searchQuery) }}&per_page={{ $perPage }}"
+           class="btn btn-sm {{ $kelengkapanFilter === 'lengkap' ? 'btn-success' : 'btn-outline-success' }}">
+            <i class="fas fa-check-circle me-1"></i> Antrian Lengkap
+            <span class="badge bg-success text-white ms-1">{{ number_format($countLengkap) }}</span>
+            <small class="ms-1 opacity-75">(T1–5: {{ number_format($countLengkap15) }} | T1–7: {{ number_format($countLengkap17) }} | Batal 99: {{ number_format($countLengkap99) }})</small>
+        </a>
 
-    <a href="{{ $filterAction }}?start_date={{ $startDate }}&end_date={{ $endDate }}&kelengkapan=tidak_lengkap"
-       class="btn btn-sm {{ $kelengkapanFilter === 'tidak_lengkap' ? 'btn-danger' : 'btn-outline-danger' }}">
-        <i class="fas fa-exclamation-triangle me-1"></i> Antrian Tidak Lengkap
-        <span class="badge bg-danger text-white ms-1">{{ $countTidakLengkap }}</span>
-    </a>
+        <a href="{{ $filterAction }}?start_date={{ $startDate }}&end_date={{ $endDate }}&kelengkapan=tidak_lengkap&q={{ urlencode($searchQuery) }}&per_page={{ $perPage }}"
+           class="btn btn-sm {{ $kelengkapanFilter === 'tidak_lengkap' ? 'btn-danger' : 'btn-outline-danger' }}">
+            <i class="fas fa-exclamation-triangle me-1"></i> Antrian Tidak Lengkap
+            <span class="badge bg-danger text-white ms-1">{{ number_format($countTidakLengkap) }}</span>
+        </a>
+    </div>
+
+    @if($isPaginated && $kodebookings->total() > 0)
+        <div class="text-muted small">
+            Menampilkan <strong>{{ number_format($kodebookings->firstItem()) }}–{{ number_format($kodebookings->lastItem()) }}</strong>
+            dari <strong>{{ number_format($kodebookings->total()) }}</strong> antrean
+        </div>
+    @endif
 </div>
 
 {{-- Kartu Info Evaluasi Waktu Tunggu --}}
@@ -242,7 +145,7 @@
                         </div>
                     </div>
                     <span class="badge bg-light text-dark border">
-                        {{ count($diffs2to4) }} Antrean
+                        {{ number_format($count2to4) }} Antrean
                     </span>
                 </div>
                 <div class="mt-2 pt-2 border-top text-muted" style="font-size: 0.73rem;">
@@ -268,7 +171,7 @@
                         </div>
                     </div>
                     <span class="badge bg-light text-dark border">
-                        {{ count($diffs3to4) }} Antrean
+                        {{ number_format($count3to4) }} Antrean
                     </span>
                 </div>
                 <div class="mt-2 pt-2 border-top text-muted" style="font-size: 0.73rem;">
@@ -295,7 +198,7 @@
                         </div>
                     </div>
                     <span class="badge bg-light text-dark border">
-                        {{ count($diffsBoth) }} Lengkap
+                        {{ number_format($countBoth) }} Lengkap
                     </span>
                 </div>
                 <div class="mt-2 pt-2 border-top d-flex justify-content-between text-muted" style="font-size: 0.73rem;">
@@ -308,12 +211,13 @@
     </div>
 </div>
 
-{{-- Tabel --}}
-<table id="{{ $tableId }}" class="table table-hover table-striped table-bordered text-center">
+{{-- Tabel (Hanya merender baris per halaman agar ringan & bebas crash browser) --}}
+<div class="table-responsive">
+    <table id="{{ $tableId }}" class="table table-hover table-striped table-bordered text-center mb-0">
         <thead>
             <tr>
                 <th style="width:4%;">No</th>
-                <th style="width:15%; text-align: left;">Informasi Antrian</th>
+                <th style="width:16%; text-align: left;">Informasi Antrian</th>
                 <th style="width:7%;">T1<br><small>Daftar</small></th>
                 <th style="width:7%;">T2<br><small>Poli</small></th>
                 <th style="width:7%;">T3<br><small>Layan</small></th>
@@ -330,14 +234,14 @@
             @php
                 $tasks = [1, 2, 3, 4, 5, 6, 7, 99];
             @endphp
-            @foreach($filteredKodebookings as $index => $kb)
+            @forelse($kodebookings as $index => $kb)
                 @php
                     $tgl = date('Y-m-d', strtotime($kb->tanggalperiksa));
                     $noSep = null;
                     if (!empty($kb->nojkn) && isset($vclaimMap[$kb->nojkn])) {
                         $noSep = $vclaimMap[$kb->nojkn][$tgl] ?? null;
                         if (!$noSep) {
-                            $noSep = reset($vclaimMap[$kb->nojkn]); // Fallback ke SEP pertama yang ditemukan untuk kartu tsb
+                            $noSep = reset($vclaimMap[$kb->nojkn]);
                         }
                     }
                     $evalRow = $rowMetaMap[$kb->kodebooking] ?? [
@@ -348,9 +252,10 @@
                     ];
                 @endphp
                 <tr>
-                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $firstItemNumber + $index }}</td>
                     <td style="text-align: left;">
                         <strong>{{ $kb->kodebooking }}</strong>
+                        <span class="text-muted small ms-1">({{ $tgl }})</span>
                         <div class="mt-1 mb-1">
                             @if($evalRow['is_lengkap'])
                                 <span class="badge bg-success" style="font-size: 0.68rem;">
@@ -378,15 +283,14 @@
                             @if($taskData)
                                 @php
                                     $msg = strtolower($taskData->message ?? '');
-                                    // Indikator Warna
                                     if (str_contains($msg, 'success') || str_contains($msg, 'ok')) {
-                                        $color = '#28a745'; // green
+                                        $color = '#28a745';
                                         $title = 'Success: ' . $taskData->message;
                                     } elseif (str_contains($msg, 'antrean') || $msg == '') {
-                                        $color = '#fd7e14'; // orange (Queue/Pending)
+                                        $color = '#fd7e14';
                                         $title = 'Pending/Queue';
                                     } else {
-                                        $color = '#dc3545'; // red (Failed)
+                                        $color = '#dc3545';
                                         $title = 'Error: ' . $taskData->message;
                                     }
                                 @endphp
@@ -414,9 +318,28 @@
                         </button>
                     </td>
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="12" class="text-center py-4 text-muted">
+                        Tidak ada data antrean untuk filter dan periode yang dipilih.
+                    </td>
+                </tr>
+            @endforelse
         </tbody>
     </table>
+</div>
+
+@if($isPaginated && $kodebookings->hasPages())
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+        <div class="text-muted small">
+            Halaman <strong>{{ $kodebookings->currentPage() }}</strong> dari <strong>{{ $kodebookings->lastPage() }}</strong>
+            (Total {{ number_format($kodebookings->total()) }} data)
+        </div>
+        <div>
+            {{ $kodebookings->links('pagination::bootstrap-5') }}
+        </div>
+    </div>
+@endif
 
 {{-- Modal Detail Task ID --}}
 <div class="modal fade" id="modalDetailTask" tabindex="-1" aria-labelledby="modalDetailTaskLabel" aria-hidden="true">
@@ -455,21 +378,17 @@ function showDetail(kodebooking) {
     $('#detailKodebookingTitle').text(kodebooking);
     $('#bodyDetailTask').html('<tr><td colspan="5" class="text-center">Memuat data...</td></tr>');
     
-    // Tampilkan modal (asumsi menggunakan Bootstrap 5)
     var modal = new bootstrap.Modal(document.getElementById('modalDetailTask'));
     modal.show();
 
-    // Fetch data sesuai cabang aktif
     fetch('{{ $detailBaseUrl ?? $filterAction }}/' + encodeURIComponent(kodebooking))
         .then(response => response.json())
         .then(data => {
             if(data.metadata.code === 200 && data.response.length > 0) {
                 let html = '';
                 
-                // Helper untuk format tanggal dari timestamp (ms) ke format WIB
                 const formatWaktuWIB = (waktuMs) => {
                     if (!waktuMs) return '-';
-                    // Cek jika waktuMs berupa 13 digit angka (milliseconds BPJS)
                     if (String(waktuMs).length === 13 && !isNaN(waktuMs)) {
                         let d = new Date(parseInt(waktuMs));
                         let day = String(d.getDate()).padStart(2, '0');
@@ -512,58 +431,5 @@ function showDetail(kodebooking) {
             $('#bodyDetailTask').html('<tr><td colspan="5" class="text-center text-danger">Terjadi kesalahan saat memuat data.</td></tr>');
         });
 }
-
-$(document).ready(function() {
-    $('#{{ $tableId }}').DataTable({
-        "paging": true,
-        "lengthChange": true,
-        "searching": true,
-        "ordering": true,
-        "info": true,
-        "autoWidth": false,
-        "responsive": true,
-        "pageLength": 50,
-        "language": {
-            "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json"
-        }
-    });
-
-    // Event listener untuk preset tanggal
-    $('.btn-preset').on('click', function() {
-        const preset = $(this).data('preset');
-        let startDate, endDate;
-        const today = new Date();
-
-        // Helper function for local YYYY-MM-DD
-        const formatDate = (date) => {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        };
-
-        if (preset === 'today') {
-            startDate = formatDate(today);
-            endDate = formatDate(today);
-        } else if (preset === 'yesterday') {
-            const yesterday = new Date(today);
-            yesterday.setDate(today.getDate() - 1);
-            startDate = formatDate(yesterday);
-            endDate = formatDate(yesterday);
-        } else if (preset === 'week') {
-            const lastWeek = new Date(today);
-            lastWeek.setDate(today.getDate() - 6);
-            startDate = formatDate(lastWeek);
-            endDate = formatDate(today);
-        } else if (preset === 'month') {
-            startDate = formatDate(new Date(today.getFullYear(), today.getMonth(), 1));
-            endDate = formatDate(today);
-        }
-
-        $('#start_date').val(startDate);
-        $('#end_date').val(endDate);
-        $(this).closest('form').submit();
-    });
-});
 </script>
 @endpush

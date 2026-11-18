@@ -166,6 +166,12 @@ class AntrianController extends Controller
         $today = date('Y-m-d');
         $start_date = $request->input('start_date', $today);
         $end_date = $request->input('end_date', $today);
+        $kelengkapanFilter = $request->input('kelengkapan', '');
+        $searchQuery = trim((string) $request->input('q', ''));
+        $perPage = (int) $request->input('per_page', 50);
+        if (!in_array($perPage, [25, 50, 100, 250], true)) {
+            $perPage = 50;
+        }
 
         $branchConfig = [
             'QLJ' => [
@@ -197,43 +203,221 @@ class AntrianController extends Controller
             return redirect()->back()->with('error', "Tabel {$cfg['kb_table']} atau {$cfg['task_table']} tidak ditemukan.");
         }
 
-        // Ambil data kode booking berdasarkan rentang tanggal — hanya kolom yang diperlukan
-        $kodebookings = DB::table($cfg['kb_table'])->select(
+        // 1. Ambil data kode booking berdasarkan rentang tanggal (dan filter pencarian jika ada)
+        $kbQuery = DB::table($cfg['kb_table'])->select(
             'id', 'kodebooking', 'norm', 'nojkn', 'namadokter', 'namaunit', 'tanggalperiksa'
-        )
-            ->whereBetween('tanggalperiksa', [$start_date, $end_date])
-            ->get();
+        )->whereBetween('tanggalperiksa', [$start_date, $end_date]);
 
-        // Ambil semua kodebooking sebagai array
-        $kbs = $kodebookings->pluck('kodebooking')->filter()->unique()->values()->toArray();
-        $nojkns = $kodebookings->pluck('nojkn')->filter()->unique()->values()->toArray();
-
-        // Ambil data_taskid untuk kodebooking terkait — hanya kolom yang diperlukan (hindari request/response TEXT besar)
-        $taskids = !empty($kbs) ? DB::table($cfg['task_table'])->select(
-            'id', 'kodebooking', 'taskid', 'waktu', 'jam', 'code', 'message', 'tanggal', 'reupload'
-        )
-            ->whereIn('kodebooking', $kbs)
-            ->get() : collect();
-
-        // Ambil data SEP dari VclaimKunjungan
-        $vclaimMap = [];
-        if (count($nojkns) > 0 && Schema::hasTable('vclaim_kunjungan')) {
-            $vclaims = \App\Models\VclaimKunjungan::select('no_kartu', 'tgl_kunjungan', 'no_sep')
-                ->whereIn('no_kartu', $nojkns)
-                ->whereBetween('tgl_kunjungan', [$start_date, $end_date])
-                ->get();
-
-            foreach ($vclaims as $v) {
-                $tgl = $v->tgl_kunjungan ? $v->tgl_kunjungan->format('Y-m-d') : '';
-                $vclaimMap[$v->no_kartu][$tgl] = $v->no_sep;
-            }
+        if ($searchQuery !== '') {
+            $kbQuery->where(function ($q) use ($searchQuery) {
+                $q->where('kodebooking', 'like', "%{$searchQuery}%")
+                  ->orWhere('norm', 'like', "%{$searchQuery}%")
+                  ->orWhere('nojkn', 'like', "%{$searchQuery}%")
+                  ->orWhere('namadokter', 'like', "%{$searchQuery}%")
+                  ->orWhere('namaunit', 'like', "%{$searchQuery}%");
+            });
         }
 
-        // Grouping berdasarkan kodebooking
+        $kodebookings = $kbQuery->orderBy('tanggalperiksa', 'asc')->orderBy('id', 'asc')->get();
+
+        // 2. Ambil data_taskid menggunakan subquery (tanpa ribuan binding parameter di whereIn)
+        $taskids = $kodebookings->isNotEmpty()
+            ? DB::table($cfg['task_table'])
+                ->select('kodebooking', 'taskid', 'waktu', 'jam', 'message', 'tanggal')
+                ->whereIn('kodebooking', function ($q) use ($cfg, $start_date, $end_date) {
+                    $q->select('kodebooking')
+                      ->from($cfg['kb_table'])
+                      ->whereBetween('tanggalperiksa', [$start_date, $end_date]);
+                })
+                ->get()
+            : collect();
+
         $groupedTasks = [];
         foreach ($taskids as $t) {
             $groupedTasks[$t->kodebooking][$t->taskid] = $t;
         }
+
+        // Helper konversi waktu task ke detik epoch
+        $getTaskSec = static function ($task): ?float {
+            if (!$task) return null;
+            if (!empty($task->waktu) && is_numeric($task->waktu)) {
+                $w = (float) $task->waktu;
+                return $w > 100000000000 ? ($w / 1000.0) : $w;
+            }
+            if (!empty($task->tanggal) && !empty($task->jam)) {
+                $ts = strtotime($task->tanggal . ' ' . $task->jam);
+                return $ts !== false ? (float) $ts : null;
+            }
+            if (!empty($task->waktu) && is_string($task->waktu)) {
+                $ts = strtotime($task->waktu);
+                return $ts !== false ? (float) $ts : null;
+            }
+            return null;
+        };
+
+        // 3. Evaluasi kelengkapan & waktu tunggu di sisi server untuk seluruh rentang tanggal
+        $countTotalAll = 0;
+        $countLengkap = 0;
+        $countLengkap15 = 0;
+        $countLengkap17 = 0;
+        $countLengkap99 = 0;
+        $countTidakLengkap = 0;
+
+        $rowMetaMap = [];
+        $filteredKodebookings = [];
+        $diffs2to4 = [];
+        $diffs3to4 = [];
+        $diffsBoth = [];
+        $evaluatedKbSet = [];
+
+        foreach ($kodebookings as $kb) {
+            $kbCode = $kb->kodebooking;
+            $tMap = $groupedTasks[$kbCode] ?? [];
+
+            $has1to5 = isset($tMap[1], $tMap[2], $tMap[3], $tMap[4], $tMap[5]);
+            $has6 = isset($tMap[6]);
+            $has7 = isset($tMap[7]);
+            $has99 = isset($tMap[99]);
+
+            $isLengkap = false;
+            $subType = 'tidak_lengkap';
+            $statusLabel = 'Antrian Tidak Lengkap';
+
+            if ($has99) {
+                $isLengkap = true;
+                $subType = 'batal_99';
+                $statusLabel = 'Antrian Lengkap (Batal 99)';
+                $countLengkap99++;
+            } elseif ($has1to5 && $has6 && $has7) {
+                $isLengkap = true;
+                $subType = 't1_7';
+                $statusLabel = 'Antrian Lengkap (T1–7)';
+                $countLengkap17++;
+            } elseif ($has1to5 && !$has6 && !$has7) {
+                $isLengkap = true;
+                $subType = 't1_5';
+                $statusLabel = 'Antrian Lengkap (T1–5)';
+                $countLengkap15++;
+            }
+
+            $countTotalAll++;
+            if ($isLengkap) {
+                $countLengkap++;
+            } else {
+                $countTidakLengkap++;
+            }
+
+            if (!isset($rowMetaMap[$kbCode])) {
+                $s2 = $getTaskSec($tMap[2] ?? null);
+                $s3 = $getTaskSec($tMap[3] ?? null);
+                $s4 = $getTaskSec($tMap[4] ?? null);
+
+                $d24 = ($s2 !== null && $s4 !== null && $s4 >= $s2) ? ($s4 - $s2) : null;
+                $d34 = ($s3 !== null && $s4 !== null && $s4 >= $s3) ? ($s4 - $s3) : null;
+
+                $rowMetaMap[$kbCode] = [
+                    'is_lengkap' => $isLengkap,
+                    'sub_type' => $subType,
+                    'status_label' => $statusLabel,
+                    'd24' => $d24,
+                    'd34' => $d34,
+                ];
+            }
+
+            $matchFilter = true;
+            if ($kelengkapanFilter === 'lengkap') {
+                $matchFilter = $isLengkap;
+            } elseif ($kelengkapanFilter === 'tidak_lengkap') {
+                $matchFilter = !$isLengkap;
+            } elseif (in_array($kelengkapanFilter, ['t1_5', 't1_7', 'batal_99'], true)) {
+                $matchFilter = ($subType === $kelengkapanFilter);
+            }
+
+            if ($matchFilter) {
+                $filteredKodebookings[] = $kb;
+                if (!isset($evaluatedKbSet[$kbCode])) {
+                    $evaluatedKbSet[$kbCode] = true;
+                    $d24 = $rowMetaMap[$kbCode]['d24'];
+                    $d34 = $rowMetaMap[$kbCode]['d34'];
+                    if ($d24 !== null) $diffs2to4[] = $d24;
+                    if ($d34 !== null) $diffs3to4[] = $d34;
+                    if ($d24 !== null && $d34 !== null) $diffsBoth[] = ($d24 + $d34) / 2.0;
+                }
+            }
+        }
+
+        $avg2to4 = count($diffs2to4) > 0 ? (array_sum($diffs2to4) / count($diffs2to4)) : null;
+        $avg3to4 = count($diffs3to4) > 0 ? (array_sum($diffs3to4) / count($diffs3to4)) : null;
+        if (count($diffsBoth) > 0) {
+            $avgCombined = array_sum($diffsBoth) / count($diffsBoth);
+        } elseif ($avg2to4 !== null && $avg3to4 !== null) {
+            $avgCombined = ($avg2to4 + $avg3to4) / 2.0;
+        } else {
+            $avgCombined = $avg2to4 ?? $avg3to4;
+        }
+
+        $evalSummary = [
+            'countTotalAll' => $countTotalAll,
+            'countLengkap' => $countLengkap,
+            'countLengkap15' => $countLengkap15,
+            'countLengkap17' => $countLengkap17,
+            'countLengkap99' => $countLengkap99,
+            'countTidakLengkap' => $countTidakLengkap,
+            'avg2to4' => $avg2to4,
+            'avg3to4' => $avg3to4,
+            'avgCombined' => $avgCombined,
+            'count2to4' => count($diffs2to4),
+            'count3to4' => count($diffs3to4),
+            'countBoth' => count($diffsBoth),
+        ];
+
+        // 4. Paginate di sisi server agar browser hanya me-render 50 baris per halaman (anti crash)
+        $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage('page');
+        $totalFiltered = count($filteredKodebookings);
+        $pageItems = array_slice($filteredKodebookings, ($currentPage - 1) * $perPage, $perPage);
+
+        $paginatedKodebookings = new \Illuminate\Pagination\LengthAwarePaginator(
+            $pageItems,
+            $totalFiltered,
+            $perPage,
+            $currentPage,
+            [
+                'path' => $cfg['filter_action'],
+                'query' => $request->query(),
+            ]
+        );
+
+        // 5. Ambil data SEP dari vclaim_kunjungan HANYA untuk baris di halaman aktif (sangat cepat)
+        $pageNojkns = collect($pageItems)->pluck('nojkn')->filter()->unique()->values()->toArray();
+        $vclaimMap = [];
+        if (!empty($pageNojkns) && Schema::hasTable('vclaim_kunjungan')) {
+            $vclaims = DB::table('vclaim_kunjungan')
+                ->select('no_kartu', 'tgl_kunjungan', 'no_sep')
+                ->whereIn('no_kartu', $pageNojkns)
+                ->whereBetween('tgl_kunjungan', [$start_date, $end_date])
+                ->get();
+
+            foreach ($vclaims as $v) {
+                $tgl = $v->tgl_kunjungan ? substr((string) $v->tgl_kunjungan, 0, 10) : '';
+                $vclaimMap[$v->no_kartu][$tgl] = $v->no_sep;
+            }
+        }
+
+        // Hanya kirim groupedTasks & rowMetaMap milik halaman aktif ke Blade agar memori ringan
+        $pageGroupedTasks = [];
+        $pageRowMetaMap = [];
+        foreach ($pageItems as $item) {
+            $k = $item->kodebooking;
+            if (isset($groupedTasks[$k])) {
+                $pageGroupedTasks[$k] = $groupedTasks[$k];
+            }
+            if (isset($rowMetaMap[$k])) {
+                $pageRowMetaMap[$k] = $rowMetaMap[$k];
+            }
+        }
+        $groupedTasks = $pageGroupedTasks;
+        $rowMetaMap = $pageRowMetaMap;
+        $kodebookings = $paginatedKodebookings;
 
         $pageTitle = $cfg['title'];
         $filterAction = $cfg['filter_action'];
@@ -244,6 +428,8 @@ class AntrianController extends Controller
         return view('monitoring_taskid', compact(
             'kodebookings',
             'groupedTasks',
+            'rowMetaMap',
+            'evalSummary',
             'start_date',
             'end_date',
             'vclaimMap',
@@ -251,7 +437,10 @@ class AntrianController extends Controller
             'filterAction',
             'detailBaseUrl',
             'tableId',
-            'urlQL'
+            'urlQL',
+            'kelengkapanFilter',
+            'searchQuery',
+            'perPage'
         ));
     }
 
