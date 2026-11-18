@@ -161,11 +161,15 @@ class data_taskid extends Model
 
     /**
      * Ambil daftar antrean yang memiliki Task ID 6 dan Task ID 1 s/d 5 sudah lengkap,
-     * namun setelah >= 2 jam dari waktu Task ID 6, Task ID 7 masih kosong.
+     * namun melebihi jam 22:00 WIB pada tanggal pelayanan, Task ID 7 masih kosong.
      */
-    public function getTaskid6WithComplete1to5AndNullTaskid7After2Hours($urlQL = 'QLJ', $kodebooking = null)
+    public function getTaskid6WithComplete1to5AndNullTaskid7After22Wib($urlQL = 'QLJ', $kodebooking = null)
     {
-        $twoHoursAgoMs = (now()->setTimezone('Asia/Jakarta')->getTimestamp() - 7200) * 1000;
+        $nowJakarta = now()->setTimezone('Asia/Jakarta');
+        $todayStr = $nowJakarta->toDateString();
+        $yesterdayStr = $nowJakarta->copy()->subDays(1)->toDateString();
+        $fromStr = $nowJakarta->copy()->subDays(31)->toDateString();
+        $isAfter22Wib = ((int) $nowJakarta->format('H')) >= 22;
 
         $query = DB::table("{$this->table} as dt6")
             ->select('dt6.kodebooking', 'dt6.waktu', 'dt6.idpendaftaran')
@@ -192,7 +196,6 @@ class data_taskid extends Model
             })
             ->where('dt6.taskid', '=', 6)
             ->where('dt6.waktu', '>', 0)
-            ->where('dt6.waktu', '<=', $twoHoursAgoMs)
             ->where(function ($q) {
                 $q->whereNull('dt6.message')
                   ->orWhere('dt6.message', 'not like', '%TaskId terakhir 99%');
@@ -200,13 +203,17 @@ class data_taskid extends Model
             ->whereNull('dt7.id')
             ->whereNull('dt99.id');
 
+        // Hanya ambil antrean yang sudah melewati jam 22:00 WIB pada hari pelayanannya
+        if ($isAfter22Wib) {
+            $query->where('dt6.tanggal', '<=', $todayStr);
+        } else {
+            $query->where('dt6.tanggal', '<=', $yesterdayStr);
+        }
+
         if (!empty($kodebooking)) {
             $query->where('dt6.kodebooking', '=', $kodebooking);
         } else {
-            $query->whereBetween('dt6.tanggal', [
-                now()->setTimezone('Asia/Jakarta')->subDays(31)->toDateString(),
-                now()->setTimezone('Asia/Jakarta')->toDateString()
-            ]);
+            $query->where('dt6.tanggal', '>=', $fromStr);
         }
 
         return $query->get();

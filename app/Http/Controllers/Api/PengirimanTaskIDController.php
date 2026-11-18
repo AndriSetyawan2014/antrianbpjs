@@ -552,14 +552,14 @@ class PengirimanTaskIDController extends Controller
             $autoGenerateMissingPrevTask(3, 2, 60, 180);
             $autoGenerateMissingPrevTask(2, 1, 60, 300);
 
-            // E. Jika ditemukan Task ID 6 dan Task ID 1 s/d 5 sudah lengkap, serta dalam >= 2 jam Task ID 7 masih kosong -> auto-generate Task ID 7
-            $missingTask7After2h = $data_taskID_gen->getTaskid6WithComplete1to5AndNullTaskid7After2Hours($urlQL, $kodebooking)->toArray();
-            if (!empty($missingTask7After2h)) {
-                Log::info('[' . $urlQL . '] Found ' . count($missingTask7After2h) . ' bookings with Task ID 6 (>= 2 hours) missing Task ID 7. Auto-generating Task ID 7...');
+            // E. Jika ditemukan Task ID 6 dan Task ID 1 s/d 5 sudah lengkap, serta melebihi jam 22:00 WIB Task ID 7 masih kosong -> auto-generate Task ID 7 (Task 6 + 15 s/d 30 menit)
+            $missingTask7After22Wib = $data_taskID_gen->getTaskid6WithComplete1to5AndNullTaskid7After22Wib($urlQL, $kodebooking)->toArray();
+            if (!empty($missingTask7After22Wib)) {
+                Log::info('[' . $urlQL . '] Found ' . count($missingTask7After22Wib) . ' bookings with Task ID 6 (> 22:00 WIB) missing Task ID 7. Auto-generating Task ID 7...');
                 $upsertTask7 = [];
-                foreach ($missingTask7After2h as $dataTaskID6) {
+                foreach ($missingTask7After22Wib as $dataTaskID6) {
                     $waktuTask6 = (int) $dataTaskID6->waktu;
-                    $randomSecond = rand(180, 600); // 3 - 10 menit setelah Task ID 6
+                    $randomSecond = rand(900, 1800); // 15 - 30 menit (900 - 1800 detik) setelah Task ID 6
                     $newWaktursMilliseconds = $waktuTask6 + ($randomSecond * 1000);
 
                     $timestamp = (int) round($newWaktursMilliseconds / 1000);
