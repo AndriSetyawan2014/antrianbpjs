@@ -6,7 +6,7 @@
 --}}
 
 @section('page_title')
-    <h1 class="page-title"><i class="fas fa-user-clock me-2 text-primary"></i>Kesesuaian Jadwal Dokter — {{ $branchTitle }}</h1>
+    <i class="fas fa-user-clock me-2 text-primary"></i>Kesesuaian Jadwal Dokter — {{ $branchTitle }}
 @endsection
 
 @section('page_subtitle')

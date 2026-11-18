@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('page_title')
-    <h1 class="page-title"><i class="fab fa-whatsapp me-2 text-primary"></i>WhatsApp Blast</h1>
+    <i class="fab fa-whatsapp me-2 text-primary"></i>WhatsApp Blast
 @endsection
 
 @section('page_subtitle')

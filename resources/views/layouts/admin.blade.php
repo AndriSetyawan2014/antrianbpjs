@@ -57,7 +57,7 @@
                     $currentBranchName = 'Kulon Progo';
                 } elseif (Request::is('qltmg*') || Request::is('*qltmg*')) {
                     $currentBranchName = 'Temanggung';
-                } elseif (Request::is('TaskID*') || Request::is('taskid*') || Request::is('*taskid*') || Request::is('data_kodebooking_jogja*') || Request::is('rekap_kodebooking*') || Request::is('monitoring_taskid*')) {
+                } elseif (Request::is('TaskID*') || Request::is('taskid*') || Request::is('*taskid*') || Request::is('data_kodebooking_jogja*') || Request::is('rekap_kodebooking*') || Request::is('monitoring_taskid*') || Request::is('kesesuaian_jadwal*') || Request::is('sync_jadwal_bpjs*')) {
                     $currentBranchName = 'Yogyakarta';
                 }
             @endphp
@@ -101,8 +101,8 @@
                     {{-- Flash Messages --}}
                     @include('components.flash')
 
-                    {{-- Page Header & Breadcrumb --}}
-                    @if(isset($pageTitle) || $__env->hasSection('page_header'))
+                    {{-- Page Header & Breadcrumb (Opsi B: judul dipusatkan di navbar atas) --}}
+                    @if($__env->hasSection('page_header'))
                         <div class="page-header">
                             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                                 <div>

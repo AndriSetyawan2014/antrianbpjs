@@ -3,7 +3,7 @@
 {{-- index.css sudah dimuat global via @vite di layouts/admin --}}
 
 @section('page_title')
-    <h1 class="page-title"><i class="fas fa-tachometer-alt me-2 text-primary"></i>Dashboard</h1>
+    <i class="fas fa-tachometer-alt me-2 text-primary"></i>Dashboard
 @endsection
 
 @section('page_subtitle')

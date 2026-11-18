@@ -4,7 +4,7 @@
 --}}
 
 @section('page_title')
-    <h1 class="page-title"><i class="fas fa-chart-bar me-2 text-primary"></i>{{ $pageTitle }}</h1>
+    <i class="fas fa-chart-bar me-2 text-primary"></i>{{ $pageTitle }}
 @endsection
 
 @section('page_subtitle')

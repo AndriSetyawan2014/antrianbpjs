@@ -2,9 +2,17 @@
   Partial DRY: halaman Data Task ID (QLJ / QLKP / QLTMG)
   Params: $pageTitle, $filterAction, $resetUrl, $exportUrl, $exportMode ('server'|'client'),
           $items, $startDate, $endDate, $tableId, $urlQL
-  Catatan: Partial ini HANYA berisi konten (tanpa @section wrapper).
+  Catatan: Partial ini mendefinisikan page_title, page_subtitle, dan konten.
            View induk bertanggung jawab membungkus dengan @section('content').
 --}}
+
+@section('page_title')
+    <i class="fas fa-file-medical me-2 text-primary"></i>{{ $pageTitle }}
+@endsection
+
+@section('page_subtitle')
+    Data detail Task ID antrian bridging BPJS
+@endsection
 
 <style>
 .taskid-table-wrap {

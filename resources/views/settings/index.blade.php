@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('page_title')
-    <h1 class="page-title"><i class="fas fa-cogs me-2 text-primary"></i>Pengaturan Sistem</h1>
+    <i class="fas fa-cogs me-2 text-primary"></i>Pengaturan Sistem
 @endsection
 
 @section('page_subtitle')
