@@ -2,7 +2,22 @@
 {{-- Page header dihandle oleh layout via @section('page_title') --}}
 
 {{-- Filter Card --}}
-<div class="filter-card">
+<div class="filter-card" style="flex-wrap: wrap; gap: 8px;">
+    <div class="btn-group me-2" role="group" aria-label="Pilih Cabang QL">
+        <a href="{{ url('/monitoring_taskid') }}?start_date={{ $startDate }}&end_date={{ $endDate }}"
+           class="btn btn-sm {{ ($urlQL ?? 'QLJ') === 'QLJ' ? 'btn-primary' : 'btn-outline-primary' }}">
+            <i class="fas fa-hospital me-1"></i> QLJ (Yogyakarta)
+        </a>
+        <a href="{{ url('/qlkp_monitoring_taskid') }}?start_date={{ $startDate }}&end_date={{ $endDate }}"
+           class="btn btn-sm {{ ($urlQL ?? 'QLJ') === 'QLKP' ? 'btn-primary' : 'btn-outline-primary' }}">
+            <i class="fas fa-hospital me-1"></i> QLKP (Kulon Progo)
+        </a>
+        <a href="{{ url('/qltmg_monitoring_taskid') }}?start_date={{ $startDate }}&end_date={{ $endDate }}"
+           class="btn btn-sm {{ ($urlQL ?? 'QLJ') === 'QLTMG' ? 'btn-primary' : 'btn-outline-primary' }}">
+            <i class="fas fa-hospital me-1"></i> QLTMG (Temanggung)
+        </a>
+    </div>
+
     <i class="fas fa-filter" style="color:var(--color-primary);"></i>
     <form method="GET" action="{{ $filterAction }}" style="display:contents;">
         <label for="start_date">Dari:</label>
@@ -147,8 +162,8 @@ function showDetail(kodebooking) {
     var modal = new bootstrap.Modal(document.getElementById('modalDetailTask'));
     modal.show();
 
-    // Fetch data
-    fetch('{{ url("/monitoring_taskid") }}/' + kodebooking)
+    // Fetch data sesuai cabang aktif
+    fetch('{{ $detailBaseUrl ?? $filterAction }}/' + encodeURIComponent(kodebooking))
         .then(response => response.json())
         .then(data => {
             if(data.metadata.code === 200 && data.response.length > 0) {
@@ -172,10 +187,11 @@ function showDetail(kodebooking) {
                 };
 
                 data.response.forEach(function(task) {
+                    let msgText = String(task.message || '');
                     let badgeClass = 'bg-danger';
-                    if (task.message.toLowerCase().includes('success') || task.message.toLowerCase().includes('ok')) {
+                    if (msgText.toLowerCase().includes('success') || msgText.toLowerCase().includes('ok')) {
                         badgeClass = 'bg-success';
-                    } else if (task.message.toLowerCase().includes('antrean') || task.message == '') {
+                    } else if (msgText.toLowerCase().includes('antrean') || msgText === '') {
                         badgeClass = 'bg-warning text-dark';
                     }
                     
@@ -184,7 +200,7 @@ function showDetail(kodebooking) {
                     html += `<tr>
                         <td class="text-center"><strong>${task.taskid}</strong></td>
                         <td>${waktuWIB}</td>
-                        <td><span class="badge ${badgeClass}">${task.message}</span></td>
+                        <td><span class="badge ${badgeClass}">${msgText || '-'}</span></td>
                         <td style="max-width: 200px; overflow-wrap: break-word;"><small>${task.request || '-'}</small></td>
                         <td style="max-width: 200px; overflow-wrap: break-word;"><small>${task.response || '-'}</small></td>
                     </tr>`;

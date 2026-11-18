@@ -144,23 +144,72 @@ class AntrianController extends Controller
 
     public function monitoringTaskid(Request $request)
     {
+        $branch = strtoupper($request->input('urlQL', 'QLJ'));
+        if (!in_array($branch, ['QLJ', 'QLKP', 'QLTMG'], true)) {
+            $branch = 'QLJ';
+        }
+        return $this->renderMonitoringTaskid($request, $branch);
+    }
+
+    public function qlkp_monitoringTaskid(Request $request)
+    {
+        return $this->renderMonitoringTaskid($request, 'QLKP');
+    }
+
+    public function qltmg_monitoringTaskid(Request $request)
+    {
+        return $this->renderMonitoringTaskid($request, 'QLTMG');
+    }
+
+    private function renderMonitoringTaskid(Request $request, string $branch = 'QLJ')
+    {
         $today = date('Y-m-d');
         $start_date = $request->input('start_date', $today);
         $end_date = $request->input('end_date', $today);
 
+        $branchConfig = [
+            'QLJ' => [
+                'kb_table' => 'data_kodebooking',
+                'task_table' => 'data_taskids',
+                'title' => 'Monitoring Task ID Antrian — Yogyakarta',
+                'filter_action' => url('/monitoring_taskid'),
+                'table_id' => 'monitoring_taskid_table',
+            ],
+            'QLKP' => [
+                'kb_table' => 'qlkp_data_kodebooking',
+                'task_table' => 'qlkp_data_taskids',
+                'title' => 'Monitoring Task ID Antrian — Kulon Progo',
+                'filter_action' => url('/qlkp_monitoring_taskid'),
+                'table_id' => 'qlkp_monitoring_taskid_table',
+            ],
+            'QLTMG' => [
+                'kb_table' => 'qltmg_data_kodebooking',
+                'task_table' => 'qltmg_data_taskids',
+                'title' => 'Monitoring Task ID Antrian — Temanggung',
+                'filter_action' => url('/qltmg_monitoring_taskid'),
+                'table_id' => 'qltmg_monitoring_taskid_table',
+            ],
+        ];
+
+        $cfg = $branchConfig[$branch] ?? $branchConfig['QLJ'];
+
+        if (!Schema::hasTable($cfg['kb_table']) || !Schema::hasTable($cfg['task_table'])) {
+            return redirect()->back()->with('error', "Tabel {$cfg['kb_table']} atau {$cfg['task_table']} tidak ditemukan.");
+        }
+
         // Ambil data kode booking berdasarkan rentang tanggal — hanya kolom yang diperlukan
-        $kodebookings = DataKodebooking::select(
+        $kodebookings = DB::table($cfg['kb_table'])->select(
             'id', 'kodebooking', 'norm', 'nojkn', 'namadokter', 'namaunit', 'tanggalperiksa'
         )
             ->whereBetween('tanggalperiksa', [$start_date, $end_date])
             ->get();
 
         // Ambil semua kodebooking sebagai array
-        $kbs = $kodebookings->pluck('kodebooking')->toArray();
+        $kbs = $kodebookings->pluck('kodebooking')->filter()->unique()->values()->toArray();
         $nojkns = $kodebookings->pluck('nojkn')->filter()->unique()->values()->toArray();
-        
+
         // Ambil data_taskid untuk kodebooking terkait — hanya kolom yang diperlukan (hindari request/response TEXT besar)
-        $taskids = !empty($kbs) ? data_taskid::select(
+        $taskids = !empty($kbs) ? DB::table($cfg['task_table'])->select(
             'id', 'kodebooking', 'taskid', 'waktu', 'jam', 'code', 'message', 'tanggal', 'reupload'
         )
             ->whereIn('kodebooking', $kbs)
@@ -168,14 +217,13 @@ class AntrianController extends Controller
 
         // Ambil data SEP dari VclaimKunjungan
         $vclaimMap = [];
-        if (count($nojkns) > 0) {
+        if (count($nojkns) > 0 && Schema::hasTable('vclaim_kunjungan')) {
             $vclaims = \App\Models\VclaimKunjungan::select('no_kartu', 'tgl_kunjungan', 'no_sep')
                 ->whereIn('no_kartu', $nojkns)
                 ->whereBetween('tgl_kunjungan', [$start_date, $end_date])
                 ->get();
 
             foreach ($vclaims as $v) {
-                // Tgl Kunjungan cast to date, so format it back
                 $tgl = $v->tgl_kunjungan ? $v->tgl_kunjungan->format('Y-m-d') : '';
                 $vclaimMap[$v->no_kartu][$tgl] = $v->no_sep;
             }
@@ -187,14 +235,53 @@ class AntrianController extends Controller
             $groupedTasks[$t->kodebooking][$t->taskid] = $t;
         }
 
-        $pageTitle = 'Monitoring Task ID Antrian';
+        $pageTitle = $cfg['title'];
+        $filterAction = $cfg['filter_action'];
+        $detailBaseUrl = $cfg['filter_action'];
+        $tableId = $cfg['table_id'];
+        $urlQL = $branch;
 
-        return view('monitoring_taskid', compact('kodebookings', 'groupedTasks', 'start_date', 'end_date', 'vclaimMap', 'pageTitle'));
+        return view('monitoring_taskid', compact(
+            'kodebookings',
+            'groupedTasks',
+            'start_date',
+            'end_date',
+            'vclaimMap',
+            'pageTitle',
+            'filterAction',
+            'detailBaseUrl',
+            'tableId',
+            'urlQL'
+        ));
     }
 
-    public function getMonitoringTaskidDetail($kodebooking)
+    public function getMonitoringTaskidDetail(Request $request, $kodebooking)
     {
-        $taskids = data_taskid::where('kodebooking', $kodebooking)
+        $branch = strtoupper($request->input('urlQL', 'QLJ'));
+        return $this->fetchMonitoringTaskidDetail($kodebooking, $branch);
+    }
+
+    public function getQlkpMonitoringTaskidDetail($kodebooking)
+    {
+        return $this->fetchMonitoringTaskidDetail($kodebooking, 'QLKP');
+    }
+
+    public function getQltmgMonitoringTaskidDetail($kodebooking)
+    {
+        return $this->fetchMonitoringTaskidDetail($kodebooking, 'QLTMG');
+    }
+
+    private function fetchMonitoringTaskidDetail($kodebooking, string $branch = 'QLJ')
+    {
+        $tableMap = [
+            'QLJ' => 'data_taskids',
+            'QLKP' => 'qlkp_data_taskids',
+            'QLTMG' => 'qltmg_data_taskids',
+        ];
+        $table = $tableMap[$branch] ?? 'data_taskids';
+
+        $taskids = DB::table($table)
+            ->where('kodebooking', $kodebooking)
             ->orderBy('taskid', 'asc')
             ->get();
 

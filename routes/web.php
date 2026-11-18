@@ -85,6 +85,8 @@ Route::get('/export-taskid', function () {
 // Tampilan
 Route::get('/qlkp_data_kodebooking', [AntrianController::class, 'qlkp_datakodebooking'])->name('qlkp_data_kodebooking');
 Route::get('/qlkp_rekap_kodebooking', [AntrianController::class, 'qlkp_rekap_kodebooking'])->name('qlkp_rekap_kodebooking');
+Route::get('/qlkp_monitoring_taskid', [AntrianController::class, 'qlkp_monitoringTaskid'])->name('qlkp_monitoring_taskid');
+Route::get('/qlkp_monitoring_taskid/{kodebooking}', [AntrianController::class, 'getQlkpMonitoringTaskidDetail']);
 Route::get('/qlkp_TaskID', [AntrianController::class, 'qlkp_TaskID'])->name('qlkp_TaskID');
 Route::get('/qlkp_taskid/filter', [AntrianController::class, 'qlkp_TaskID'])->name('qlkp_taskid.filter');
 Route::get('/qlkp_taskid/reset', [AntrianController::class, 'qlkp_TaskID'])->name('qlkp_taskid.reset');
@@ -107,6 +109,8 @@ Route::get('/qlkp-taskid', [AntrianController::class, 'qlkp_TaskID'])->name('qlk
 // Tampilan
 Route::get('/qltmg_data_kodebooking', [AntrianController::class, 'qltmg_datakodebooking'])->name('qltmg_data_kodebooking');
 Route::get('/qltmg_rekap_kodebooking', [AntrianController::class, 'qltmg_rekap_kodebooking'])->name('qltmg_rekap_kodebooking');
+Route::get('/qltmg_monitoring_taskid', [AntrianController::class, 'qltmg_monitoringTaskid'])->name('qltmg_monitoring_taskid');
+Route::get('/qltmg_monitoring_taskid/{kodebooking}', [AntrianController::class, 'getQltmgMonitoringTaskidDetail']);
 Route::get('/qltmg_TaskID', [AntrianController::class, 'qltmg_TaskID'])->name('qltmg_TaskID');
 Route::get('/qltmg_taskid/filter', [AntrianController::class, 'qltmg_TaskID'])->name('qltmg_taskid.filter');
 Route::get('/qltmg_taskid/reset', [AntrianController::class, 'qltmg_TaskID'])->name('qltmg_taskid.reset');
