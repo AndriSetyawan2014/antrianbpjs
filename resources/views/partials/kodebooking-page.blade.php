@@ -14,108 +14,138 @@
 @endsection
 
 <style>
+/* ─── Metric Filter Cards ─── */
 .filter-box {
     background: #fff;
-    border: 1px solid #e3e6f0;
-    border-radius: 8px;
-    padding: 15px 20px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px 18px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 .filter-box:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(15, 76, 92, 0.12);
 }
 .filter-box.active-filter {
-    border-color: var(--color-primary, #4e73df);
-    box-shadow: 0 0 0 2px rgba(78, 115, 223, 0.25);
+    border-color: var(--color-primary, #0f4c5c) !important;
+    box-shadow: 0 0 0 2px rgba(15, 76, 92, 0.25) !important;
 }
 .filter-info {
     display: flex;
     flex-direction: column;
 }
 .filter-title {
-    font-size: 0.8rem;
-    font-weight: 600;
+    font-size: 0.75rem;
+    font-weight: 700;
     text-transform: uppercase;
-    color: #858796;
-    margin-bottom: 4px;
+    color: #64748b;
+    margin-bottom: 2px;
+    letter-spacing: 0.03em;
 }
 .filter-value {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #5a5c69;
-    line-height: 1;
+    color: #1e293b;
+    line-height: 1.1;
 }
 .filter-icon {
-    font-size: 2rem;
-    opacity: 0.8;
+    font-size: 1.85rem;
+    opacity: 0.85;
 }
-.filter-primary .filter-title { color: #4e73df; }
-.filter-primary .filter-icon { color: #4e73df; }
-.filter-success .filter-title { color: #1cc88a; }
-.filter-success .filter-icon { color: #1cc88a; }
-.filter-warning .filter-title { color: #f6c23e; }
-.filter-warning .filter-icon { color: #f6c23e; }
-.filter-danger .filter-title { color: #e74a3b; }
-.filter-danger .filter-icon { color: #e74a3b; }
+.filter-primary .filter-title { color: var(--color-primary, #0f4c5c); }
+.filter-primary .filter-icon { color: var(--color-primary, #0f4c5c); }
+.filter-success .filter-title { color: #10b981; }
+.filter-success .filter-icon { color: #10b981; }
+.filter-warning .filter-title { color: #f59e0b; }
+.filter-warning .filter-icon { color: #f59e0b; }
+.filter-danger .filter-title { color: #ef4444; }
+.filter-danger .filter-icon { color: #ef4444; }
+
+/* ─── Table & Action Styling ─── */
+.kb-table-wrap {
+    background: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #e3e6f0);
+    border-radius: 10px;
+    padding: 12px 14px;
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+}
+.kb-table-wrap table.dataTable {
+    margin-top: 8px !important;
+    margin-bottom: 8px !important;
+    font-size: 0.82rem !important;
+}
+.kb-table-wrap table.dataTable th,
+.kb-table-wrap table.dataTable td {
+    padding: 7px 10px !important;
+    vertical-align: middle !important;
+}
+.kb-table-wrap thead th {
+    position: static !important;
+    background: var(--color-primary, #0f4c5c) !important;
+    color: #ffffff !important;
+    font-size: 0.78rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    text-align: center;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+}
+.kb-table-wrap thead th small,
+.kb-table-wrap thead th .text-muted {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.row-highlight-flash > td {
+    background-color: #d1fae5 !important;
+    transition: background-color 1.2s ease;
+}
+
+.btn-json-compact {
+    padding: 2px 7px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.25 !important;
+    font-weight: 500;
+}
 .btn-resend-soft {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 4px 12px; font-size: 0.78rem; font-weight: 600;
-    color: var(--color-primary, #4e73df);
-    background: color-mix(in srgb, var(--color-primary, #4e73df) 10%, transparent);
-    border: 1px solid color-mix(in srgb, var(--color-primary, #4e73df) 25%, transparent);
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; font-size: 0.74rem; font-weight: 600;
+    color: var(--color-primary, #0f4c5c);
+    background: color-mix(in srgb, var(--color-primary, #0f4c5c) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-primary, #0f4c5c) 25%, transparent);
     border-radius: 999px; cursor: pointer;
     transition: all .15s ease;
 }
 .btn-resend-soft:hover {
-    color: #fff; background: var(--color-primary, #4e73df);
-    border-color: var(--color-primary, #4e73df);
-    box-shadow: 0 2px 6px color-mix(in srgb, var(--color-primary, #4e73df) 35%, transparent);
+    color: #fff; background: var(--color-primary, #0f4c5c);
+    border-color: var(--color-primary, #0f4c5c);
+    box-shadow: 0 2px 6px color-mix(in srgb, var(--color-primary, #0f4c5c) 35%, transparent);
 }
-.resend-editor {
-    width: 100%; min-height: 320px; font-family: monospace; font-size: 0.8rem;
-    padding: 10px; border: 1px solid #d1d3e2; border-radius: 8px; resize: vertical;
-}
-.resend-editor:focus { outline: none; border-color: var(--color-primary, #4e73df); }
-.kb-table-wrap { border: 1px solid var(--color-border, #e3e6f0); border-radius: 8px; overflow: hidden; }
-.kb-table-wrap .dataTables_wrapper { padding: 8px 10px; }
-.kb-table-wrap .dataTables_scrollHead { overflow: hidden; }
-.kb-table-wrap .dataTables_scrollHead table { margin-bottom: 0 !important; }
-.kb-table-wrap .dataTables_scrollHead thead th {
-    position: static !important; box-shadow: none !important;
-}
-.kb-table-wrap .dataTables_scrollBody thead th,
-.kb-table-wrap .dataTables_scrollBody thead td {
-    position: static !important; box-shadow: none !important;
-    padding-top: 0 !important; padding-bottom: 0 !important; border-top: 0 !important;
-    height: 0 !important; line-height: 0 !important; background: transparent !important; color: transparent !important;
-}
-.kb-table-wrap .dataTables_scrollBody thead th::before,
-.kb-table-wrap .dataTables_scrollBody thead th::after { display: none !important; }
+
 .resend-prev {
     display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
     padding: 6px 12px; border-radius: 8px; font-size: .8rem; text-align: left;
     white-space: nowrap; overflow: hidden;
-    background: color-mix(in srgb, #e74a3b 8%, transparent);
-    border: 1px solid color-mix(in srgb, #e74a3b 25%, transparent);
+    background: color-mix(in srgb, #ef4444 8%, transparent);
+    border: 1px solid color-mix(in srgb, #ef4444 25%, transparent);
 }
 .resend-prev.ok {
-    background: color-mix(in srgb, #1cc88a 8%, transparent);
-    border-color: color-mix(in srgb, #1cc88a 25%, transparent);
+    background: color-mix(in srgb, #10b981 8%, transparent);
+    border-color: color-mix(in srgb, #10b981 25%, transparent);
 }
-.resend-prev-label { font-weight: 600; color: #858796; flex-shrink: 0; }
-.resend-prev-code { font-weight: 700; padding: 0 8px; border-radius: 999px; color: #fff; background: #e74a3b; flex-shrink: 0; }
-.resend-prev.ok .resend-prev-code { background: #1cc88a; }
-.resend-prev-msg { overflow: hidden; text-overflow: ellipsis; color: #5a5c69; }
+.resend-prev-label { font-weight: 600; color: #64748b; flex-shrink: 0; }
+.resend-prev-code { font-weight: 700; padding: 0 8px; border-radius: 999px; color: #fff; background: #ef4444; flex-shrink: 0; }
+.resend-prev.ok .resend-prev-code { background: #10b981; }
+.resend-prev-msg { overflow: hidden; text-overflow: ellipsis; color: #334155; }
 </style>
 
 {{-- Filter Card (form GET agar tetap jalan tanpa JS) --}}
-<div class="filter-card" style="flex-wrap: nowrap; overflow-x: auto;">
+<div class="filter-card" style="flex-wrap: wrap; gap: 8px; align-items: center;">
     <i class="fas fa-filter" style="color:var(--color-primary); flex-shrink:0;"></i>
     <form method="GET" action="{{ $filterAction }}" style="display:contents;">
         <label for="start_date">Dari:</label>
@@ -166,7 +196,7 @@
     $totalCount = count($items);
 @endphp
 
-<div class="row mb-3 mt-4">
+<div class="row mb-3 mt-3">
     <div class="col-md-3 col-sm-6 mb-3">
         <div class="filter-box filter-primary active-filter" onclick="filterTableCode(this, '')">
             <div class="filter-info">
@@ -174,7 +204,7 @@
                 <span class="filter-value">{{ $totalCount }}</span>
             </div>
             <div class="filter-icon">
-                <i class="fas fa-list-alt"></i>
+                <i class="fas fa-calendar-check"></i>
             </div>
         </div>
     </div>
@@ -196,7 +226,7 @@
                 <span class="filter-value">{{ $count0 }}</span>
             </div>
             <div class="filter-icon">
-                <i class="fas fa-clock"></i>
+                <i class="fas fa-hourglass-half"></i>
             </div>
         </div>
     </div>
@@ -207,63 +237,107 @@
                 <span class="filter-value">{{ $countError }}</span>
             </div>
             <div class="filter-icon">
-                <i class="fas fa-times-circle"></i>
+                <i class="fas fa-exclamation-triangle"></i>
             </div>
         </div>
     </div>
 </div>
 
-{{-- Tabel --}}
+{{-- Tabel Data Kode Booking --}}
 <div class="kb-table-wrap">
-    <table id="{{ $tableId }}" class="table table-hover table-striped table-bordered">
+    <table id="{{ $tableId }}" class="table table-hover table-striped table-bordered w-100" style="table-layout: auto;">
         <thead>
             <tr>
                 <th style="width:3%;">No</th>
-                <th style="width:13%;">Kode Booking</th>
-                <th style="width:8%;">No RM</th>
-                <th style="width:9%;">Tgl Periksa</th>
-                <th style="width:8%;">Code</th>
-                <th style="width:18%;">Message</th>
-                <th style="width:9%;" class="text-center">Request</th>
-                <th style="width:9%;" class="text-center">Response</th>
-                <th style="width:10%;" class="text-center">Aksi</th>
+                <th style="width:17%;">Informasi Pasien &amp; Booking<br><small class="text-muted fw-normal">Kode Booking, RM &amp; ID Daftar</small></th>
+                <th style="width:8%;">Tgl Periksa</th>
+                <th style="width:18%;">Dokter &amp; Poli<br><small class="text-muted fw-normal">Unit Layanan &amp; Dokter</small></th>
+                <th style="width:7%;">Antrean<br><small class="text-muted fw-normal">No &amp; Angka</small></th>
+                <th style="width:28%;">Status &amp; Message BPJS<br><small class="text-muted fw-normal">Code &amp; Pesan Respon Bridging</small></th>
+                <th style="width:19%;" class="text-center">Aksi / JSON</th>
             </tr>
         </thead>
         <tbody>
             @foreach($items as $item)
             @php
                 $code = $item->code;
-                $badgeClass = $code == 200 ? 'badge-success' : ($code == 0 ? 'badge-warning' : 'badge-danger');
-                $badgeLabel = $code == 200 ? '✓ 200 OK' : ($code == 0 ? '⏳ Pending' : '✗ Err '.$code);
-                $msg = json_decode($item->response)->metadata->message ?? ($item->message ?? '');
+                $badgeClass = ($code == 200 || $code == 208) ? 'badge-success' : ($code == 0 ? 'badge-warning' : 'badge-danger');
+                $badgeLabel = $code == 200 ? '200 OK' : ($code == 208 ? '208 OK' : ($code == 0 ? 'Pending' : 'Err '.$code));
+                $rawResp = $item->response ?? '';
+                $rawReq = $item->request ?? '';
+                $msg = json_decode($rawResp)->metadata->message ?? ($item->message ?? '');
+                $idPend = $item->idpendaftaran ?? '';
+                $normVal = !empty($item->norm) ? $item->norm : '-';
+                $tglPeriksaVal = !empty($item->tanggalperiksa) ? $item->tanggalperiksa : '-';
+                $dokterVal = !empty($item->namadokter) ? $item->namadokter : '-';
+                $poliVal = !empty($item->namaunit) ? $item->namaunit : '-';
+                $noAntreanVal = !empty($item->noantrian) ? $item->noantrian : '-';
+                $reupCount = $item->reupload ?? 1;
             @endphp
-            <tr>
-                <td></td>
-                <td><strong>{{ $item->kodebooking }}</strong></td>
-                <td>{{ $item->norm }}</td>
-                <td>{{ $item->tanggalperiksa }}</td>
-                <td class="text-center">
-                    <span class="status-badge {{ $badgeClass }}">{{ $badgeLabel }}</span>
+            <tr data-row-id="{{ $item->id }}" data-kb="{{ $item->kodebooking }}">
+                <td class="text-center"></td>
+                <td class="text-nowrap">
+                    <div class="d-flex align-items-center gap-1">
+                        <span class="font-monospace fw-bold text-dark fs-6">{{ $item->kodebooking }}</span>
+                    </div>
+                    <div class="small text-muted mt-1">
+                        <span>RM: <strong class="text-dark font-monospace">{{ $normVal }}</strong></span>
+                        @if($idPend)
+                            <span class="ms-1">| ID: <strong class="text-dark font-monospace">{{ $idPend }}</strong></span>
+                        @endif
+                    </div>
                 </td>
-                <td>{{ $msg }}</td>
-                <td class="text-center">
-                    <button class="btn-json-view" data-json="{{ htmlspecialchars($item->request, ENT_QUOTES, 'UTF-8') }}" data-title="Request — {{ $item->kodebooking }}">
-                        <i class="fas fa-eye"></i> Lihat
-                    </button>
+                <td class="text-nowrap text-center">{{ $tglPeriksaVal }}</td>
+                <td>
+                    <div class="text-truncate fw-semibold text-dark" style="max-width: 220px;" title="{{ $dokterVal }}">
+                        {{ $dokterVal }}
+                    </div>
+                    <div class="mt-1">
+                        <span class="badge bg-secondary text-truncate d-inline-block" style="max-width: 160px; font-size:0.68rem;" title="{{ $poliVal }}">
+                            {{ $poliVal }}
+                        </span>
+                    </div>
                 </td>
                 <td class="text-center">
-                    <button class="btn-json-view" data-json="{{ htmlspecialchars($item->response, ENT_QUOTES, 'UTF-8') }}" data-title="Response — {{ $item->kodebooking }}">
-                        <i class="fas fa-eye"></i> Lihat
-                    </button>
+                    <span class="badge bg-primary px-2 fs-6">{{ $noAntreanVal }}</span>
                 </td>
-                <td class="text-center text-nowrap">
-                    <button type="button" class="btn-resend-soft btn-resend-kb"
-                        data-kodebooking="{{ $item->kodebooking }}"
-                        data-norm="{{ $item->norm }}"
-                        data-response="{{ $item->response }}"
-                        title="Kirim Ulang Kode Booking {{ $item->kodebooking }} ke BPJS">
-                        <i class="fas fa-paper-plane"></i> Kirim Ulang
-                    </button>
+                <td>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="status-badge {{ $badgeClass }}">{{ $badgeLabel }}</span>
+                    </div>
+                    <div class="text-break" style="font-size:0.78rem; line-height:1.35; color:#334155;" title="{{ $msg }}">
+                        {{ $msg ?: '-' }}
+                    </div>
+                </td>
+                <td class="text-center">
+                    <div class="d-flex flex-column gap-1">
+                        <div class="d-flex align-items-center justify-content-between gap-1">
+                            <span class="badge bg-light text-secondary border" title="Nilai Reupload" style="font-size:0.66rem;">
+                                Reup: {{ $reupCount }}
+                            </span>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button class="btn btn-outline-secondary btn-json-view btn-json-compact"
+                                        data-json="{{ htmlspecialchars($rawReq, ENT_QUOTES, 'UTF-8') }}"
+                                        data-title="Request — {{ $item->kodebooking }}"
+                                        title="Lihat Payload Request">
+                                    <i class="fas fa-file-code me-1"></i>Req
+                                </button>
+                                <button class="btn btn-outline-info btn-json-view btn-json-compact"
+                                        data-json="{{ htmlspecialchars($rawResp, ENT_QUOTES, 'UTF-8') }}"
+                                        data-title="Response — {{ $item->kodebooking }}"
+                                        title="Lihat Payload Response">
+                                    <i class="fas fa-poll-h me-1"></i>Resp
+                                </button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-resend-soft btn-resend-kb w-100 justify-content-center mt-1"
+                            data-kodebooking="{{ $item->kodebooking }}"
+                            data-norm="{{ $item->norm }}"
+                            data-response="{{ $rawResp }}"
+                            title="Kirim Ulang Kode Booking {{ $item->kodebooking }} ke BPJS">
+                            <i class="fas fa-paper-plane me-1"></i> Kirim Ulang
+                        </button>
+                    </div>
                 </td>
             </tr>
             @endforeach
@@ -291,13 +365,13 @@ function filterTableCode(element, type) {
 
     var table = $('#{{ $tableId }}').DataTable();
     if (type === '') {
-        table.column(4).search('').draw();
+        table.column(5).search('').draw();
     } else if (type === '200') {
-        table.column(4).search('200 OK').draw();
+        table.column(5).search('200 OK').draw();
     } else if (type === '0') {
-        table.column(4).search('Pending').draw();
+        table.column(5).search('Pending').draw();
     } else if (type === 'error') {
-        table.column(4).search('Err').draw();
+        table.column(5).search('Err').draw();
     }
 }
 
@@ -306,16 +380,28 @@ $(document).ready(function() {
     var urlQL = '{{ $urlQL }}';
     var $table = $('#' + tableId);
     var dtMain = $table.DataTable({
-        responsive: false,
-        scrollY: '55vh',
-        scrollCollapse: true,
+        paging: true,
+        lengthChange: true,
+        searching: true,
+        ordering: true,
+        info: true,
         autoWidth: false,
+        responsive: false,
         pageLength: 25,
+        order: [[1, 'asc']],
+        language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json' },
         columnDefs: [
-            { orderable: false, targets: [0, 6, 7, 8] },
-            { render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, targets: 0 }
-        ],
-        language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json' }
+            { orderable: false, targets: [0, 6] },
+            { className: 'text-center', targets: [0, 2, 4, 6] }
+        ]
+    });
+
+    // Nomor urut dinamis saat sorting, searching, atau paging
+    dtMain.on('order.dt search.dt page.dt draw.dt', function () {
+        var info = dtMain.page.info();
+        dtMain.column(0, { search: 'applied', order: 'applied' }).nodes().each(function (cell, i) {
+            cell.innerHTML = (info.start + i + 1);
+        });
     });
 
     var hideKey = 'hideDupKb_' + tableId;
@@ -324,12 +410,14 @@ $(document).ready(function() {
         if (settings.nTable.id !== tableId || !hideDup) return true;
         return !/duplikasi/i.test(data[5] || '');
     });
+
     function refreshHideBtn() {
         var $b = $('#btnHideDup');
         $b.toggleClass('btn-primary', hideDup).toggleClass('btn-secondary', !hideDup);
         $b.find('i').attr('class', 'fas me-1 ' + (hideDup ? 'fa-eye' : 'fa-eye-slash'));
         $b.find('span').text(hideDup ? 'Show Duplikasi' : 'Hide Duplikasi');
     }
+
     $('#btnHideDup').on('click', function () {
         hideDup = !hideDup;
         localStorage.setItem(hideKey, hideDup ? '1' : '0');
@@ -339,28 +427,59 @@ $(document).ready(function() {
     refreshHideBtn();
     dtMain.draw();
 
+    function escapeAttr(s) {
+        if (s == null) return '';
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
     function updateKodebookingRow(kb, code, msg, res) {
-        var $btn = $table.find('button.btn-resend-kb[data-kodebooking="' + kb.replace(/"/g, '\\"') + '"]').first();
-        if (!$btn.length) return;
-        var $tr = $btn.closest('tr');
-        var row = dtMain.row($tr);
+        var $targetNode = null;
+        dtMain.rows().every(function () {
+            var node = this.node();
+            if (node && String($(node).attr('data-kb')) === String(kb)) {
+                $targetNode = node;
+            }
+        });
+
+        if (!$targetNode) return;
+        var row = dtMain.row($targetNode);
         if (!row.length) return;
 
         var badgeClass = (code == 200 || code == 208) ? 'badge-success' : (code == 0 ? 'badge-warning' : 'badge-danger');
-        var badgeLabel = (code == 200 ? '✓ 200 OK' : (code == 0 ? '⏳ Pending' : '✗ Err ' + code));
-        var safeMsg = $('<div>').text(msg).html();
+        var badgeLabel = (code == 200 ? '200 OK' : (code == 208 ? '208 OK' : (code == 0 ? 'Pending' : 'Err ' + code)));
+        var safeMsg = escapeAttr(msg);
 
         var data = row.data();
-        data[4] = '<span class="status-badge ' + badgeClass + '">' + badgeLabel + '</span>';
-        data[5] = safeMsg;
+        data[5] = '<div class="d-flex align-items-center gap-2 mb-1">' +
+                      '<span class="status-badge ' + badgeClass + '">' + badgeLabel + '</span>' +
+                  '</div>' +
+                  '<div class="text-break" style="font-size:0.78rem; line-height:1.35; color:#334155;" title="' + safeMsg + '">' +
+                      (safeMsg || '-') +
+                  '</div>';
+
+        var respStr = '';
+        try {
+            respStr = JSON.stringify((res && res.response) ? res.response : res);
+        } catch (e) {
+            respStr = String((res && res.response) ? res.response : res);
+        }
+
+        var $tr = $($targetNode);
+        $tr.find('.btn-resend-kb').attr('data-response', respStr);
+        $tr.find('button[data-title^="Response"]').attr('data-json', respStr);
+
         row.data(data).draw(false);
 
-        var $newTr = $(row.node());
-        var respStr = '';
-        try { respStr = JSON.stringify((res && res.response) ? res.response : res); } catch (e) { respStr = String((res && res.response) ? res.response : res); }
-        $newTr.find('.btn-resend-kb').attr('data-response', respStr);
-        $newTr.find('td').eq(7).find('button.btn-json-view').attr('data-json', respStr);
-        $newTr.find('td').eq(7).find('button.btn-json-view').attr('data-title', 'Response — ' + kb);
+        var $updatedTr = $(row.node());
+        $updatedTr.addClass('row-highlight-flash');
+        setTimeout(function () {
+            $updatedTr.removeClass('row-highlight-flash');
+        }, 1600);
     }
 
     $table.on('click', '.btn-resend-kb', function() {
@@ -397,17 +516,8 @@ $(document).ready(function() {
 
             var r = res.response || {};
             var jampraktek = r.jampraktek || '';
-            var jamMulai = '', jamAkhir = '';
-            if (jampraktek && jampraktek.includes('-')) {
-                var parts = jampraktek.split('-');
-                jamMulai = parts[0] || '';
-                jamAkhir = parts[1] || '';
-            }
 
             var pasienbaru = r.pasienbaru || 0;
-            var pasienbaruLabel = (pasienbaru == 1) ? 'Baru' : 'Lama';
-            var jeniskunjungan = r.jeniskunjungan || '';
-            var jeniskunjunganLabel = (jeniskunjungan == 1) ? 'Rawat Inap' : (jeniskunjungan == 2) ? 'Rawat Jalan' : (jeniskunjungan == 3) ? 'Rawat Darurat' : jeniskunjungan;
             var estimasiRaw = r.estimasidilayani != null ? r.estimasidilayani : '';
             var estimasiWIB = '';
             if (estimasiRaw && !isNaN(estimasiRaw)) {
@@ -427,7 +537,7 @@ $(document).ready(function() {
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
                 '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Kode Booking</label>' +
-                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.kodebooking || kb) + '" >' +
+                '      <input type="text" class="form-control form-control-sm flex-fill" value="' + (r.kodebooking || kb) + '" readonly>' +
                 '    </div>' +
                 '  </div>' +
                 '  <div class="col-md-6">' +
@@ -507,8 +617,8 @@ $(document).ready(function() {
                 '  </div>' +
                 '  <div class="col-md-6">' +
                 '    <div class="d-flex align-items-center gap-2">' +
-                '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;" title="1=Rawat Inap, 2=Rawat Jalan, 3=Rawat Darurat, 4=Kontrol">Jenis Kunj.</label>' +
-                '      <select class="form-select form-select-sm flex-fill" id="inputJeniskunjungan" title="1=Rujukan FKTP, 2=Rujukan Internal, 3=Kontrol, 4=Rujukan Antar RS">' +
+                '      <label class="form-label fw-bold text-xs mb-0" style="width: 150px; text-align: right;">Jenis Kunjungan</label>' +
+                '      <select class="form-select form-select-sm flex-fill" id="inputJeniskunjungan">' +
                 '        <option value="1" ' + (r.jeniskunjungan == 1 ? 'selected' : '') + '>1 - Rujukan FKTP</option>' +
                 '        <option value="2" ' + (r.jeniskunjungan == 2 ? 'selected' : '') + '>2 - Rujukan Internal</option>' +
                 '        <option value="3" ' + (r.jeniskunjungan == 3 ? 'selected' : '') + '>3 - Kontrol</option>' +
@@ -583,7 +693,7 @@ $(document).ready(function() {
                 title: '',
                 width: 1150,
                 html: '<div class="text-start mb-3" style="font-size:0.85rem;">' +
-                    '<div class="p-2 rounded mb-2 text-center" style="background:var(--color-primary); color:#fff; border:1px solid var(--color-primary-dark);">' +
+                    '<div class="p-2 rounded mb-2 text-center" style="background:var(--color-primary, #0f4c5c); color:#fff; border:1px solid var(--color-primary-dark, #0a3a46);">' +
                     '<div class="fw-bold mb-1" style="font-size:0.95rem;"><i class="fas fa-paper-plane me-2"></i>Kirim Ulang Kode Booking</div>' +
                     '<div class="d-flex align-items-center justify-content-center flex-wrap gap-3" style="font-size:0.85rem;">' +
                     '<span><i class="fas fa-barcode me-1"></i> Kode Booking: <strong>' + kb + '</strong></span>' +
@@ -615,12 +725,10 @@ $(document).ready(function() {
                 },
                 confirmButtonText: '<i class="fas fa-paper-plane me-1"></i> Kirim ke BPJS',
                 cancelButtonText: 'Batal',
-                confirmButtonColor: '#0f4c5c',
-                cancelButtonColor: '#6c757d',
                 buttonsStyling: false,
                 customClass: {
-                    confirmButton: 'btn btn-primary px-5 py-2 fs-6',
-                    cancelButton: 'btn btn-outline-secondary px-5 py-2 fs-6'
+                    confirmButton: 'btn btn-primary px-4 py-2',
+                    cancelButton: 'btn btn-outline-secondary px-4 py-2'
                 },
                 preConfirm: () => {
                     var payloadText = document.getElementById('resendPayload') ? document.getElementById('resendPayload').value : '';
@@ -629,7 +737,6 @@ $(document).ready(function() {
                         if (payloadText.trim()) {
                             payload = JSON.parse(payloadText);
                         } else {
-                            // Build payload from form inputs
                             var getVal = function(id) { var el = document.getElementById(id); return el ? el.value : ''; };
                             payload.kodebooking = kb;
                             payload.jenispasien = getVal('inputJenispasien') || r.jenispasien || 'JKN';
@@ -648,10 +755,9 @@ $(document).ready(function() {
                             payload.nomorreferensi = getVal('inputNomorreferensi') || r.nomorreferensi || '';
                             payload.nomorantrean = getVal('inputNomorantrean') || r.nomorantrean || '';
                             payload.angkaantrean = getVal('inputAngkaantrean') || r.angkaantrean || '';
-                            // Convert estimasi WIB back to timestamp
+
                             var estInput = getVal('inputEstimasi');
                             if (estInput && estInput !== estimasiWIB) {
-                                // User changed the value - try to parse it as datetime
                                 var estDate = new Date(estInput);
                                 if (!isNaN(estDate.getTime())) {
                                     payload.estimasidilayani = estDate.getTime();
@@ -695,20 +801,22 @@ $(document).ready(function() {
                             var code = meta.code || 200;
                             var msg = meta.message || 'Proses selesai.';
 
+                            updateKodebookingRow(kb, code, msg, res);
+
                             if (code == 200 || code == 208) {
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'Berhasil (Code ' + code + ')',
                                     text: msg,
-                                    timer: 3000,
+                                    timer: 2500,
                                     timerProgressBar: true
-                                }).then(() => updateKodebookingRow(kb, code, msg, res));
+                                });
                             } else {
                                 Swal.fire({
                                     icon: 'warning',
                                     title: 'Respon BPJS (Code ' + code + ')',
                                     text: msg
-                                }).then(() => updateKodebookingRow(kb, code, msg, res));
+                                });
                             }
                         },
                         error: function(xhr) {
@@ -737,8 +845,11 @@ $(document).ready(function() {
             showCancelButton: true,
             confirmButtonText: '<i class="fas fa-sync-alt me-1"></i> Ya, Proses Antrean!',
             cancelButtonText: 'Batal',
-            confirmButtonColor: '#f6c23e',
-            cancelButtonColor: '#858796',
+            buttonsStyling: false,
+            customClass: {
+                confirmButton: 'btn btn-warning px-4 py-2 me-2',
+                cancelButton: 'btn btn-secondary px-4 py-2'
+            }
         }).then((result) => {
             if (result.isConfirmed) {
                 Swal.fire({
@@ -780,4 +891,3 @@ $(document).ready(function() {
 });
 </script>
 @endpush
-
