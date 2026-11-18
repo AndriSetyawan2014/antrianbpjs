@@ -332,20 +332,20 @@
 
     <!-- JSON Viewer Modal -->
     <div class="modal fade" id="jsonViewerModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-dialog modal-dialog-scrollable modal-xl" style="max-width: 95vw; width: 1200px;">
             <div class="modal-content border-0 shadow">
-                <div class="modal-header py-3 px-4" style="background:var(--color-primary);">
+                <div class="modal-header py-2 px-3" style="background:var(--color-primary);">
                     <h6 class="modal-title text-white m-0" id="jsonModalTitle" style="font-size: 0.95rem;">
                         <i class="fas fa-list-alt me-2"></i>Detail Data
                     </h6>
                     <div class="d-flex align-items-center">
                         <button type="button" class="btn btn-sm btn-outline-light py-1 px-2 me-3" id="btnCopyJson" title="Salin JSON" style="font-size: 0.8rem;">
-                            <i class="fas fa-copy"></i> Salin
+                            <i class="fas fa-copy"></i> Salin JSON
                         </button>
                         <button type="button" class="btn-close btn-close-white" style="font-size: 0.75rem;" data-bs-dismiss="modal" aria-label="Tutup"></button>
                     </div>
                 </div>
-                <div class="modal-body p-0" style="background-color: var(--color-surface) !important;">
+                <div class="modal-body p-0" style="background-color: #f8fafc;">
                     <div id="jsonContentArea"></div>
                 </div>
             </div>
@@ -356,57 +356,178 @@
     <script>
         let currentRawJson = '';
         function escapeHtml(unsafe) {
-            if (typeof unsafe !== 'string') return unsafe;
+            if (unsafe == null) return '';
+            if (typeof unsafe !== 'string') unsafe = String(unsafe);
             return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
-        function renderJsonToHtml(obj) {
-            if (obj === null) return '<span style="color:#9ca3af; font-style:italic; font-family:monospace;">null</span>';
-            if (typeof obj !== 'object') {
-                if (typeof obj === 'boolean') return `<span style="color:#be185d; font-weight:700; font-family:monospace;">${obj}</span>`;
-                if (typeof obj === 'number') return `<span style="color:#2563eb; font-weight:700; font-family:monospace;">${obj}</span>`;
-                return `<span style="color:#047857; font-weight:700; font-family:monospace;">"${escapeHtml(obj)}"</span>`;
+
+        const taskFieldLabels = {
+            'kodebooking': 'Kode Booking',
+            'taskid': 'Task ID',
+            'waktu': 'Waktu (Epoch / Timestamp)',
+            'idpendaftaran': 'ID Pendaftaran',
+            'tanggal': 'Tanggal',
+            'jam': 'Jam',
+            'code': 'Status Code',
+            'message': 'Pesan / Respon',
+            'metadata': 'Metadata Respon',
+            'response': 'Data Respon',
+            'norm': 'No. RM',
+            'nojkn': 'No. Kartu JKN',
+            'nik': 'NIK Pasien',
+            'namadokter': 'Nama Dokter',
+            'namaunit': 'Nama Poli / Unit',
+            'kodepoli': 'Kode Poli',
+            'kodedokter': 'Kode Dokter',
+            'jammulai': 'Jam Mulai',
+            'jamakhir': 'Jam Akhir',
+            'reupload': 'Status Reupload'
+        };
+
+        function formatEpochToWib(val) {
+            let num = parseInt(val, 10);
+            if (!isNaN(num) && String(val).length >= 12) {
+                let d = new Date(num > 100000000000 ? num : num * 1000);
+                if (!isNaN(d.getTime())) {
+                    let day = String(d.getDate()).padStart(2, '0');
+                    let mo = String(d.getMonth() + 1).padStart(2, '0');
+                    let yr = d.getFullYear();
+                    let hr = String(d.getHours()).padStart(2, '0');
+                    let min = String(d.getMinutes()).padStart(2, '0');
+                    let sec = String(d.getSeconds()).padStart(2, '0');
+                    return `${day}-${mo}-${yr} ${hr}:${min}:${sec} WIB`;
+                }
             }
+            return null;
+        }
+
+        function renderJsonFormView(obj) {
+            if (obj === null || obj === undefined) return '<div class="text-muted fst-italic p-3">Data kosong (null)</div>';
+            if (typeof obj !== 'object') {
+                return `<div class="p-3 fs-6">${escapeHtml(obj)}</div>`;
+            }
+
             if (Array.isArray(obj)) {
-                if (obj.length === 0) return '<span style="color:#adb5bd; font-style:italic; font-family:monospace;">[]</span>';
-                let html = '<div class="d-flex flex-column gap-3">';
+                if (obj.length === 0) return '<div class="text-muted fst-italic p-3">Daftar kosong []</div>';
+                let html = '<div class="d-flex flex-column gap-3 p-3">';
                 obj.forEach((item, idx) => {
-                    html += `<div class="border rounded p-3 shadow-sm" style="background:var(--color-surface); border-color:var(--color-border) !important;">
-                                <div class="mb-3 border-bottom pb-2" style="font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--color-text-muted);">
-                                    <i class="fas fa-layer-group me-1"></i> Item #${idx + 1}
+                    html += `<div class="card border shadow-sm">
+                                <div class="card-header bg-light py-2 px-3 fw-bold text-secondary" style="font-size:0.8rem;">
+                                    <i class="fas fa-layer-group me-1"></i> Data #${idx + 1}
                                 </div>
-                                ${renderJsonToHtml(item)}
+                                <div class="card-body p-0">${renderJsonFormView(item)}</div>
                              </div>`;
                 });
                 html += '</div>';
                 return html;
             }
-            let html = '<table style="width:100%; border-collapse:collapse; margin:0; font-size:13px;"><tbody>';
+
+            let html = '<div class="table-responsive m-0"><table class="table table-bordered table-striped m-0" style="font-size:0.84rem;"><tbody>';
             for (let key in obj) {
-                html += `<tr style="border-bottom:1px solid #f3f4f6;">
-                            <td style="width:30%; background:#f8f9fa; font-weight:700; color:#4b5563; vertical-align:middle; padding: 12px 16px; font-family:monospace; border-color:#e5e7eb;">${escapeHtml(key)}</td>
-                            <td style="word-break:break-word; vertical-align:middle; padding: 12px 16px; color:#1f2937; border-color:#e5e7eb; background:#ffffff;">${renderJsonToHtml(obj[key])}</td>
+                let label = taskFieldLabels[key.toLowerCase()] || key;
+                let val = obj[key];
+
+                let formattedVal = '';
+                if (val === null || val === undefined) {
+                    formattedVal = '<span class="badge bg-secondary">null</span>';
+                } else if (typeof val === 'boolean') {
+                    formattedVal = val ? '<span class="badge bg-success">True</span>' : '<span class="badge bg-danger">False</span>';
+                } else if (key.toLowerCase() === 'code') {
+                    let cNum = parseInt(val, 10);
+                    let cBadge = (cNum === 200 || cNum === 208) ? 'bg-success' : (cNum === 0 ? 'bg-warning text-dark' : 'bg-danger');
+                    formattedVal = `<span class="badge ${cBadge} fs-6 px-2 py-1">${escapeHtml(val)}</span>`;
+                } else if (key.toLowerCase() === 'taskid') {
+                    formattedVal = `<span class="badge bg-primary fs-6 px-2 py-1">Task ${escapeHtml(val)}</span>`;
+                } else if (key.toLowerCase() === 'waktu') {
+                    let wib = formatEpochToWib(val);
+                    formattedVal = `<div class="fw-bold text-primary font-monospace">${escapeHtml(val)}</div>`;
+                    if (wib) {
+                        formattedVal += `<small class="text-success fw-bold"><i class="fas fa-clock me-1"></i>${wib}</small>`;
+                    }
+                } else if (typeof val === 'object') {
+                    formattedVal = `<div class="border rounded bg-white mt-1">${renderJsonFormView(val)}</div>`;
+                } else {
+                    let strVal = String(val);
+                    if (key.toLowerCase() === 'message') {
+                        let isSucc = strVal.toLowerCase().includes('success') || strVal.toLowerCase().includes('ok') || strVal.toLowerCase().includes('sudah ada');
+                        let isWarn = strVal.toLowerCase().includes('menunggu') || strVal.toLowerCase().includes('antrean');
+                        let alertClass = isSucc ? 'alert-success text-success' : (isWarn ? 'alert-warning text-warning' : 'alert-danger text-danger');
+                        formattedVal = `<div class="alert ${alertClass} py-1 px-2 m-0 fw-bold border-0" style="font-size:0.84rem;"><i class="fas fa-info-circle me-1"></i>${escapeHtml(strVal)}</div>`;
+                    } else {
+                        formattedVal = `<span class="fw-semibold text-dark">${escapeHtml(strVal)}</span>`;
+                    }
+                }
+
+                html += `<tr>
+                            <td style="width:32%; background:#f1f5f9; color:#475569; font-weight:600; vertical-align:top; padding:8px 12px;">
+                                <div>${escapeHtml(label)}</div>
+                                ${label !== key ? `<small class="text-muted font-monospace" style="font-size:0.7rem;">(${escapeHtml(key)})</small>` : ''}
+                            </td>
+                            <td style="vertical-align:middle; padding:8px 12px; background:#fff; word-break:break-word;">
+                                ${formattedVal}
+                            </td>
                          </tr>`;
             }
-            html += '</tbody></table>';
+            html += '</tbody></table></div>';
             return html;
         }
+
         document.addEventListener('click', function(e) {
             const btn = e.target.closest('.btn-json-view');
             if (!btn) return;
             currentRawJson = btn.getAttribute('data-json') || '';
             const title = btn.getAttribute('data-title') || 'Detail Data';
-            document.getElementById('jsonModalTitle').innerHTML = '<i class="fas fa-list-alt me-2"></i>' + escapeHtml(title);
+            document.getElementById('jsonModalTitle').innerHTML = '<i class="fas fa-file-code me-2"></i>' + escapeHtml(title);
             function decodeEntities(s) {
                 return s.replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
             }
             const container = document.getElementById('jsonContentArea');
+            let decoded = decodeEntities(currentRawJson).trim();
+            let parsed = null;
+            let parseSuccess = false;
+
             try {
-                const parsed = JSON.parse(decodeEntities(currentRawJson));
-                const prettyJson = JSON.stringify(parsed, null, 2);
-                container.innerHTML = `<div style="background-color: var(--color-surface) !important; font-size: 0.85rem; font-family: monospace; color: var(--color-text-primary); white-space: pre-wrap; word-break: break-word; line-height: 1.4; border: none; max-height: none !important; overflow: visible !important;">${escapeHtml(prettyJson)}</div>`;
+                if (decoded !== '') {
+                    parsed = JSON.parse(decoded);
+                    if (typeof parsed === 'string') {
+                        try { parsed = JSON.parse(parsed); } catch (e2) {}
+                    }
+                    parseSuccess = true;
+                }
             } catch (ex) {
-                container.innerHTML = `<div style="background-color: var(--color-surface) !important; font-size: 0.85rem; font-family: monospace; color: var(--color-text-primary); white-space: pre-wrap; word-break: break-word; line-height: 1.4; border: none; max-height: none !important; overflow: visible !important;">${escapeHtml(decodeEntities(currentRawJson))}</div>`;
+                parseSuccess = false;
             }
+
+            let prettyJson = parseSuccess ? JSON.stringify(parsed, null, 2) : decoded;
+            let leftFormHtml = parseSuccess ? renderJsonFormView(parsed) : `<div class="p-4 text-muted fst-italic">Data tidak berformat JSON valid:<br><pre class="mt-2 font-monospace">${escapeHtml(decoded)}</pre></div>`;
+
+            container.innerHTML = `
+                <div class="row g-0" style="min-height: 480px;">
+                    <div class="col-lg-6 border-end d-flex flex-column" style="background:#fff;">
+                        <div class="p-2 px-3 bg-light border-bottom d-flex align-items-center justify-content-between">
+                            <span class="fw-bold text-dark" style="font-size:0.82rem;">
+                                <i class="fas fa-table-list text-primary me-1"></i> Tampilan Form Rapi
+                            </span>
+                            <span class="badge bg-primary-subtle text-primary border border-primary" style="font-size:0.7rem;">Informatif</span>
+                        </div>
+                        <div class="p-3" style="max-height: 72vh; overflow-y: auto;">
+                            ${leftFormHtml}
+                        </div>
+                    </div>
+                    <div class="col-lg-6 d-flex flex-column" style="background:#1e293b;">
+                        <div class="p-2 px-3 border-bottom d-flex align-items-center justify-content-between" style="background:#0f172a; border-color:#334155 !important;">
+                            <span class="fw-bold text-light" style="font-size:0.82rem;">
+                                <i class="fas fa-code text-warning me-1"></i> Format JSON Asli (Raw)
+                            </span>
+                            <span class="badge bg-secondary" style="font-size:0.7rem;">JSON Source</span>
+                        </div>
+                        <div class="p-3" style="max-height: 72vh; overflow-y: auto;">
+                            <pre class="m-0 font-monospace" style="font-size:0.8rem; line-height:1.45; color:#38bdf8; white-space:pre-wrap; word-break:break-all;">${escapeHtml(prettyJson)}</pre>
+                        </div>
+                    </div>
+                </div>
+            `;
+
             new bootstrap.Modal(document.getElementById('jsonViewerModal')).show();
         });
         function fallbackCopyTextToClipboard(text, onSuccess) {
