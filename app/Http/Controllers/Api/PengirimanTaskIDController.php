@@ -207,7 +207,7 @@ class PengirimanTaskIDController extends Controller
         ];
         $kbTable = $kbTables[$urlQL] ?? 'data_kodebooking';
         $kbInfo = \Illuminate\Support\Facades\DB::table($kbTable)
-            ->select('namadokter', 'namaunit as namapoli', 'jammulai', 'jamakhir')
+            ->select('norm', 'tanggalperiksa', 'namadokter', 'namaunit as namapoli', 'jammulai', 'jamakhir')
             ->where('kodebooking', $record->kodebooking)
             ->orderByDesc('id')
             ->first();
@@ -215,6 +215,8 @@ class PengirimanTaskIDController extends Controller
         return [
             'id' => $record->id,
             'kodebooking' => $record->kodebooking,
+            'norm' => (!empty($kbInfo->norm) ? $kbInfo->norm : ($record->norm ?? '-')),
+            'tanggalperiksa' => $kbInfo->tanggalperiksa ?? ($record->tanggal ?? '-'),
             'taskid' => $record->taskid,
             'waktu' => $record->waktu,
             'idpendaftaran' => $record->idpendaftaran ?? '',

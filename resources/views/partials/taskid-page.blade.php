@@ -101,21 +101,23 @@
         <thead>
             <tr>
                 <th style="width:3%;">No</th>
-                <th style="width:9%;">Kode Booking</th>
+                <th style="width:8%;">Kode Booking</th>
+                <th style="width:6%;">No. RM</th>
+                <th style="width:7%;">Tgl Periksa</th>
                 <th style="width:8%;">Waktu</th>
-                <th style="width:5%;">Task ID</th>
+                <th style="width:4%;">Task ID</th>
                 <th style="width:7%;">ID Pendaftaran</th>
-                <th style="width:10%;">Dokter</th>
-                <th style="width:7%;">Poli</th>
-                <th style="width:7%;">Jadwal RS</th>
-                <th style="width:6%;">Code</th>
-                <th style="width:10%;">Message</th>
-                <th style="width:7%;">Tanggal</th>
+                <th style="width:9%;">Dokter</th>
+                <th style="width:6%;">Poli</th>
+                <th style="width:6%;">Jadwal RS</th>
+                <th style="width:5%;">Code</th>
+                <th style="width:9%;">Message</th>
+                <th style="width:6%;">Tanggal</th>
                 <th style="width:5%;">Jam</th>
-                <th style="width:6%;" class="text-center">Request</th>
-                <th style="width:6%;" class="text-center">Response</th>
+                <th style="width:5%;" class="text-center">Request</th>
+                <th style="width:5%;" class="text-center">Response</th>
                 <th style="width:4%;">Reupload</th>
-                <th style="width:8%;" class="text-center">Created / Updated By</th>
+                <th style="width:7%;" class="text-center">Created / Updated By</th>
                 <th style="width:6%;">Aksi</th>
             </tr>
         </thead>
@@ -128,6 +130,8 @@
                 $rawResp = $item->response ?? '';
                 $rawReq = $item->request ?? '';
                 $idPend = $item->idpendaftaran ?? '';
+                $normVal = !empty($item->norm) ? $item->norm : '-';
+                $tglPeriksaVal = !empty($item->tanggalperiksa) ? $item->tanggalperiksa : ($item->tanggal ?? '-');
                 $msg = ($item->message !== null && $item->message !== '')
                     ? $item->message
                     : (json_decode($rawResp)->metadata->message ?? '');
@@ -139,6 +143,8 @@
             <tr data-row-id="{{ $item->id }}" data-kb="{{ $item->kodebooking }}" data-taskid="{{ $item->taskid }}">
                 <td></td>
                 <td class="text-nowrap">{{ $item->kodebooking }}</td>
+                <td class="text-nowrap">{{ $normVal }}</td>
+                <td class="text-nowrap">{{ $tglPeriksaVal }}</td>
                 <td class="text-nowrap">{{ $item->waktu }}</td>
                 <td class="text-center"><strong>{{ $item->taskid }}</strong></td>
                 <td class="text-nowrap">{{ $idPend }}</td>
@@ -324,10 +330,10 @@ $(document).ready(function () {
         autoWidth: false,
         responsive: false,
         pageLength: 25,
-        order: [[1, 'asc'], [3, 'asc']],
+        order: [[1, 'asc'], [5, 'asc']],
         language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json' },
         columnDefs: [
-            { orderable: false, targets: [0, 12, 13, 16] },
+            { orderable: false, targets: [0, 14, 15, 18] },
             { render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, targets: 0 }
         ]
     });
@@ -377,10 +383,14 @@ $(document).ready(function () {
         var rawReq = escapeAttr(r.request || '');
         var rawResp = escapeAttr(r.response || '');
         var kbSafe = escapeAttr(r.kodebooking);
+        var normSafe = escapeAttr(r.norm || '-');
+        var tglPeriksaSafe = escapeAttr(r.tanggalperiksa || r.tanggal || '-');
 
         return [
             '',
             kbSafe,
+            normSafe,
+            tglPeriksaSafe,
             escapeAttr(r.waktu),
             '<strong>' + escapeAttr(r.taskid) + '</strong>',
             escapeAttr(idPend),
@@ -407,17 +417,19 @@ $(document).ready(function () {
            .attr('data-taskid', r.taskid);
         $tr.find('td').eq(1).addClass('text-nowrap');
         $tr.find('td').eq(2).addClass('text-nowrap');
-        $tr.find('td').eq(3).addClass('text-center');
+        $tr.find('td').eq(3).addClass('text-nowrap');
         $tr.find('td').eq(4).addClass('text-nowrap');
-        $tr.find('td').eq(7).addClass('text-nowrap');
-        $tr.find('td').eq(8).addClass('text-center text-nowrap');
-        $tr.find('td').eq(10).addClass('text-nowrap');
-        $tr.find('td').eq(11).addClass('text-nowrap');
-        $tr.find('td').eq(12).addClass('text-center text-nowrap');
-        $tr.find('td').eq(13).addClass('text-center text-nowrap');
-        $tr.find('td').eq(14).addClass('text-center');
+        $tr.find('td').eq(5).addClass('text-center');
+        $tr.find('td').eq(6).addClass('text-nowrap');
+        $tr.find('td').eq(9).addClass('text-nowrap');
+        $tr.find('td').eq(10).addClass('text-center text-nowrap');
+        $tr.find('td').eq(12).addClass('text-nowrap');
+        $tr.find('td').eq(13).addClass('text-nowrap');
+        $tr.find('td').eq(14).addClass('text-center text-nowrap');
         $tr.find('td').eq(15).addClass('text-center text-nowrap');
-        $tr.find('td').eq(16).addClass('text-center text-nowrap');
+        $tr.find('td').eq(16).addClass('text-center');
+        $tr.find('td').eq(17).addClass('text-center text-nowrap');
+        $tr.find('td').eq(18).addClass('text-center text-nowrap');
     }
 
     function upsertRowInDataTable(r) {
@@ -570,7 +582,7 @@ $(document).ready(function () {
     });
 
     $('#download_excel_' + tableId).on('click', function () {
-        var skip = [12, 13, 16];
+        var skip = [14, 15, 18];
         var headers = [];
         $table.find('thead th').each(function (i) { if (!skip.includes(i)) headers.push($(this).text().trim()); });
         var rows = [headers];
