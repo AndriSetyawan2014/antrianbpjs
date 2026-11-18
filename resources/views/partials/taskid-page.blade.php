@@ -252,13 +252,6 @@
         </tbody>
     </table>
 </div>
-                    </button>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-</div>
 
 {{-- Empty State --}}
 @if(empty($items))
