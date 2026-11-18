@@ -1,45 +1,9 @@
 {{-- Partial: halaman Monitoring Task ID --}}
 {{-- Page header dihandle oleh layout via @section('page_title') --}}
 
-{{-- Filter Card --}}
-<div class="filter-card" style="flex-wrap: wrap; gap: 8px;">
-    <div class="btn-group me-2" role="group" aria-label="Pilih Cabang QL">
-        <a href="{{ url('/monitoring_taskid') }}?start_date={{ $startDate }}&end_date={{ $endDate }}"
-           class="btn btn-sm {{ ($urlQL ?? 'QLJ') === 'QLJ' ? 'btn-primary' : 'btn-outline-primary' }}">
-            <i class="fas fa-hospital me-1"></i> QLJ (Yogyakarta)
-        </a>
-        <a href="{{ url('/qlkp_monitoring_taskid') }}?start_date={{ $startDate }}&end_date={{ $endDate }}"
-           class="btn btn-sm {{ ($urlQL ?? 'QLJ') === 'QLKP' ? 'btn-primary' : 'btn-outline-primary' }}">
-            <i class="fas fa-hospital me-1"></i> QLKP (Kulon Progo)
-        </a>
-        <a href="{{ url('/qltmg_monitoring_taskid') }}?start_date={{ $startDate }}&end_date={{ $endDate }}"
-           class="btn btn-sm {{ ($urlQL ?? 'QLJ') === 'QLTMG' ? 'btn-primary' : 'btn-outline-primary' }}">
-            <i class="fas fa-hospital me-1"></i> QLTMG (Temanggung)
-        </a>
-    </div>
-
-    <i class="fas fa-filter" style="color:var(--color-primary);"></i>
-    <form method="GET" action="{{ $filterAction }}" style="display:contents;">
-        <label for="start_date">Dari:</label>
-        <input type="date" id="start_date" name="start_date" value="{{ $startDate }}">
-        <label for="end_date">Sampai:</label>
-        <input type="date" id="end_date" name="end_date" value="{{ $endDate }}">
-        <button type="submit" class="btn-filter btn-primary">
-            <i class="fas fa-search"></i> Filter
-        </button>
-        <a href="{{ $filterAction }}" class="btn-filter btn-secondary">
-            <i class="fas fa-undo"></i> Reset
-        </a>
-    </form>
-
-    <div class="date-presets" role="group" aria-label="Preset tanggal cepat">
-        <button type="button" class="btn-preset" data-preset="yesterday">Kemarin</button>
-        <button type="button" class="btn-preset" data-preset="week">7 hari</button>
-        <button type="button" class="btn-preset" data-preset="month">Bulan ini</button>
-    </div>
-</div>
-
 @php
+    $kelengkapanFilter = request('kelengkapan', '');
+
     $getTaskSec = function ($task) {
         if (!$task) return null;
         if (!empty($task->waktu) && is_numeric($task->waktu)) {
@@ -72,18 +36,99 @@
         return sprintf('%s%d mnt %d dtk', $prefix, $mins, $remSec);
     };
 
-    $diffs2to4 = [];
-    $diffs3to4 = [];
-    $diffsBoth = [];
-    $rowEvalMap = [];
+    $countTotalAll = 0;
+    $countLengkap = 0;
+    $countLengkap15 = 0;
+    $countLengkap17 = 0;
+    $countLengkap99 = 0;
+    $countTidakLengkap = 0;
 
-    foreach ($groupedTasks as $kbCode => $tMap) {
+    $rowMetaMap = [];
+    $filteredKodebookings = [];
+
+    foreach ($kodebookings as $kb) {
+        $kbCode = $kb->kodebooking;
+        $tMap = $groupedTasks[$kbCode] ?? [];
+
+        $has1to5 = isset($tMap[1], $tMap[2], $tMap[3], $tMap[4], $tMap[5]);
+        $has6 = isset($tMap[6]);
+        $has7 = isset($tMap[7]);
+        $has99 = isset($tMap[99]);
+
+        $isLengkap = false;
+        $subType = 'tidak_lengkap';
+        $statusLabel = 'Antrian Tidak Lengkap';
+
+        if ($has99) {
+            $isLengkap = true;
+            $subType = 'batal_99';
+            $statusLabel = 'Antrian Lengkap (Batal 99)';
+            $countLengkap99++;
+        } elseif ($has1to5 && $has6 && $has7) {
+            $isLengkap = true;
+            $subType = 't1_7';
+            $statusLabel = 'Antrian Lengkap (T1–7)';
+            $countLengkap17++;
+        } elseif ($has1to5 && !$has6 && !$has7) {
+            $isLengkap = true;
+            $subType = 't1_5';
+            $statusLabel = 'Antrian Lengkap (T1–5)';
+            $countLengkap15++;
+        }
+
+        $countTotalAll++;
+        if ($isLengkap) {
+            $countLengkap++;
+        } else {
+            $countTidakLengkap++;
+        }
+
         $s2 = $getTaskSec($tMap[2] ?? null);
         $s3 = $getTaskSec($tMap[3] ?? null);
         $s4 = $getTaskSec($tMap[4] ?? null);
 
         $d24 = ($s2 !== null && $s4 !== null && $s4 >= $s2) ? ($s4 - $s2) : null;
         $d34 = ($s3 !== null && $s4 !== null && $s4 >= $s3) ? ($s4 - $s3) : null;
+
+        $rowMetaMap[$kbCode] = [
+            'is_lengkap' => $isLengkap,
+            'sub_type' => $subType,
+            'status_label' => $statusLabel,
+            'd24' => $d24,
+            'd34' => $d34,
+        ];
+
+        $matchFilter = true;
+        if ($kelengkapanFilter === 'lengkap') {
+            $matchFilter = $isLengkap;
+        } elseif ($kelengkapanFilter === 'tidak_lengkap') {
+            $matchFilter = !$isLengkap;
+        } elseif (in_array($kelengkapanFilter, ['t1_5', 't1_7', 'batal_99'], true)) {
+            $matchFilter = ($subType === $kelengkapanFilter);
+        }
+
+        if ($matchFilter) {
+            $filteredKodebookings[] = $kb;
+        }
+    }
+
+    $diffs2to4 = [];
+    $diffs3to4 = [];
+    $diffsBoth = [];
+    $evaluatedKbSet = [];
+
+    foreach ($filteredKodebookings as $kb) {
+        $kbCode = $kb->kodebooking;
+        if (isset($evaluatedKbSet[$kbCode])) {
+            continue;
+        }
+        $evaluatedKbSet[$kbCode] = true;
+
+        $meta = $rowMetaMap[$kbCode] ?? null;
+        if (!$meta) continue;
+
+        $d24 = $meta['d24'];
+        $d34 = $meta['d34'];
 
         if ($d24 !== null) {
             $diffs2to4[] = $d24;
@@ -94,11 +139,6 @@
         if ($d24 !== null && $d34 !== null) {
             $diffsBoth[] = ($d24 + $d34) / 2.0;
         }
-
-        $rowEvalMap[$kbCode] = [
-            'd24' => $d24,
-            'd34' => $d34,
-        ];
     }
 
     $avg2to4 = count($diffs2to4) > 0 ? (array_sum($diffs2to4) / count($diffs2to4)) : null;
@@ -112,6 +152,77 @@
         $avgCombined = $avg2to4 ?? $avg3to4;
     }
 @endphp
+
+{{-- Filter Card --}}
+<div class="filter-card" style="flex-wrap: wrap; gap: 8px;">
+    <div class="btn-group me-2" role="group" aria-label="Pilih Cabang QL">
+        <a href="{{ url('/monitoring_taskid') }}?start_date={{ $startDate }}&end_date={{ $endDate }}&kelengkapan={{ $kelengkapanFilter }}"
+           class="btn btn-sm {{ ($urlQL ?? 'QLJ') === 'QLJ' ? 'btn-primary' : 'btn-outline-primary' }}">
+            <i class="fas fa-hospital me-1"></i> QLJ (Yogyakarta)
+        </a>
+        <a href="{{ url('/qlkp_monitoring_taskid') }}?start_date={{ $startDate }}&end_date={{ $endDate }}&kelengkapan={{ $kelengkapanFilter }}"
+           class="btn btn-sm {{ ($urlQL ?? 'QLJ') === 'QLKP' ? 'btn-primary' : 'btn-outline-primary' }}">
+            <i class="fas fa-hospital me-1"></i> QLKP (Kulon Progo)
+        </a>
+        <a href="{{ url('/qltmg_monitoring_taskid') }}?start_date={{ $startDate }}&end_date={{ $endDate }}&kelengkapan={{ $kelengkapanFilter }}"
+           class="btn btn-sm {{ ($urlQL ?? 'QLJ') === 'QLTMG' ? 'btn-primary' : 'btn-outline-primary' }}">
+            <i class="fas fa-hospital me-1"></i> QLTMG (Temanggung)
+        </a>
+    </div>
+
+    <i class="fas fa-filter" style="color:var(--color-primary);"></i>
+    <form method="GET" action="{{ $filterAction }}" style="display:contents;">
+        <label for="start_date">Dari:</label>
+        <input type="date" id="start_date" name="start_date" value="{{ $startDate }}">
+        <label for="end_date">Sampai:</label>
+        <input type="date" id="end_date" name="end_date" value="{{ $endDate }}">
+
+        <label for="kelengkapan">Status:</label>
+        <select id="kelengkapan" name="kelengkapan" style="width: 210px;" onchange="this.form.submit()">
+            <option value="" {{ $kelengkapanFilter === '' ? 'selected' : '' }}>Semua Antrian ({{ $countTotalAll }})</option>
+            <option value="lengkap" {{ $kelengkapanFilter === 'lengkap' ? 'selected' : '' }}>Antrian Lengkap ({{ $countLengkap }})</option>
+            <option value="tidak_lengkap" {{ $kelengkapanFilter === 'tidak_lengkap' ? 'selected' : '' }}>Antrian Tidak Lengkap ({{ $countTidakLengkap }})</option>
+            <option value="t1_5" {{ $kelengkapanFilter === 't1_5' ? 'selected' : '' }}>↳ Lengkap: Task ID 1–5 ({{ $countLengkap15 }})</option>
+            <option value="t1_7" {{ $kelengkapanFilter === 't1_7' ? 'selected' : '' }}>↳ Lengkap: Task ID 1–7 ({{ $countLengkap17 }})</option>
+            <option value="batal_99" {{ $kelengkapanFilter === 'batal_99' ? 'selected' : '' }}>↳ Lengkap: Batal 99 ({{ $countLengkap99 }})</option>
+        </select>
+
+        <button type="submit" class="btn-filter btn-primary">
+            <i class="fas fa-search"></i> Filter
+        </button>
+        <a href="{{ $filterAction }}" class="btn-filter btn-secondary">
+            <i class="fas fa-undo"></i> Reset
+        </a>
+    </form>
+
+    <div class="date-presets" role="group" aria-label="Preset tanggal cepat">
+        <button type="button" class="btn-preset" data-preset="yesterday">Kemarin</button>
+        <button type="button" class="btn-preset" data-preset="week">7 hari</button>
+        <button type="button" class="btn-preset" data-preset="month">Bulan ini</button>
+    </div>
+</div>
+
+{{-- Filter Cepat Kelengkapan Antrian --}}
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+    <a href="{{ $filterAction }}?start_date={{ $startDate }}&end_date={{ $endDate }}"
+       class="btn btn-sm {{ $kelengkapanFilter === '' ? 'btn-dark' : 'btn-outline-secondary' }}">
+        <i class="fas fa-layer-group me-1"></i> Semua Antrian
+        <span class="badge bg-secondary ms-1">{{ $countTotalAll }}</span>
+    </a>
+
+    <a href="{{ $filterAction }}?start_date={{ $startDate }}&end_date={{ $endDate }}&kelengkapan=lengkap"
+       class="btn btn-sm {{ $kelengkapanFilter === 'lengkap' ? 'btn-success' : 'btn-outline-success' }}">
+        <i class="fas fa-check-circle me-1"></i> Antrian Lengkap
+        <span class="badge bg-success text-white ms-1">{{ $countLengkap }}</span>
+        <small class="ms-1 opacity-75">(T1–5: {{ $countLengkap15 }} | T1–7: {{ $countLengkap17 }} | Batal 99: {{ $countLengkap99 }})</small>
+    </a>
+
+    <a href="{{ $filterAction }}?start_date={{ $startDate }}&end_date={{ $endDate }}&kelengkapan=tidak_lengkap"
+       class="btn btn-sm {{ $kelengkapanFilter === 'tidak_lengkap' ? 'btn-danger' : 'btn-outline-danger' }}">
+        <i class="fas fa-exclamation-triangle me-1"></i> Antrian Tidak Lengkap
+        <span class="badge bg-danger text-white ms-1">{{ $countTidakLengkap }}</span>
+    </a>
+</div>
 
 {{-- Kartu Info Evaluasi Waktu Tunggu --}}
 <div class="row g-3 mb-4">
@@ -219,7 +330,7 @@
             @php
                 $tasks = [1, 2, 3, 4, 5, 6, 7, 99];
             @endphp
-            @foreach($kodebookings as $index => $kb)
+            @foreach($filteredKodebookings as $index => $kb)
                 @php
                     $tgl = date('Y-m-d', strtotime($kb->tanggalperiksa));
                     $noSep = null;
@@ -229,11 +340,28 @@
                             $noSep = reset($vclaimMap[$kb->nojkn]); // Fallback ke SEP pertama yang ditemukan untuk kartu tsb
                         }
                     }
+                    $evalRow = $rowMetaMap[$kb->kodebooking] ?? [
+                        'is_lengkap' => false,
+                        'status_label' => 'Antrian Tidak Lengkap',
+                        'd24' => null,
+                        'd34' => null,
+                    ];
                 @endphp
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td style="text-align: left;">
-                        <strong>{{ $kb->kodebooking }}</strong><br>
+                        <strong>{{ $kb->kodebooking }}</strong>
+                        <div class="mt-1 mb-1">
+                            @if($evalRow['is_lengkap'])
+                                <span class="badge bg-success" style="font-size: 0.68rem;">
+                                    <i class="fas fa-check-circle me-1"></i>{{ $evalRow['status_label'] }}
+                                </span>
+                            @else
+                                <span class="badge bg-danger" style="font-size: 0.68rem;">
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ $evalRow['status_label'] }}
+                                </span>
+                            @endif
+                        </div>
                         <small>RM: {{ $kb->norm }} | JKN: {{ $kb->nojkn ?? '-' }}</small>
                         @if($noSep)
                             <br><small class="text-primary"><i class="fas fa-file-medical"></i> SEP: {{ $noSep }}</small>
@@ -270,9 +398,6 @@
                             @endif
                         </td>
                     @endforeach
-                    @php
-                        $evalRow = $rowEvalMap[$kb->kodebooking] ?? ['d24' => null, 'd34' => null];
-                    @endphp
                     <td style="text-align: left; font-size: 0.75rem; white-space: nowrap;">
                         <div>
                             <span class="text-muted">T2➔T4:</span>
