@@ -58,29 +58,29 @@
 
         <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddTaskIDJogja"
-           aria-expanded="{{ Request::is('TaskID*') || Request::is('rekap_taskid*') || Request::is('monitoring_taskid*') ? 'true' : 'false' }}">
+           aria-expanded="{{ Request::is('TaskID*') || Request::is('taskid*') || Request::is('rekap_taskid*') || Request::is('monitoring_taskid*') ? 'true' : 'false' }}">
             <i class="fas fa-tasks nav-icon"></i>
             <span>Task ID</span>
-            <i class="fas fa-angle-down arrow-icon {{ Request::is('TaskID*') || Request::is('rekap_taskid*') || Request::is('monitoring_taskid*') ? 'rotated' : '' }}"></i>
+            <i class="fas fa-angle-down arrow-icon {{ Request::is('TaskID*') || Request::is('taskid*') || Request::is('rekap_taskid*') || Request::is('monitoring_taskid*') ? 'rotated' : '' }}"></i>
         </button>
-        <div class="collapse {{ Request::is('TaskID*') || Request::is('rekap_taskid*') || Request::is('monitoring_taskid*') ? 'show' : '' }}"
+        <div class="collapse {{ Request::is('TaskID*') || Request::is('taskid*') || Request::is('rekap_taskid*') || Request::is('monitoring_taskid*') ? 'show' : '' }}"
              id="ddTaskIDJogja">
             <ul class="nav flex-column ms-3">
                 <li class="nav-item">
                     <a href="{{ url('/monitoring_taskid') }}"
-                       class="nav-link {{ Request::is('monitoring_taskid') ? 'active' : '' }}">
+                       class="nav-link {{ Request::is('monitoring_taskid*') ? 'active' : '' }}">
                         <i class="fas fa-table nav-icon"></i> <span>Monitoring Task ID</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ url('/TaskID') }}"
-                       class="nav-link {{ Request::is('TaskID') ? 'active' : '' }}">
+                       class="nav-link {{ Request::is('TaskID*') || Request::is('taskid*') ? 'active' : '' }}">
                         <i class="fas fa-file-medical nav-icon"></i> <span>Data Task ID</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ url('/rekap_taskid') }}"
-                       class="nav-link {{ Request::is('rekap_taskid') ? 'active' : '' }}">
+                       class="nav-link {{ Request::is('rekap_taskid*') ? 'active' : '' }}">
                         <i class="fas fa-clipboard-list nav-icon"></i> <span>Rekap Task ID</span>
                     </a>
                 </li>
@@ -119,12 +119,12 @@
 
         <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddTaskIDKP"
-           aria-expanded="{{ Request::is('qlkp_TaskID*') || Request::is('qlkp_rekap_taskid*') || Request::is('qlkp_monitoring_taskid*') || Request::is('qlkp_kesesuaian_jadwal*') ? 'true' : 'false' }}">
+           aria-expanded="{{ Request::is('qlkp_TaskID*') || Request::is('qlkp_taskid*') || Request::is('qlkp-taskid*') || Request::is('qlkp_rekap_taskid*') || Request::is('qlkp_monitoring_taskid*') || Request::is('qlkp_kesesuaian_jadwal*') ? 'true' : 'false' }}">
             <i class="fas fa-tasks nav-icon"></i>
             <span>Task ID</span>
-            <i class="fas fa-angle-down arrow-icon {{ Request::is('qlkp_TaskID*') || Request::is('qlkp_rekap_taskid*') || Request::is('qlkp_monitoring_taskid*') || Request::is('qlkp_kesesuaian_jadwal*') ? 'rotated' : '' }}"></i>
+            <i class="fas fa-angle-down arrow-icon {{ Request::is('qlkp_TaskID*') || Request::is('qlkp_taskid*') || Request::is('qlkp-taskid*') || Request::is('qlkp_rekap_taskid*') || Request::is('qlkp_monitoring_taskid*') || Request::is('qlkp_kesesuaian_jadwal*') ? 'rotated' : '' }}"></i>
         </button>
-        <div class="collapse {{ Request::is('qlkp_TaskID*') || Request::is('qlkp_rekap_taskid*') || Request::is('qlkp_monitoring_taskid*') || Request::is('qlkp_kesesuaian_jadwal*') ? 'show' : '' }}"
+        <div class="collapse {{ Request::is('qlkp_TaskID*') || Request::is('qlkp_taskid*') || Request::is('qlkp-taskid*') || Request::is('qlkp_rekap_taskid*') || Request::is('qlkp_monitoring_taskid*') || Request::is('qlkp_kesesuaian_jadwal*') ? 'show' : '' }}"
              id="ddTaskIDKP">
             <ul class="nav flex-column ms-3">
                 <li class="nav-item">
@@ -135,13 +135,13 @@
                 </li>
                 <li class="nav-item">
                     <a href="{{ url('/qlkp_TaskID') }}"
-                       class="nav-link {{ Request::is('qlkp_TaskID') ? 'active' : '' }}">
+                       class="nav-link {{ Request::is('qlkp_TaskID*') || Request::is('qlkp_taskid*') || Request::is('qlkp-taskid*') ? 'active' : '' }}">
                         <i class="fas fa-file-medical nav-icon"></i> <span>Data Task ID</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ url('/qlkp_rekap_taskid') }}"
-                       class="nav-link {{ Request::is('qlkp_rekap_taskid') ? 'active' : '' }}">
+                       class="nav-link {{ Request::is('qlkp_rekap_taskid*') ? 'active' : '' }}">
                         <i class="fas fa-clipboard-list nav-icon"></i> <span>Rekap Task ID</span>
                     </a>
                 </li>
@@ -186,12 +186,12 @@
 
         <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddTaskIDTMG"
-           aria-expanded="{{ Request::is('qltmg_TaskID*') || Request::is('qltmg_rekap_taskid*') || Request::is('qltmg_monitoring_taskid*') ? 'true' : 'false' }}">
+           aria-expanded="{{ Request::is('qltmg_TaskID*') || Request::is('qltmg_taskid*') || Request::is('qltmg-taskid*') || Request::is('qltmg_rekap_taskid*') || Request::is('qltmg_monitoring_taskid*') ? 'true' : 'false' }}">
             <i class="fas fa-tasks nav-icon"></i>
             <span>Task ID</span>
-            <i class="fas fa-angle-down arrow-icon {{ Request::is('qltmg_TaskID*') || Request::is('qltmg_rekap_taskid*') || Request::is('qltmg_monitoring_taskid*') ? 'rotated' : '' }}"></i>
+            <i class="fas fa-angle-down arrow-icon {{ Request::is('qltmg_TaskID*') || Request::is('qltmg_taskid*') || Request::is('qltmg-taskid*') || Request::is('qltmg_rekap_taskid*') || Request::is('qltmg_monitoring_taskid*') ? 'rotated' : '' }}"></i>
         </button>
-        <div class="collapse {{ Request::is('qltmg_TaskID*') || Request::is('qltmg_rekap_taskid*') || Request::is('qltmg_monitoring_taskid*') ? 'show' : '' }}"
+        <div class="collapse {{ Request::is('qltmg_TaskID*') || Request::is('qltmg_taskid*') || Request::is('qltmg-taskid*') || Request::is('qltmg_rekap_taskid*') || Request::is('qltmg_monitoring_taskid*') ? 'show' : '' }}"
              id="ddTaskIDTMG">
             <ul class="nav flex-column ms-3">
                 <li class="nav-item">
@@ -202,13 +202,13 @@
                 </li>
                 <li class="nav-item">
                     <a href="{{ url('/qltmg_TaskID') }}"
-                       class="nav-link {{ Request::is('qltmg_TaskID') ? 'active' : '' }}">
+                       class="nav-link {{ Request::is('qltmg_TaskID*') || Request::is('qltmg_taskid*') || Request::is('qltmg-taskid*') ? 'active' : '' }}">
                         <i class="fas fa-file-medical nav-icon"></i> <span>Data Task ID</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ url('/qltmg_rekap_taskid') }}"
-                       class="nav-link {{ Request::is('qltmg_rekap_taskid') ? 'active' : '' }}">
+                       class="nav-link {{ Request::is('qltmg_rekap_taskid*') ? 'active' : '' }}">
                         <i class="fas fa-clipboard-list nav-icon"></i> <span>Rekap Task ID</span>
                     </a>
                 </li>

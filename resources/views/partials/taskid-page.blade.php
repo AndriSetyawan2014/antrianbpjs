@@ -27,11 +27,18 @@
 }
 .taskid-table-wrap thead th {
     position: static !important;
+    background: var(--color-primary, #0f4c5c) !important;
+    color: #ffffff !important;
     font-size: 0.78rem !important;
     text-transform: uppercase;
     letter-spacing: 0.02em;
     white-space: nowrap;
     text-align: center;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+}
+.taskid-table-wrap thead th small,
+.taskid-table-wrap thead th .text-muted {
+    color: rgba(255, 255, 255, 0.8) !important;
 }
 .row-highlight-flash > td {
     background-color: #d1fae5 !important;

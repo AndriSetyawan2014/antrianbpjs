@@ -51,11 +51,23 @@
                 <i class="fas fa-bars"></i>
             </button>
 
+            @php
+                $currentBranchName = 'Queen Latifa';
+                if (Request::is('qlkp*') || Request::is('*qlkp*')) {
+                    $currentBranchName = 'Kulon Progo';
+                } elseif (Request::is('qltmg*') || Request::is('*qltmg*')) {
+                    $currentBranchName = 'Temanggung';
+                } elseif (Request::is('TaskID*') || Request::is('taskid*') || Request::is('*taskid*') || Request::is('data_kodebooking_jogja*') || Request::is('rekap_kodebooking*') || Request::is('monitoring_taskid*')) {
+                    $currentBranchName = 'Yogyakarta';
+                }
+            @endphp
             <div class="d-flex align-items-center gap-3">
                 <h1 class="system-title">
                     <i class="fas fa-hospital me-2"></i>
                     <span>Antrian BPJS Online</span>
-                    <span class="d-inline d-md-none">Queen Latifa</span>
+                    <span class="badge bg-primary text-white ms-1 fw-semibold d-inline-flex align-items-center" style="font-size: 0.75rem; letter-spacing: 0.02em; padding: 4px 8px; border-radius: 6px;">
+                        {{ $currentBranchName }}
+                    </span>
                 </h1>
 
                 @hasSection('page_title')
