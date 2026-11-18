@@ -153,6 +153,8 @@ class PengirimanTaskIDController extends Controller
             'request' => $record->request ?? '',
             'response' => $record->response ?? '',
             'reupload' => $record->reupload ?? 1,
+            'created_by' => $record->created_by ?? 'Sync SIMRS',
+            'updated_by' => $record->updated_by ?? null,
             'namadokter' => $kbInfo->namadokter ?? '-',
             'namapoli' => $kbInfo->namapoli ?? '-',
             'jammulai' => $kbInfo->jammulai ?? null,
@@ -207,6 +209,7 @@ class PengirimanTaskIDController extends Controller
                     'code' => 0,
                     'message' => 'Menunggu Sinkronisasi',
                     'reupload' => 1,
+                    'updated_by' => 'Manual Operator',
                 ]);
                 $record = $existing->fresh();
                 $isUpdated = true;
@@ -221,6 +224,8 @@ class PengirimanTaskIDController extends Controller
                     'code' => 0,
                     'message' => 'Menunggu Sinkronisasi',
                     'reupload' => 1,
+                    'created_by' => 'Manual Operator',
+                    'updated_by' => 'Manual Operator',
                 ]);
             }
 
@@ -295,6 +300,7 @@ class PengirimanTaskIDController extends Controller
                 'code' => 0,
                 'message' => 'Menunggu Sinkronisasi',
                 'reupload' => 1,
+                'updated_by' => 'Manual Operator',
             ]);
 
             // Clear dashboard cache karena data taskid telah berubah
@@ -388,13 +394,15 @@ class PengirimanTaskIDController extends Controller
                             'code'          => $dataEntry['code'] ?? null,
                             'message'       => $dataEntry['message'] ?? null,
                             'reupload'      => $reupload,
+                            'created_by'    => 'Sync SIMRS',
+                            'updated_by'    => 'Sync SIMRS',
                             'updated_at'    => now(),
                         ];
                     }
 
                     if (!empty($upsertData)) {
                         $data_taskID_model->upsert($upsertData, ['kodebooking', 'taskid'], [
-                            'waktu', 'idpendaftaran', 'tanggal', 'jam', 'code', 'message', 'reupload', 'updated_at'
+                            'waktu', 'idpendaftaran', 'tanggal', 'jam', 'code', 'message', 'reupload', 'updated_by', 'updated_at'
                         ]);
                         $totalUpserted += count($upsertData);
                     }
@@ -483,13 +491,15 @@ class PengirimanTaskIDController extends Controller
                         'code'          => 0,
                         'message'       => 'Menunggu Sinkronisasi',
                         'reupload'      => 1,
+                        'created_by'    => 'Auto Generate',
+                        'updated_by'    => 'Auto Generate',
                         'updated_at'    => $nowTs,
                         'created_at'    => $nowTs,
                     ];
                 }
                 foreach (array_chunk($upsertRows, 500) as $chunk) {
                     $data_taskID_gen->newQuery()->upsert($chunk, ['kodebooking', 'taskid'], [
-                        'waktu', 'idpendaftaran', 'tanggal', 'jam', 'code', 'message', 'reupload', 'updated_at'
+                        'waktu', 'idpendaftaran', 'tanggal', 'jam', 'code', 'message', 'reupload', 'created_by', 'updated_by', 'updated_at'
                     ]);
                 }
             };
@@ -521,13 +531,15 @@ class PengirimanTaskIDController extends Controller
                         'code'          => 0,
                         'message'       => 'Menunggu Sinkronisasi',
                         'reupload'      => 1,
+                        'created_by'    => 'Auto Generate',
+                        'updated_by'    => 'Auto Generate',
                         'updated_at'    => $nowTs,
                         'created_at'    => $nowTs,
                     ];
                 }
                 foreach (array_chunk($upsertTask5, 500) as $t5Chunk) {
                     $data_taskID_gen->newQuery()->upsert($t5Chunk, ['kodebooking', 'taskid'], [
-                        'waktu', 'idpendaftaran', 'tanggal', 'jam', 'code', 'message', 'reupload', 'updated_at'
+                        'waktu', 'idpendaftaran', 'tanggal', 'jam', 'code', 'message', 'reupload', 'created_by', 'updated_by', 'updated_at'
                     ]);
                 }
             }
@@ -563,13 +575,15 @@ class PengirimanTaskIDController extends Controller
                         'code'          => 0,
                         'message'       => 'Menunggu Sinkronisasi',
                         'reupload'      => 1,
+                        'created_by'    => 'Auto Generate',
+                        'updated_by'    => 'Auto Generate',
                         'updated_at'    => $nowTs,
                         'created_at'    => $nowTs,
                     ];
                 }
                 foreach (array_chunk($upsertTask7, 500) as $t7Chunk) {
                     $data_taskID_gen->newQuery()->upsert($t7Chunk, ['kodebooking', 'taskid'], [
-                        'waktu', 'idpendaftaran', 'tanggal', 'jam', 'code', 'message', 'reupload', 'updated_at'
+                        'waktu', 'idpendaftaran', 'tanggal', 'jam', 'code', 'message', 'reupload', 'created_by', 'updated_by', 'updated_at'
                     ]);
                 }
             }
@@ -1175,6 +1189,8 @@ class PengirimanTaskIDController extends Controller
                                     'tanggal' => date('Y-m-d', $newWaktu/1000),
                                     'jam' => date('H:i:s', $newWaktu/1000),
                                     'reupload' => 1,
+                                    'created_by' => 'Auto Generate',
+                                    'updated_by' => 'Auto Generate',
                                     'message' => 'Auto Created (Missing Task Detection)'
                                 ];
                                 $created_task = $model->updateOrCreate(['kodebooking' => $kodebooking, 'taskid' => $missingTaskID], $data_additional);

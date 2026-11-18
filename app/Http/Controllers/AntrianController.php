@@ -462,6 +462,7 @@ class AntrianController extends Controller
 
     private function fetchMonitoringTaskidDetail($kodebooking, string $branch = 'QLJ')
     {
+        data_taskid::ensureAuditColumnsExist();
         $tableMap = [
             'QLJ' => 'data_taskids',
             'QLKP' => 'qlkp_data_taskids',
@@ -594,6 +595,7 @@ public function rekapKodeBooking(Request $request)
     // Method untuk TaskID tetap ada
     public function TaskID(Request $request)
 {
+    data_taskid::ensureAuditColumnsExist();
     $messageFilter = $request->input('message');
     $startDate = $request->input('start_date', date('Y-m-d')); // Default to today
     $endDate = $request->input('end_date', date('Y-m-d')); // Default to today
@@ -601,7 +603,7 @@ public function rekapKodeBooking(Request $request)
     $TaskID = DB::table('data_taskids as dt')
         ->leftJoin('data_kodebooking as dk', 'dt.kodebooking', '=', 'dk.kodebooking')
         ->select(
-            'dt.id', 'dt.kodebooking', 'dt.taskid', 'dt.waktu', 'dt.idpendaftaran', 'dt.jam', 'dt.code', 'dt.message', 'dt.tanggal', 'dt.request', 'dt.response', 'dt.reupload',
+            'dt.id', 'dt.kodebooking', 'dt.taskid', 'dt.waktu', 'dt.idpendaftaran', 'dt.jam', 'dt.code', 'dt.message', 'dt.tanggal', 'dt.request', 'dt.response', 'dt.reupload', 'dt.created_by', 'dt.updated_by',
             'dk.namadokter', 'dk.namaunit as namapoli', 'dk.jammulai', 'dk.jamakhir'
         );
 
@@ -744,6 +746,7 @@ public function qlkp_datakodebooking(Request $request)
     if (!Schema::hasTable('qlkp_data_taskids')) {
         return redirect()->back()->with('error', 'The table qlkp_data_taskid does not exist.');
     }
+    data_taskid::ensureAuditColumnsExist();
 
     // Ambil data filter message dan tanggal dari query string
     $messageFilter = $request->input('message');
@@ -756,7 +759,7 @@ public function qlkp_datakodebooking(Request $request)
     $qlkp_TaskID = DB::table('qlkp_data_taskids as dt')
         ->leftJoin('qlkp_data_kodebooking as dk', 'dt.kodebooking', '=', 'dk.kodebooking')
         ->select(
-            'dt.id', 'dt.kodebooking', 'dt.taskid', 'dt.waktu', 'dt.idpendaftaran', 'dt.jam', 'dt.code', 'dt.message', 'dt.tanggal', 'dt.request', 'dt.response', 'dt.reupload',
+            'dt.id', 'dt.kodebooking', 'dt.taskid', 'dt.waktu', 'dt.idpendaftaran', 'dt.jam', 'dt.code', 'dt.message', 'dt.tanggal', 'dt.request', 'dt.response', 'dt.reupload', 'dt.created_by', 'dt.updated_by',
             'dk.namadokter', 'dk.namaunit as namapoli', 'dk.jammulai', 'dk.jamakhir'
         );
 
@@ -1354,6 +1357,7 @@ public function qlkp_datakodebooking(Request $request)
         if (!Schema::hasTable('qltmg_data_taskids')) {
             return redirect()->back()->with('error', 'The table qltmg_data_taskids does not exist.');
         }
+        data_taskid::ensureAuditColumnsExist();
 
         $messageFilter = $request->input('message');
         $filterDate = $request->input('filter_date');
@@ -1363,7 +1367,7 @@ public function qlkp_datakodebooking(Request $request)
         $qltmg_TaskID = DB::table('qltmg_data_taskids as dt')
             ->leftJoin('qltmg_data_kodebooking as dk', 'dt.kodebooking', '=', 'dk.kodebooking')
             ->select(
-                'dt.id', 'dt.kodebooking', 'dt.taskid', 'dt.waktu', 'dt.idpendaftaran', 'dt.jam', 'dt.code', 'dt.message', 'dt.tanggal', 'dt.request', 'dt.response', 'dt.reupload',
+                'dt.id', 'dt.kodebooking', 'dt.taskid', 'dt.waktu', 'dt.idpendaftaran', 'dt.jam', 'dt.code', 'dt.message', 'dt.tanggal', 'dt.request', 'dt.response', 'dt.reupload', 'dt.created_by', 'dt.updated_by',
                 'dk.namadokter', 'dk.namaunit as namapoli', 'dk.jammulai', 'dk.jamakhir'
             );
 

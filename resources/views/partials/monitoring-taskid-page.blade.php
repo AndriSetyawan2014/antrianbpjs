@@ -395,9 +395,23 @@ function showDetail(kodebooking) {
                     
                     let waktuWIB = formatWaktuWIB(task.waktu);
                     let codeTag = codeVal ? `<div class="small text-muted mb-1">Code: <strong>${escapeHtml(codeVal)}</strong></div>` : '';
+                    let createdBy = task.created_by || 'Sync SIMRS';
+                    let updatedBy = task.updated_by || '';
+                    let srcBadge = `<span class="badge bg-info text-dark mt-1" style="font-size:0.65rem;"><i class="fas fa-sync-alt me-1"></i>${escapeHtml(createdBy)}</span>`;
+                    if (String(createdBy).toLowerCase().includes('auto')) {
+                        srcBadge = `<span class="badge mt-1" style="background-color:#7c3aed; color:#fff; font-size:0.65rem;"><i class="fas fa-magic me-1"></i>${escapeHtml(createdBy)}</span>`;
+                    } else if (String(createdBy).toLowerCase().includes('manual')) {
+                        srcBadge = `<span class="badge bg-warning text-dark mt-1" style="font-size:0.65rem;"><i class="fas fa-user-edit me-1"></i>${escapeHtml(createdBy)}</span>`;
+                    }
+                    if (updatedBy && updatedBy !== createdBy) {
+                        srcBadge += `<div class="text-muted" style="font-size:0.63rem;">Upd: ${escapeHtml(updatedBy)}</div>`;
+                    }
 
                     html += `<tr>
-                        <td class="text-center"><span class="badge bg-primary fs-6 px-2 py-1">${escapeHtml(task.taskid)}</span></td>
+                        <td class="text-center">
+                            <div><span class="badge bg-primary fs-6 px-2 py-1">${escapeHtml(task.taskid)}</span></div>
+                            ${srcBadge}
+                        </td>
                         <td class="text-nowrap">${waktuWIB}</td>
                         <td style="white-space: normal; word-break: break-word;">
                             ${codeTag}

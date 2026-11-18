@@ -4,12 +4,16 @@ namespace App\Models;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class data_taskid extends Model
 {
     use HasFactory;
+
+    protected static $auditColumnsChecked = false;
 
     protected $table = 'data_taskids'; // Default table
 
@@ -26,15 +30,51 @@ class data_taskid extends Model
         'response',
         'norm',
         'reupload',
+        'created_by',
+        'updated_by',
     ];
 
     public $timestamps = true;
+
+    /**
+     * Pastikan kolom created_by dan updated_by tersedia pada semua tabel taskid
+     */
+    public static function ensureAuditColumnsExist(): void
+    {
+        if (self::$auditColumnsChecked) {
+            return;
+        }
+        self::$auditColumnsChecked = true;
+
+        try {
+            $tables = ['data_taskids', 'qlkp_data_taskids', 'qltmg_data_taskids'];
+            foreach ($tables as $tbl) {
+                if (Schema::hasTable($tbl)) {
+                    $hasCreated = Schema::hasColumn($tbl, 'created_by');
+                    $hasUpdated = Schema::hasColumn($tbl, 'updated_by');
+                    if (!$hasCreated || !$hasUpdated) {
+                        Schema::table($tbl, function (Blueprint $table) use ($hasCreated, $hasUpdated) {
+                            if (!$hasCreated) {
+                                $table->string('created_by', 60)->nullable()->default('Sync SIMRS')->after('reupload');
+                            }
+                            if (!$hasUpdated) {
+                                $table->string('updated_by', 60)->nullable()->after('reupload');
+                            }
+                        });
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('ensureAuditColumnsExist warning: ' . $e->getMessage());
+        }
+    }
 
     /**
      * Set table name based on urlQL
      */
     public function setTableByQL($urlQL = 'QLJ')
     {
+        self::ensureAuditColumnsExist();
         $map = [
             'QLJ'   => 'data_taskids',
             'QLKP'  => 'qlkp_data_taskids',

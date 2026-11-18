@@ -81,6 +81,7 @@
                 <th style="width:6%;" class="text-center">Request</th>
                 <th style="width:6%;" class="text-center">Response</th>
                 <th style="width:4%;">Reupload</th>
+                <th style="width:8%;" class="text-center">Created / Updated By</th>
                 <th style="width:6%;">Aksi</th>
             </tr>
         </thead>
@@ -94,6 +95,10 @@
                 $rawReq = $item->request ?? '';
                 $idPend = $item->idpendaftaran ?? '';
                 $msg = json_decode($rawResp)->metadata->message ?? ($item->message ?? '');
+                $createdBy = !empty($item->created_by) ? $item->created_by : 'Sync SIMRS';
+                $updatedBy = $item->updated_by ?? null;
+                $isAutoGen = stripos($createdBy, 'Auto') !== false;
+                $isManual = stripos($createdBy, 'Manual') !== false;
             @endphp
             <tr data-row-id="{{ $item->id }}" data-kb="{{ $item->kodebooking }}" data-taskid="{{ $item->taskid }}">
                 <td></td>
@@ -129,6 +134,26 @@
                     </button>
                 </td>
                 <td class="text-center">{{ $item->reupload }}</td>
+                <td class="text-center text-nowrap">
+                    @if($isAutoGen)
+                        <span class="badge" style="background-color: #7c3aed; color: #fff;" title="Dibuat otomatis oleh sistem (Auto Generate)">
+                            <i class="fas fa-magic me-1"></i>{{ $createdBy }}
+                        </span>
+                    @elseif($isManual)
+                        <span class="badge bg-warning text-dark" title="Dibuat manual oleh operator">
+                            <i class="fas fa-user-edit me-1"></i>{{ $createdBy }}
+                        </span>
+                    @else
+                        <span class="badge bg-info text-dark" title="Hasil sinkronisasi dari SIMRS">
+                            <i class="fas fa-sync-alt me-1"></i>{{ $createdBy }}
+                        </span>
+                    @endif
+                    @if(!empty($updatedBy) && $updatedBy !== $createdBy)
+                        <div class="text-muted mt-1" style="font-size: 0.68rem;">
+                            Upd: <strong>{{ $updatedBy }}</strong>
+                        </div>
+                    @endif
+                </td>
                 <td class="text-center text-nowrap">
                     <button class="btn btn-sm btn-info btn-duplicate"
                         data-kodebooking="{{ $item->kodebooking }}"
@@ -266,7 +291,7 @@ $(document).ready(function () {
         order: [[1, 'asc'], [3, 'asc']],
         language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json' },
         columnDefs: [
-            { orderable: false, targets: [0, 12, 13, 15] },
+            { orderable: false, targets: [0, 12, 13, 16] },
             { render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, targets: 0 }
         ]
     });
@@ -278,6 +303,24 @@ $(document).ready(function () {
             .replace(/'/g, '&#039;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;');
+    }
+
+    function buildSourceBadge(r) {
+        var createdBy = r.created_by || 'Sync SIMRS';
+        var updatedBy = r.updated_by || '';
+        var lower = String(createdBy).toLowerCase();
+        var badgeHtml = '';
+        if (lower.indexOf('auto') !== -1) {
+            badgeHtml = '<span class="badge" style="background-color: #7c3aed; color: #fff;"><i class="fas fa-magic me-1"></i>' + escapeAttr(createdBy) + '</span>';
+        } else if (lower.indexOf('manual') !== -1) {
+            badgeHtml = '<span class="badge bg-warning text-dark"><i class="fas fa-user-edit me-1"></i>' + escapeAttr(createdBy) + '</span>';
+        } else {
+            badgeHtml = '<span class="badge bg-info text-dark"><i class="fas fa-sync-alt me-1"></i>' + escapeAttr(createdBy) + '</span>';
+        }
+        if (updatedBy && updatedBy !== createdBy) {
+            badgeHtml += '<div class="text-muted mt-1" style="font-size: 0.68rem;">Upd: <strong>' + escapeAttr(updatedBy) + '</strong></div>';
+        }
+        return badgeHtml;
     }
 
     function buildRowCells(r) {
@@ -315,6 +358,7 @@ $(document).ready(function () {
             '<button class="btn-json-view" data-json="' + rawReq + '" data-title="Request — ' + escapeAttr(r.taskid) + '"><i class="fas fa-eye"></i> Lihat</button>',
             '<button class="btn-json-view" data-json="' + rawResp + '" data-title="Response — ' + escapeAttr(r.taskid) + '"><i class="fas fa-eye"></i> Lihat</button>',
             escapeAttr(r.reupload != null ? r.reupload : 1),
+            buildSourceBadge(r),
             '<button class="btn btn-sm btn-info btn-duplicate" data-kodebooking="' + kbSafe + '" data-taskid="' + escapeAttr(r.taskid) + '" data-waktu="' + escapeAttr(r.waktu) + '" data-idpendaftaran="' + escapeAttr(idPend) + '" title="Duplikat Task ID ini"><i class="fas fa-copy"></i></button>' +
             '<button class="btn btn-sm btn-warning btn-edit ms-1" data-id="' + escapeAttr(r.id) + '" data-kodebooking="' + kbSafe + '" data-taskid="' + escapeAttr(r.taskid) + '" data-waktu="' + escapeAttr(r.waktu) + '" data-idpendaftaran="' + escapeAttr(idPend) + '" title="Edit Task ID ini"><i class="fas fa-edit"></i></button>' +
             '<button class="btn btn-sm btn-success btn-sync-kb ms-1" data-kodebooking="' + kbSafe + '" title="Sinkronisasi Ulang Semua Task ID untuk Kode Booking Ini"><i class="fas fa-sync-alt"></i></button>'
@@ -337,6 +381,7 @@ $(document).ready(function () {
         $tr.find('td').eq(13).addClass('text-center text-nowrap');
         $tr.find('td').eq(14).addClass('text-center');
         $tr.find('td').eq(15).addClass('text-center text-nowrap');
+        $tr.find('td').eq(16).addClass('text-center text-nowrap');
     }
 
     function upsertRowInDataTable(r) {
@@ -489,7 +534,7 @@ $(document).ready(function () {
     });
 
     $('#download_excel_' + tableId).on('click', function () {
-        var skip = [12, 13, 15];
+        var skip = [12, 13, 16];
         var headers = [];
         $table.find('thead th').each(function (i) { if (!skip.includes(i)) headers.push($(this).text().trim()); });
         var rows = [headers];
