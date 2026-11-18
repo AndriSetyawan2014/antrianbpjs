@@ -6,7 +6,27 @@
            View induk bertanggung jawab membungkus dengan @section('content').
 --}}
 
-{{-- Judul + breadcrumb dihandle oleh layout via @section('page_title') / @section('page_subtitle') --}}
+<style>
+.taskid-table-wrap {
+    background: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #e3e6f0);
+    border-radius: 10px;
+    padding: 12px 14px;
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+}
+.taskid-table-wrap table.dataTable {
+    margin-top: 8px !important;
+    margin-bottom: 8px !important;
+}
+.taskid-table-wrap thead th {
+    position: static !important;
+}
+.row-highlight-flash > td {
+    background-color: #d1fae5 !important;
+    transition: background-color 1.2s ease;
+}
+</style>
 
 {{-- Filter Card --}}
 <div class="filter-card" style="flex-wrap: nowrap; overflow-x: auto;">
@@ -42,8 +62,8 @@
 </div>
 
 {{-- Tabel --}}
-<div class="table-responsive">
-    <table id="{{ $tableId }}" class="table table-hover table-striped table-bordered">
+<div class="taskid-table-wrap">
+    <table id="{{ $tableId }}" class="table table-hover table-striped table-bordered w-100">
         <thead>
             <tr>
                 <th style="width:3%;">No</th>
@@ -61,7 +81,7 @@
                 <th style="width:6%;" class="text-center">Request</th>
                 <th style="width:6%;" class="text-center">Response</th>
                 <th style="width:4%;">Reupload</th>
-                <th style="width:5%;">Aksi</th>
+                <th style="width:6%;">Aksi</th>
             </tr>
         </thead>
         <tbody>
@@ -75,33 +95,33 @@
                 $idPend = $item->idpendaftaran ?? '';
                 $msg = json_decode($rawResp)->metadata->message ?? ($item->message ?? '');
             @endphp
-            <tr>
+            <tr data-row-id="{{ $item->id }}" data-kb="{{ $item->kodebooking }}" data-taskid="{{ $item->taskid }}">
                 <td></td>
-                <td>{{ $item->kodebooking }}</td>
-                <td>{{ $item->waktu }}</td>
-                <td><strong>{{ $item->taskid }}</strong></td>
-                <td>{{ $idPend }}</td>
+                <td class="text-nowrap">{{ $item->kodebooking }}</td>
+                <td class="text-nowrap">{{ $item->waktu }}</td>
+                <td class="text-center"><strong>{{ $item->taskid }}</strong></td>
+                <td class="text-nowrap">{{ $idPend }}</td>
                 <td><small class="font-weight-bold">{{ $item->namadokter ?? '-' }}</small></td>
                 <td><span class="badge bg-secondary">{{ $item->namapoli ?? '-' }}</span></td>
-                <td>
+                <td class="text-nowrap">
                     <small class="text-nowrap font-weight-bold">
                         {{ (isset($item->jammulai) && $item->jammulai) ? substr($item->jammulai, 0, 5) . '-' . substr($item->jamakhir, 0, 5) : '-' }}
                     </small>
                 </td>
-                <td class="text-center">
+                <td class="text-center text-nowrap">
                     <span class="status-badge {{ $badgeClass }}">{{ $badgeLabel }}</span>
                 </td>
                 <td>{{ $msg }}</td>
-                <td>{{ $item->tanggal }}</td>
-                <td>{{ $item->jam }}</td>
-                <td class="text-center">
+                <td class="text-nowrap">{{ $item->tanggal }}</td>
+                <td class="text-nowrap">{{ $item->jam }}</td>
+                <td class="text-center text-nowrap">
                     <button class="btn-json-view"
                             data-json="{{ htmlspecialchars($rawReq, ENT_QUOTES, 'UTF-8') }}"
                             data-title="Request — {{ $item->taskid }}">
                         <i class="fas fa-eye"></i> Lihat
                     </button>
                 </td>
-                <td class="text-center">
+                <td class="text-center text-nowrap">
                     <button class="btn-json-view"
                             data-json="{{ htmlspecialchars($rawResp, ENT_QUOTES, 'UTF-8') }}"
                             data-title="Response — {{ $item->taskid }}">
@@ -109,7 +129,7 @@
                     </button>
                 </td>
                 <td class="text-center">{{ $item->reupload }}</td>
-                <td class="text-center">
+                <td class="text-center text-nowrap">
                     <button class="btn btn-sm btn-info btn-duplicate"
                         data-kodebooking="{{ $item->kodebooking }}"
                         data-taskid="{{ $item->taskid }}"
@@ -241,13 +261,112 @@ $(document).ready(function () {
         ordering: true,
         info: true,
         autoWidth: false,
+        responsive: false,
         pageLength: 25,
+        order: [[1, 'asc'], [3, 'asc']],
         language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json' },
         columnDefs: [
             { orderable: false, targets: [0, 12, 13, 15] },
             { render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, targets: 0 }
         ]
     });
+
+    function escapeAttr(str) {
+        return String(str == null ? '' : str)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function buildRowCells(r) {
+        var code = parseInt(r.code, 10) || 0;
+        var badgeClass = code === 200 ? 'badge-success' : (code === 0 ? 'badge-warning' : 'badge-danger');
+        var badgeLabel = code === 200 ? '✓ 200 OK' : (code === 0 ? '⏳ Pending' : '✗ Err ' + r.code);
+        var msg = r.message || '';
+        if (r.response) {
+            try {
+                var parsed = JSON.parse(r.response);
+                if (parsed && parsed.metadata && parsed.metadata.message) {
+                    msg = parsed.metadata.message;
+                }
+            } catch (e) {}
+        }
+        var jadwal = (r.jammulai && r.jamakhir) ? (String(r.jammulai).slice(0, 5) + '-' + String(r.jamakhir).slice(0, 5)) : '-';
+        var idPend = r.idpendaftaran || '';
+        var rawReq = escapeAttr(r.request || '');
+        var rawResp = escapeAttr(r.response || '');
+        var kbSafe = escapeAttr(r.kodebooking);
+
+        return [
+            '',
+            kbSafe,
+            escapeAttr(r.waktu),
+            '<strong>' + escapeAttr(r.taskid) + '</strong>',
+            escapeAttr(idPend),
+            '<small class="font-weight-bold">' + escapeAttr(r.namadokter || '-') + '</small>',
+            '<span class="badge bg-secondary">' + escapeAttr(r.namapoli || '-') + '</span>',
+            '<small class="text-nowrap font-weight-bold">' + escapeAttr(jadwal) + '</small>',
+            '<span class="status-badge ' + badgeClass + '">' + badgeLabel + '</span>',
+            escapeAttr(msg),
+            escapeAttr(r.tanggal || ''),
+            escapeAttr(r.jam || ''),
+            '<button class="btn-json-view" data-json="' + rawReq + '" data-title="Request — ' + escapeAttr(r.taskid) + '"><i class="fas fa-eye"></i> Lihat</button>',
+            '<button class="btn-json-view" data-json="' + rawResp + '" data-title="Response — ' + escapeAttr(r.taskid) + '"><i class="fas fa-eye"></i> Lihat</button>',
+            escapeAttr(r.reupload != null ? r.reupload : 1),
+            '<button class="btn btn-sm btn-info btn-duplicate" data-kodebooking="' + kbSafe + '" data-taskid="' + escapeAttr(r.taskid) + '" data-waktu="' + escapeAttr(r.waktu) + '" data-idpendaftaran="' + escapeAttr(idPend) + '" title="Duplikat Task ID ini"><i class="fas fa-copy"></i></button>' +
+            '<button class="btn btn-sm btn-warning btn-edit ms-1" data-id="' + escapeAttr(r.id) + '" data-kodebooking="' + kbSafe + '" data-taskid="' + escapeAttr(r.taskid) + '" data-waktu="' + escapeAttr(r.waktu) + '" data-idpendaftaran="' + escapeAttr(idPend) + '" title="Edit Task ID ini"><i class="fas fa-edit"></i></button>' +
+            '<button class="btn btn-sm btn-success btn-sync-kb ms-1" data-kodebooking="' + kbSafe + '" title="Sinkronisasi Ulang Semua Task ID untuk Kode Booking Ini"><i class="fas fa-sync-alt"></i></button>'
+        ];
+    }
+
+    function applyRowAttributes($tr, r) {
+        $tr.attr('data-row-id', r.id)
+           .attr('data-kb', r.kodebooking)
+           .attr('data-taskid', r.taskid);
+        $tr.find('td').eq(1).addClass('text-nowrap');
+        $tr.find('td').eq(2).addClass('text-nowrap');
+        $tr.find('td').eq(3).addClass('text-center');
+        $tr.find('td').eq(4).addClass('text-nowrap');
+        $tr.find('td').eq(7).addClass('text-nowrap');
+        $tr.find('td').eq(8).addClass('text-center text-nowrap');
+        $tr.find('td').eq(10).addClass('text-nowrap');
+        $tr.find('td').eq(11).addClass('text-nowrap');
+        $tr.find('td').eq(12).addClass('text-center text-nowrap');
+        $tr.find('td').eq(13).addClass('text-center text-nowrap');
+        $tr.find('td').eq(14).addClass('text-center');
+        $tr.find('td').eq(15).addClass('text-center text-nowrap');
+    }
+
+    function upsertRowInDataTable(r) {
+        if (!r || !r.id) return;
+        var cells = buildRowCells(r);
+        var existingNode = null;
+
+        table.rows().every(function () {
+            var node = this.node();
+            if (node && (String($(node).attr('data-row-id')) === String(r.id) ||
+                ($(node).attr('data-kb') === String(r.kodebooking) && String($(node).attr('data-taskid')) === String(r.taskid)))) {
+                existingNode = node;
+            }
+        });
+
+        var $targetTr;
+        if (existingNode) {
+            table.row(existingNode).data(cells).draw(false);
+            $targetTr = $(existingNode);
+        } else {
+            var dtRow = table.row.add(cells).draw(false);
+            $targetTr = $(dtRow.node());
+        }
+
+        applyRowAttributes($targetTr, r);
+        $targetTr.addClass('row-highlight-flash');
+        setTimeout(function () {
+            $targetTr.removeClass('row-highlight-flash');
+        }, 1600);
+    }
 
     function msToLocalInput(ms) {
         var n = parseInt(ms, 10);
@@ -259,12 +378,13 @@ $(document).ready(function () {
 
     $table.on('click', '.btn-duplicate', function() {
         var btn = $(this);
-        var modal = $('#modalDuplicate_' + tableId);
-        modal.find('.dup_kodebooking').val(btn.data('kodebooking'));
-        modal.find('.dup_idpendaftaran').val(btn.data('idpendaftaran'));
-        modal.find('.dup_taskid').val(btn.data('taskid'));
-        modal.find('.dup_waktu').val(msToLocalInput(btn.data('waktu')));
-        modal.modal('show');
+        var modalEl = document.getElementById('modalDuplicate_' + tableId);
+        var $modal = $(modalEl);
+        $modal.find('.dup_kodebooking').val(btn.attr('data-kodebooking'));
+        $modal.find('.dup_idpendaftaran').val(btn.attr('data-idpendaftaran'));
+        $modal.find('.dup_taskid').val(btn.attr('data-taskid'));
+        $modal.find('.dup_waktu').val(msToLocalInput(btn.attr('data-waktu')));
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
     });
 
     $('#formDuplicate_' + tableId).on('submit', function(e) {
@@ -278,12 +398,16 @@ $(document).ready(function () {
             type: 'POST',
             data: form.serialize(),
             success: function(res) {
-                (window.showGlobalToast || alert)('Berhasil: ' + (res.metadata.message || ''), 'success');
-                $('#modalDuplicate_' + tableId).modal('hide');
-                location.reload();
+                btn.html(original).prop('disabled', false);
+                var modalEl = document.getElementById('modalDuplicate_' + tableId);
+                bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+                if (res && res.response) {
+                    upsertRowInDataTable(res.response);
+                }
+                (window.showGlobalToast || alert)('Berhasil: ' + (res.metadata && res.metadata.message ? res.metadata.message : 'Task ID disimpan'), 'success');
             },
             error: function(err) {
-                (window.showGlobalToast || alert)('Gagal menyimpan: ' + (err.responseJSON ? err.responseJSON.metadata.message : 'Error server'), 'error');
+                (window.showGlobalToast || alert)('Gagal menyimpan: ' + (err.responseJSON && err.responseJSON.metadata ? err.responseJSON.metadata.message : 'Error server'), 'error');
                 btn.html(original).prop('disabled', false);
             }
         });
@@ -291,13 +415,14 @@ $(document).ready(function () {
 
     $table.on('click', '.btn-edit', function() {
         var btn = $(this);
-        var modal = $('#modalEdit_' + tableId);
-        modal.find('.edit_id').val(btn.data('id'));
-        modal.find('.edit_kodebooking').val(btn.data('kodebooking'));
-        modal.find('.edit_idpendaftaran').val(btn.data('idpendaftaran'));
-        modal.find('.edit_taskid').val(btn.data('taskid'));
-        modal.find('.edit_waktu').val(msToLocalInput(btn.data('waktu')));
-        modal.modal('show');
+        var modalEl = document.getElementById('modalEdit_' + tableId);
+        var $modal = $(modalEl);
+        $modal.find('.edit_id').val(btn.attr('data-id'));
+        $modal.find('.edit_kodebooking').val(btn.attr('data-kodebooking'));
+        $modal.find('.edit_idpendaftaran').val(btn.attr('data-idpendaftaran'));
+        $modal.find('.edit_taskid').val(btn.attr('data-taskid'));
+        $modal.find('.edit_waktu').val(msToLocalInput(btn.attr('data-waktu')));
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
     });
 
     $('#formEdit_' + tableId).on('submit', function(e) {
@@ -311,19 +436,23 @@ $(document).ready(function () {
             type: 'POST',
             data: form.serialize(),
             success: function(res) {
-                (window.showGlobalToast || alert)('Berhasil: ' + (res.metadata.message || ''), 'success');
-                $('#modalEdit_' + tableId).modal('hide');
-                location.reload();
+                btn.html(original).prop('disabled', false);
+                var modalEl = document.getElementById('modalEdit_' + tableId);
+                bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+                if (res && res.response) {
+                    upsertRowInDataTable(res.response);
+                }
+                (window.showGlobalToast || alert)('Berhasil: ' + (res.metadata && res.metadata.message ? res.metadata.message : 'Task ID diperbarui'), 'success');
             },
             error: function(err) {
-                (window.showGlobalToast || alert)('Gagal menyimpan: ' + (err.responseJSON ? err.responseJSON.metadata.message : 'Error server'), 'error');
+                (window.showGlobalToast || alert)('Gagal menyimpan: ' + (err.responseJSON && err.responseJSON.metadata ? err.responseJSON.metadata.message : 'Error server'), 'error');
                 btn.html(original).prop('disabled', false);
             }
         });
     });
 
     $table.on('click', '.btn-sync-kb', function() {
-        var kb = $(this).data('kodebooking');
+        var kb = $(this).attr('data-kodebooking');
         Swal.fire({
             title: 'Sinkronisasi Ulang?',
             text: "Kirim ulang seluruh Task ID milik kode booking " + kb + "?",
@@ -335,10 +464,21 @@ $(document).ready(function () {
             if(result.isConfirmed) {
                 Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 $.ajax({
-                    url: '{{ url("api/run-taskid-by-kodebooking") }}?urlQL=' + urlQL + '&kodebooking=' + kb,
+                    url: '{{ url("api/run-taskid-by-kodebooking") }}?urlQL=' + urlQL + '&kodebooking=' + encodeURIComponent(kb),
                     type: 'GET',
                     success: function(res) {
-                        Swal.fire('Selesai!', res.metadata.message || 'Berhasil disinkronisasi', 'success').then(() => location.reload());
+                        if (res && Array.isArray(res.updated_rows)) {
+                            res.updated_rows.forEach(function (rowObj) {
+                                upsertRowInDataTable(rowObj);
+                            });
+                        }
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Selesai!',
+                            text: (res.metadata && res.metadata.message) ? res.metadata.message : 'Berhasil disinkronisasi',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
                     },
                     error: function() {
                         Swal.fire('Error', 'Gagal menyinkronkan data.', 'error');

@@ -109,7 +109,50 @@ class PengirimanTaskIDController extends Controller
         $data_taskID_model->where('kodebooking', $kodebooking)->update(['reupload' => 1]);
         Log::info("[$urlQL] Force re-run for kodebooking: $kodebooking. Reset reupload=1.");
 
-        return $this->taskID_otomatis($urlQL, null, $kodebooking);
+        $syncRes = $this->taskID_otomatis($urlQL, null, $kodebooking);
+        $updatedRows = (new data_taskid())->setTableByQL($urlQL)
+            ->where('kodebooking', $kodebooking)
+            ->orderBy('taskid', 'asc')
+            ->get();
+
+        $payload = $syncRes instanceof \Illuminate\Http\JsonResponse ? $syncRes->getData(true) : [];
+        $payload['updated_rows'] = $updatedRows;
+
+        return response()->json($payload);
+    }
+
+    private function enrichTaskIdRow(string $urlQL, $record): array
+    {
+        $kbTables = [
+            'QLJ' => 'data_kodebooking',
+            'QLKP' => 'qlkp_data_kodebooking',
+            'QLTMG' => 'qltmg_data_kodebooking',
+        ];
+        $kbTable = $kbTables[$urlQL] ?? 'data_kodebooking';
+        $kbInfo = \Illuminate\Support\Facades\DB::table($kbTable)
+            ->select('namadokter', 'namaunit as namapoli', 'jammulai', 'jamakhir')
+            ->where('kodebooking', $record->kodebooking)
+            ->orderByDesc('id')
+            ->first();
+
+        return [
+            'id' => $record->id,
+            'kodebooking' => $record->kodebooking,
+            'taskid' => $record->taskid,
+            'waktu' => $record->waktu,
+            'idpendaftaran' => $record->idpendaftaran ?? '',
+            'tanggal' => $record->tanggal,
+            'jam' => $record->jam,
+            'code' => $record->code ?? 0,
+            'message' => $record->message ?? 'Menunggu Sinkronisasi',
+            'request' => $record->request ?? '',
+            'response' => $record->response ?? '',
+            'reupload' => $record->reupload ?? 1,
+            'namadokter' => $kbInfo->namadokter ?? '-',
+            'namapoli' => $kbInfo->namapoli ?? '-',
+            'jammulai' => $kbInfo->jammulai ?? null,
+            'jamakhir' => $kbInfo->jamakhir ?? null,
+        ];
     }
 
     public function manualAddTaskid(Request $request)
@@ -142,18 +185,39 @@ class PengirimanTaskIDController extends Controller
             $waktuMillis = $timestamp * 1000;
 
             $model = (new \App\Models\data_taskid())->setTableByQL($urlQL);
-            
-            $model->create([
-                'kodebooking' => $request->input('kodebooking'),
-                'taskid' => $request->input('taskid'),
-                'waktu' => $waktuMillis,
-                'idpendaftaran' => $request->input('idpendaftaran'),
-                'tanggal' => \Carbon\Carbon::parse($waktuInput)->toDateString(),
-                'jam' => \Carbon\Carbon::parse($waktuInput)->toTimeString(),
-                'code' => 0,
-                'message' => 'Menunggu Sinkronisasi',
-                'reupload' => 1,
-            ]);
+
+            $existing = $model->newQuery()
+                ->where('kodebooking', $request->input('kodebooking'))
+                ->where('taskid', $request->input('taskid'))
+                ->first();
+
+            $isUpdated = false;
+            if ($existing) {
+                $existing->setTable($model->getTable());
+                $existing->update([
+                    'waktu' => $waktuMillis,
+                    'idpendaftaran' => $request->input('idpendaftaran'),
+                    'tanggal' => \Carbon\Carbon::parse($waktuInput)->toDateString(),
+                    'jam' => \Carbon\Carbon::parse($waktuInput)->toTimeString(),
+                    'code' => 0,
+                    'message' => 'Menunggu Sinkronisasi',
+                    'reupload' => 1,
+                ]);
+                $record = $existing->fresh();
+                $isUpdated = true;
+            } else {
+                $record = $model->create([
+                    'kodebooking' => $request->input('kodebooking'),
+                    'taskid' => $request->input('taskid'),
+                    'waktu' => $waktuMillis,
+                    'idpendaftaran' => $request->input('idpendaftaran'),
+                    'tanggal' => \Carbon\Carbon::parse($waktuInput)->toDateString(),
+                    'jam' => \Carbon\Carbon::parse($waktuInput)->toTimeString(),
+                    'code' => 0,
+                    'message' => 'Menunggu Sinkronisasi',
+                    'reupload' => 1,
+                ]);
+            }
 
             // Clear dashboard cache karena data taskid telah berubah
             PerformanceServiceProvider::clearDashboardCache($urlQL);
@@ -161,8 +225,12 @@ class PengirimanTaskIDController extends Controller
             return response()->json([
                 'metadata' => [
                     'code' => 200,
-                    'message' => 'Task ID berhasil ditambahkan dan siap disinkronisasi.'
-                ]
+                    'message' => $isUpdated
+                        ? 'Task ID sudah ada dan berhasil diperbarui.'
+                        : 'Task ID berhasil ditambahkan dan siap disinkronisasi.'
+                ],
+                'response' => $this->enrichTaskIdRow($urlQL, $record),
+                'is_updated' => $isUpdated,
             ]);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Error manualAddTaskid: ' . $e->getMessage());
@@ -212,6 +280,7 @@ class PengirimanTaskIDController extends Controller
                 ], 404);
             }
 
+            $record->setTable($model->getTable());
             $record->update([
                 'taskid' => $request->input('taskid'),
                 'waktu' => $waktuMillis,
@@ -230,7 +299,8 @@ class PengirimanTaskIDController extends Controller
                 'metadata' => [
                     'code' => 200,
                     'message' => 'Task ID berhasil diubah dan siap disinkronisasi.'
-                ]
+                ],
+                'response' => $this->enrichTaskIdRow($urlQL, $record->fresh()),
             ]);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Error manualEditTaskid: ' . $e->getMessage());
@@ -404,18 +474,18 @@ class PengirimanTaskIDController extends Controller
             $this->listTaskCache = []; // Reset cache di awal proses
 
             // Tentukan tabel dan model di luar loop untuk efisiensi
-            $tableTaskID = match ($urlQL) {
+            $taskTablesMap = [
                 'QLJ'   => 'data_taskids',
                 'QLKP'  => 'qlkp_data_taskids',
                 'QLTMG' => 'qltmg_data_taskids',
-                default => 'data_taskids',
-            };
-            $tableKodeBooking = match ($urlQL) {
+            ];
+            $kbTablesMap = [
                 'QLJ'   => 'data_kodebooking',
                 'QLKP'  => 'qlkp_data_kodebooking',
                 'QLTMG' => 'qltmg_data_kodebooking',
-                default => 'data_kodebooking',
-            };
+            ];
+            $tableTaskID = $taskTablesMap[$urlQL] ?? 'data_taskids';
+            $tableKodeBooking = $kbTablesMap[$urlQL] ?? 'data_kodebooking';
             $data_taskID_model = (new data_taskid())->setTableByQL($urlQL);
 
             // PROAKTIF: Batalkan Task 99 sebelum masuk queue jika sudah ada Task 3-7 (Batch Query tanpa N+1)
