@@ -8,7 +8,21 @@ description: >-
 
 This skill encapsulates the core implementation patterns of the Antrian BPJS Online project. Load this before writing any new code so you don't need to re-read large files (README.md, GEMINI.md, controllers) repeatedly.
 
-## 1. Technology Stack
+## 1. Arsitektur Terdistribusi (Multi-Skill Reference)
+
+Project Antrian BPJS Online memiliki skill modular khusus untuk menghemat token dan mempercepat observasi:
+- **`bpjs-business-flow`**: Alur bisnis lengkap sistem (Task ID 1-7/99, Kode Booking, VClaim, Kesesuaian Jadwal Dokter, trigger otomatis vs manual).
+- **`antrianbpjs-frontend`**: Standar UI AdminLTE, layout master `admin.blade.php`, Top Header Opsi B, dynamic branch badge, dan reusable partials DRY.
+- **`antrianbpjs-backend`**: Pedoman Controller Web vs API, format response JSON API, error handling, dan asynchronous jobs.
+- **`antrianbpjs-database`**: Skema multi-tabel (`data_taskids`, `qlkp_...`, `qltmg_...`), single-tabel `vclaim_kunjungan`, index performa, dan audit trail.
+- **`bpjs-api-integration`**: Signature HMAC-SHA256, enkripsi LZString/AES, dan endpoint helper `BpjsHelper.php`.
+- **`manage-queues`**: Monitoring dan manajemen antrian database (`queue:work`, `jobs`, `failed_jobs`).
+- **`blade-linter`**: Pembersihan & pencegahan syntax error Blade.
+- **`code-quality`**: Quality gate `php -l` & standarisasi coding PHP.
+
+---
+
+## 2. Technology Stack
 
 - **Framework**: Laravel 10.x, PHP >= 8.1
 - **Database**: MySQL / MariaDB
