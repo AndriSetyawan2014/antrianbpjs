@@ -445,24 +445,39 @@ class PengirimanTaskIDController extends Controller
             $data_taskID_gen = (new data_taskid())->setTableByQL($urlQL);
             $nowTs = now();
 
-            // 1. Auto-generate missing Task ID 2 dari Task ID 3 (dikurangi 1 - 3 menit / 60 - 180 detik)
-            $missingTask2 = $data_taskID_gen->getTaskid3withNullTaskid2($urlQL, $kodebooking)->toArray();
-            if (!empty($missingTask2)) {
-                Log::info('[' . $urlQL . '] Found ' . count($missingTask2) . ' bookings missing Task ID 2. Generating from Task ID 3...');
-                $upsertTask2 = [];
-                foreach ($missingTask2 as $dataTaskID3) {
-                    $waktuTask3 = $dataTaskID3->waktu;
-                    $randomSecond = rand(60, 180); // 1 - 3 menit dalam detik
-                    $newWaktursMilliseconds = $waktuTask3 - ($randomSecond * 1000);
+            // Helper untuk auto-generate task yang kosong secara berurutan mundur (7->6, 6->5, 5->4, 4->3, 3->2, 2->1)
+            $autoGenerateMissingPrevTask = function (int $srcTask, int $targetTask, int $minSec, int $maxSec) use ($data_taskID_gen, $urlQL, $kodebooking, $nowTs) {
+                $missingList = $data_taskID_gen->getTaskWithNullPrevTask($srcTask, $targetTask, $urlQL, $kodebooking)->toArray();
+                if (empty($missingList)) {
+                    return;
+                }
+                Log::info("[$urlQL] Found " . count($missingList) . " bookings with Task $srcTask missing Task $targetTask. Auto-generating Task $targetTask...");
+                $upsertRows = [];
+                foreach ($missingList as $row) {
+                    $waktuSrc = (int) $row->waktu;
+                    $waktuLower = isset($row->waktu_lower) && $row->waktu_lower ? (int) $row->waktu_lower : 0;
 
-                    $timestamp = (int) round($newWaktursMilliseconds / 1000);
+                    if ($waktuLower > 0 && $waktuLower < $waktuSrc) {
+                        $gapSec = (int) floor(($waktuSrc - $waktuLower) / 1000);
+                        if ($gapSec > $minSec + 20) {
+                            $randSec = rand($minSec, min($maxSec, $gapSec - 10));
+                            $newWaktuMs = $waktuSrc - ($randSec * 1000);
+                        } else {
+                            $newWaktuMs = $waktuLower + (int) floor(($waktuSrc - $waktuLower) / 2);
+                        }
+                    } else {
+                        $randSec = rand($minSec, $maxSec);
+                        $newWaktuMs = $waktuSrc - ($randSec * 1000);
+                    }
+
+                    $timestamp = (int) round($newWaktuMs / 1000);
                     $datetime_jakarta = Carbon::createFromTimestamp($timestamp, 'Asia/Jakarta');
 
-                    $upsertTask2[] = [
-                        'kodebooking'   => $dataTaskID3->kodebooking,
-                        'waktu'         => $newWaktursMilliseconds,
-                        'taskid'        => 2,
-                        'idpendaftaran' => $dataTaskID3->idpendaftaran,
+                    $upsertRows[] = [
+                        'kodebooking'   => $row->kodebooking,
+                        'waktu'         => $newWaktuMs,
+                        'taskid'        => $targetTask,
+                        'idpendaftaran' => $row->idpendaftaran,
                         'tanggal'       => $datetime_jakarta->format('Y-m-d'),
                         'jam'           => $datetime_jakarta->format('H:i:s'),
                         'code'          => 0,
@@ -472,48 +487,18 @@ class PengirimanTaskIDController extends Controller
                         'created_at'    => $nowTs,
                     ];
                 }
-                foreach (array_chunk($upsertTask2, 500) as $t2Chunk) {
-                    $data_taskID_gen->newQuery()->upsert($t2Chunk, ['kodebooking', 'taskid'], [
+                foreach (array_chunk($upsertRows, 500) as $chunk) {
+                    $data_taskID_gen->newQuery()->upsert($chunk, ['kodebooking', 'taskid'], [
                         'waktu', 'idpendaftaran', 'tanggal', 'jam', 'code', 'message', 'reupload', 'updated_at'
                     ]);
                 }
-            }
+            };
 
-            // 2. Auto-generate missing Task ID 1 dari Task ID 2 (dikurangi 1 - 5 menit / 60 - 300 detik)
-            $missingTask1 = $data_taskID_gen->getTaskid2withNullTaskid1($urlQL, $kodebooking)->toArray();
-            if (!empty($missingTask1)) {
-                Log::info('[' . $urlQL . '] Found ' . count($missingTask1) . ' bookings missing Task ID 1. Generating from Task ID 2...');
-                $upsertTask1 = [];
-                foreach ($missingTask1 as $dataTaskID2) {
-                    $waktuTask2 = $dataTaskID2->waktu;
-                    $randomSecond = rand(60, 300); // 1 - 5 menit dalam detik
-                    $newWaktursMilliseconds = $waktuTask2 - ($randomSecond * 1000);
+            // A. Jika ditemukan Task ID 7 dan Task ID 1..6 ada yang kosong -> lengkapi Task 6 lalu Task 5 terlebih dahulu
+            $autoGenerateMissingPrevTask(7, 6, 60, 180);
+            $autoGenerateMissingPrevTask(6, 5, 60, 240);
 
-                    $timestamp = (int) round($newWaktursMilliseconds / 1000);
-                    $datetime_jakarta = Carbon::createFromTimestamp($timestamp, 'Asia/Jakarta');
-
-                    $upsertTask1[] = [
-                        'kodebooking'   => $dataTaskID2->kodebooking,
-                        'waktu'         => $newWaktursMilliseconds,
-                        'taskid'        => 1,
-                        'idpendaftaran' => $dataTaskID2->idpendaftaran,
-                        'tanggal'       => $datetime_jakarta->format('Y-m-d'),
-                        'jam'           => $datetime_jakarta->format('H:i:s'),
-                        'code'          => 0,
-                        'message'       => 'Menunggu Sinkronisasi',
-                        'reupload'      => 1,
-                        'updated_at'    => $nowTs,
-                        'created_at'    => $nowTs,
-                    ];
-                }
-                foreach (array_chunk($upsertTask1, 500) as $t1Chunk) {
-                    $data_taskID_gen->newQuery()->upsert($t1Chunk, ['kodebooking', 'taskid'], [
-                        'waktu', 'idpendaftaran', 'tanggal', 'jam', 'code', 'message', 'reupload', 'updated_at'
-                    ]);
-                }
-            }
-
-            // 3. Auto-generate missing Task ID 5 for past bookings (not today)
+            // B. Auto-generate missing Task ID 5 untuk antrean lampau yang sudah punya Task ID 4
             $missingTask5 = $data_taskID_gen->getTaskid4withNullTaskid5($urlQL, $kodebooking)->toArray();
             if (!empty($missingTask5)) {
                 Log::info('[' . $urlQL . '] Found ' . count($missingTask5) . ' bookings missing Task ID 5. Generating...');
@@ -546,6 +531,14 @@ class PengirimanTaskIDController extends Controller
                     ]);
                 }
             }
+
+            // C. Jika ditemukan Task ID 5 dan Task ID 1..4 ada yang kosong -> auto-generate Task 4 lalu Task 3
+            $autoGenerateMissingPrevTask(5, 4, 60, 240);
+            $autoGenerateMissingPrevTask(4, 3, 60, 240);
+
+            // D. Jika ditemukan Task ID 3 dan Task ID 1 atau 2 ada yang kosong -> auto-generate Task 2 (1-3 mnt) lalu Task 1 (1-5 mnt)
+            $autoGenerateMissingPrevTask(3, 2, 60, 180);
+            $autoGenerateMissingPrevTask(2, 1, 60, 300);
 
             $this->listTaskCache = []; // Reset cache di awal proses
 
@@ -696,18 +689,18 @@ class PengirimanTaskIDController extends Controller
                         }
                     }
 
-                    // Aturan 3: Jika ditemukan TaskID 7 -> pastikan TaskID 1 s/d 5 lengkap, diupload urut
+                    // Aturan 3: Jika ditemukan TaskID 7 -> pastikan TaskID 1 s/d 6 lengkap, diupload urut (1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7)
                     if (isset($tMap[6]) && $has1to5) {
                         $allowedTaskIds[] = 6;
                     }
                     if (isset($tMap[7])) {
-                        if ($has1to5) {
-                            if (isset($tMap[6]) && !in_array(6, $allowedTaskIds, true)) {
+                        if ($has1to5 && isset($tMap[6])) {
+                            if (!in_array(6, $allowedTaskIds, true)) {
                                 $allowedTaskIds[] = 6;
                             }
                             $allowedTaskIds[] = 7;
                         } else {
-                            Log::warning("[taskID_otomatis - $urlQL] SKIPPED Task 7 for $kbKey: Task ID 1 s/d 5 belum lengkap.");
+                            Log::warning("[taskID_otomatis - $urlQL] SKIPPED Task 7 for $kbKey: Task ID 1 s/d 6 belum lengkap.");
                         }
                     }
 
@@ -818,15 +811,17 @@ class PengirimanTaskIDController extends Controller
                 }
             }
 
-            // 2. Jika mengirim Task 5, 6, atau 7: pastikan Task 1 s/d 5 sudah lengkap di DB
+            // 2. Jika mengirim Task 5 atau 6: pastikan Task 1 s/d 5 sudah lengkap di DB
+            // 3. Jika mengirim Task 7: pastikan Task 1 s/d 6 sudah lengkap di DB
             if ($currentTaskNum >= 5) {
-                for ($reqT = 1; $reqT <= 5; $reqT++) {
+                $maxRequired = ($currentTaskNum === 7) ? 6 : 5;
+                for ($reqT = 1; $reqT <= $maxRequired; $reqT++) {
                     if (!$bookingTasks->has($reqT)) {
-                        Log::warning("[taskID_single_arr - $urlQL] PENDING: {$data['kodebooking']} belum memiliki Task $reqT (Syarat Task 1-5 wajib lengkap sebelum upload Task $currentTaskNum).");
+                        Log::warning("[taskID_single_arr - $urlQL] PENDING: {$data['kodebooking']} belum memiliki Task $reqT sebelum upload Task $currentTaskNum.");
                         return response()->json([
                             'metadata' => [
                                 'code' => 202,
-                                'message' => "Pending: Task ID 1 s/d 5 belum lengkap (Task $reqT belum tersedia)."
+                                'message' => "Pending: Task ID 1 s/d $maxRequired belum lengkap (Task $reqT belum tersedia)."
                             ]
                         ], 202);
                     }
@@ -836,9 +831,6 @@ class PengirimanTaskIDController extends Controller
             // Pastikan seluruh Task sebelumnya (1 s/d N-1) sudah sukses diupload secara berurutan (Code 200/208 atau reupload=0)
             if ($currentTaskNum > 1) {
                 for ($prevT = 1; $prevT < $currentTaskNum; $prevT++) {
-                    if ($prevT === 6 && !$bookingTasks->has(6)) {
-                        continue;
-                    }
                     $prevTaskRow = $bookingTasks->get($prevT);
                     $isPrevOk = $prevTaskRow && (in_array((int) $prevTaskRow->code, [200, 208], true) || (int) $prevTaskRow->reupload === 0);
 
