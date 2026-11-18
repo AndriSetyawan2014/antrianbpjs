@@ -349,13 +349,20 @@
         <tbody>
             @php $grandTotal = 0; @endphp
             @foreach($summaryItems as $index => $item)
-            @php $grandTotal += (int) $item->total; @endphp
+            @php
+                $grandTotal += (int) $item->total;
+                $rawMsg = $item->message_all ?? '';
+                $isEmptyMsg = ($rawMsg === '__EMPTY__' || $rawMsg === null || $rawMsg === '');
+                $msgParam = $isEmptyMsg ? '__EMPTY__' : $rawMsg;
+                $msgLabel = $isEmptyMsg ? '(Kosong / Tanpa Pesan)' : $rawMsg;
+            @endphp
             <tr>
                 <td class="text-center"></td>
                 <td>
-                    <a href="{{ route($routeName, ['start_date' => $startDate, 'end_date' => $endDate, 'message' => $item->message_all]) }}"
+                    <a href="{{ route($routeName, ['start_date' => $startDate, 'end_date' => $endDate, 'message' => $msgParam]) }}"
                        class="text-decoration-none fw-semibold" style="color:var(--color-primary, #0f4c5c);">
-                        <i class="fas fa-filter me-1 text-primary" style="font-size:11px;"></i>{{ $item->message_all }}
+                        <i class="fas fa-filter me-1 text-primary" style="font-size:11px;"></i>
+                        <span class="{{ $isEmptyMsg ? 'fst-italic text-muted' : '' }}">{{ $msgLabel }}</span>
                     </a>
                 </td>
                 <td class="text-center">

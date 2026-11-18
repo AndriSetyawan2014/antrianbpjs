@@ -647,15 +647,23 @@ public function rekapKodeBooking(Request $request)
     }
 
     // Jika ada filter message, ambil detail data sesuai message dan rentang tanggal
-    if ($messageFilter) {
-        $detailData = DB::table('data_kodebooking')
-            ->where(DB::raw("CASE
+    if ($messageFilter !== null && $messageFilter !== '') {
+        $detailQuery = DB::table('data_kodebooking')
+            ->whereBetween('tanggalperiksa', [$startDate, $endDate]);
+
+        if ($messageFilter === '__EMPTY__') {
+            $detailQuery->where(function ($q) {
+                $q->whereNull('message')->orWhere('message', '');
+            });
+        } else {
+            $detailQuery->where(DB::raw("CASE
                 WHEN message LIKE '%sudah terbit SEP%' THEN 'sudah terbit SEP'
                 WHEN message LIKE '%Rujukan untuk tanggal%' AND message LIKE '%tidak valid / masa berlaku habis%' THEN 'masa berlaku habis'
                 ELSE message
-            END"), '=', $messageFilter)
-            ->whereBetween('tanggalperiksa', [$startDate, $endDate]) // Filter rentang tanggal
-            ->get();
+            END"), '=', $messageFilter);
+        }
+
+        $detailData = $detailQuery->get();
 
         return view('rekap_kodebooking', compact('detailData', 'messageFilter', 'startDate', 'endDate'));
     }
@@ -664,6 +672,7 @@ public function rekapKodeBooking(Request $request)
     $data = DB::table('data_kodebooking')
         ->select(
             DB::raw("CASE
+                WHEN message IS NULL OR message = '' THEN '__EMPTY__'
                 WHEN message LIKE '%sudah terbit SEP%' THEN 'sudah terbit SEP'
                 WHEN message LIKE '%Rujukan untuk tanggal%' AND message LIKE '%tidak valid / masa berlaku habis%' THEN 'masa berlaku habis'
                 ELSE message
@@ -838,15 +847,23 @@ public function qlkp_datakodebooking(Request $request)
         }
 
         // Jika ada filter message, ambil detail data sesuai message dan rentang tanggal
-        if ($messageFilter) {
-            $detailData = DB::table('qlkp_data_kodebooking')
-                ->where(DB::raw("CASE
+        if ($messageFilter !== null && $messageFilter !== '') {
+            $detailQuery = DB::table('qlkp_data_kodebooking')
+                ->whereBetween('tanggalperiksa', [$startDate, $endDate]);
+
+            if ($messageFilter === '__EMPTY__') {
+                $detailQuery->where(function ($q) {
+                    $q->whereNull('message')->orWhere('message', '');
+                });
+            } else {
+                $detailQuery->where(DB::raw("CASE
                     WHEN message LIKE '%sudah terbit SEP%' THEN 'sudah terbit SEP'
                     WHEN message LIKE '%Rujukan untuk tanggal%' AND message LIKE '%tidak valid / masa berlaku habis%' THEN 'masa berlaku habis'
                     ELSE message
-                END"), '=', $messageFilter)
-                ->whereBetween('tanggalperiksa', [$startDate, $endDate]) // Filter rentang tanggal
-                ->get();
+                END"), '=', $messageFilter);
+            }
+
+            $detailData = $detailQuery->get();
 
             return view('qlkp_rekap_kodebooking', compact('detailData', 'messageFilter', 'startDate', 'endDate'));
         }
@@ -854,6 +871,7 @@ public function qlkp_datakodebooking(Request $request)
         // Jika tidak ada filter message, ambil data ringkasan berdasarkan rentang tanggal
         $data = DB::table('qlkp_data_kodebooking')
             ->select(DB::raw("CASE
+                WHEN message IS NULL OR message = '' THEN '__EMPTY__'
                 WHEN message LIKE '%sudah terbit SEP%' THEN 'sudah terbit SEP'
                 WHEN message LIKE '%Rujukan untuk tanggal%' AND message LIKE '%tidak valid / masa berlaku habis%' THEN 'masa berlaku habis'
                 ELSE message
@@ -1548,21 +1566,30 @@ public function qlkp_datakodebooking(Request $request)
             $endDate = Carbon::now()->toDateString();
         }
 
-        if ($messageFilter) {
-            $detailData = DB::table('qltmg_data_kodebooking')
-                ->where(DB::raw("CASE
+        if ($messageFilter !== null && $messageFilter !== '') {
+            $detailQuery = DB::table('qltmg_data_kodebooking')
+                ->whereBetween('tanggalperiksa', [$startDate, $endDate]);
+
+            if ($messageFilter === '__EMPTY__') {
+                $detailQuery->where(function ($q) {
+                    $q->whereNull('message')->orWhere('message', '');
+                });
+            } else {
+                $detailQuery->where(DB::raw("CASE
                     WHEN message LIKE '%sudah terbit SEP%' THEN 'sudah terbit SEP'
                     WHEN message LIKE '%Rujukan untuk tanggal%' AND message LIKE '%tidak valid / masa berlaku habis%' THEN 'masa berlaku habis'
                     ELSE message
-                END"), '=', $messageFilter)
-                ->whereBetween('tanggalperiksa', [$startDate, $endDate])
-                ->get();
+                END"), '=', $messageFilter);
+            }
+
+            $detailData = $detailQuery->get();
 
             return view('qltmg_rekap_kodebooking', compact('detailData', 'messageFilter', 'startDate', 'endDate'));
         }
 
         $data = DB::table('qltmg_data_kodebooking')
             ->select(DB::raw("CASE
+                WHEN message IS NULL OR message = '' THEN '__EMPTY__'
                 WHEN message LIKE '%sudah terbit SEP%' THEN 'sudah terbit SEP'
                 WHEN message LIKE '%Rujukan untuk tanggal%' AND message LIKE '%tidak valid / masa berlaku habis%' THEN 'masa berlaku habis'
                 ELSE message
