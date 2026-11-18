@@ -126,15 +126,13 @@
         <thead>
             <tr>
                 <th style="width:3%;">No</th>
-                <th style="width:11%;">Kode Booking<br><small class="text-muted fw-normal">No. RM</small></th>
+                <th style="width:14%;">Informasi Pasien &amp; Booking<br><small class="text-muted fw-normal">Kode Booking, RM, ID Daftar &amp; Nama</small></th>
                 <th style="width:8%;">Tgl Periksa</th>
-                <th style="width:11%;">Waktu RS<br><small class="text-muted fw-normal">Timestamp</small></th>
+                <th style="width:11%;">Waktu RS<br><small class="text-muted fw-normal">Tanggal, Jam &amp; Epoch</small></th>
                 <th style="width:4.5%;">Task</th>
-                <th style="width:8%;">ID Daftar</th>
-                <th style="width:16%;">Dokter<br><small class="text-muted fw-normal">Poli &amp; Jadwal</small></th>
-                <th style="width:6%;">Code</th>
-                <th style="width:17%;">Message BPJS</th>
-                <th style="width:15.5%;" class="text-center">Aksi / Status</th>
+                <th style="width:16%;">Dokter &amp; Unit<br><small class="text-muted fw-normal">Poli &amp; Jam Jadwal</small></th>
+                <th style="width:23%;">Status &amp; Message BPJS<br><small class="text-muted fw-normal">Code &amp; Pesan Respon Bridging</small></th>
+                <th style="width:16.5%;" class="text-center">Aksi / Status</th>
             </tr>
         </thead>
         <tbody>
@@ -147,6 +145,7 @@
                 $rawReq = $item->request ?? '';
                 $idPend = $item->idpendaftaran ?? '';
                 $normVal = !empty($item->norm) ? $item->norm : '-';
+                $namaPasienVal = !empty($item->namapasien) ? $item->namapasien : '';
                 $tglPeriksaVal = !empty($item->tanggalperiksa) ? $item->tanggalperiksa : ($item->tanggal ?? '-');
                 $msg = ($item->message !== null && $item->message !== '')
                     ? $item->message
@@ -161,8 +160,20 @@
             <tr data-row-id="{{ $item->id }}" data-kb="{{ $item->kodebooking }}" data-taskid="{{ $item->taskid }}">
                 <td class="text-center"></td>
                 <td class="text-nowrap">
-                    <span class="font-monospace fw-bold">{{ $item->kodebooking }}</span>
-                    <div class="small text-muted">RM: <strong class="text-dark">{{ $normVal }}</strong></div>
+                    <div class="d-flex align-items-center gap-1">
+                        <span class="font-monospace fw-bold text-dark fs-6">{{ $item->kodebooking }}</span>
+                    </div>
+                    @if($namaPasienVal)
+                        <div class="fw-semibold text-primary text-truncate" style="max-width: 220px;" title="{{ $namaPasienVal }}">
+                            <i class="fas fa-user me-1" style="font-size:0.75rem;"></i>{{ $namaPasienVal }}
+                        </div>
+                    @endif
+                    <div class="small text-muted mt-1">
+                        <span>RM: <strong class="text-dark font-monospace">{{ $normVal }}</strong></span>
+                        @if($idPend)
+                            <span class="ms-1">| ID: <strong class="text-dark font-monospace">{{ $idPend }}</strong></span>
+                        @endif
+                    </div>
                 </td>
                 <td class="text-nowrap text-center">{{ $tglPeriksaVal }}</td>
                 <td class="text-nowrap">
@@ -172,7 +183,6 @@
                     <div class="font-monospace text-muted small" style="font-size:0.73rem;">{{ $item->waktu }}</div>
                 </td>
                 <td class="text-center"><span class="badge bg-primary px-2 fs-6">{{ $item->taskid }}</span></td>
-                <td class="text-nowrap">{{ $idPend }}</td>
                 <td>
                     <div class="text-truncate fw-semibold text-dark" style="max-width: 220px;" title="{{ $item->namadokter ?? '-' }}">
                         {{ $item->namadokter ?? '-' }}
@@ -186,11 +196,13 @@
                         @endif
                     </div>
                 </td>
-                <td class="text-center text-nowrap">
-                    <span class="status-badge {{ $badgeClass }} badge-taskid">{{ $badgeLabel }}</span>
-                </td>
                 <td>
-                    <div class="text-truncate" style="max-width: 260px;" title="{{ $msg }}">{{ $msg }}</div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="status-badge {{ $badgeClass }} badge-taskid">{{ $badgeLabel }}</span>
+                    </div>
+                    <div class="text-break" style="font-size:0.78rem; line-height:1.35; color:#334155;" title="{{ $msg }}">
+                        {{ $msg ?: '-' }}
+                    </div>
                 </td>
                 <td>
                     <div class="d-flex flex-column gap-1">
@@ -369,7 +381,7 @@ $(document).ready(function () {
         order: [[1, 'asc'], [4, 'asc']],
         language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json' },
         columnDefs: [
-            { orderable: false, targets: [0, 9] },
+            { orderable: false, targets: [0, 7] },
             { render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, targets: 0 }
         ]
     });
@@ -417,13 +429,20 @@ $(document).ready(function () {
         var rawResp = escapeAttr(r.response || '');
         var kbSafe = escapeAttr(r.kodebooking);
         var normSafe = escapeAttr(r.norm || '-');
+        var namaPasienSafe = escapeAttr(r.namapasien || '');
         var tglPeriksaSafe = escapeAttr(r.tanggalperiksa || r.tanggal || '-');
         var dokterSafe = escapeAttr(r.namadokter || '-');
         var poliSafe = escapeAttr(r.namapoli || '-');
         var tglTaskSafe = (r.tanggal && r.jam) ? (escapeAttr(r.tanggal) + ' ' + escapeAttr(r.jam)) : '';
 
-        var colBooking = '<span class="font-monospace fw-bold">' + kbSafe + '</span>' +
-                         '<div class="small text-muted">RM: <strong class="text-dark">' + normSafe + '</strong></div>';
+        var colBooking = '<div class="d-flex align-items-center gap-1">' +
+                            '<span class="font-monospace fw-bold text-dark fs-6">' + kbSafe + '</span>' +
+                         '</div>' +
+                         (namaPasienSafe ? '<div class="fw-semibold text-primary text-truncate" style="max-width: 220px;" title="' + namaPasienSafe + '"><i class="fas fa-user me-1" style="font-size:0.75rem;"></i>' + namaPasienSafe + '</div>' : '') +
+                         '<div class="small text-muted mt-1">' +
+                            '<span>RM: <strong class="text-dark font-monospace">' + normSafe + '</strong></span>' +
+                            (idPend ? '<span class="ms-1">| ID: <strong class="text-dark font-monospace">' + escapeAttr(idPend) + '</strong></span>' : '') +
+                         '</div>';
 
         var colWaktu = (tglTaskSafe ? '<div class="fw-semibold text-dark">' + tglTaskSafe + '</div>' : '') +
                        '<div class="font-monospace text-muted small" style="font-size:0.73rem;">' + escapeAttr(r.waktu) + '</div>';
@@ -433,6 +452,13 @@ $(document).ready(function () {
                             '<span class="badge bg-secondary text-truncate d-inline-block" style="max-width: 120px; font-size:0.68rem;" title="' + poliSafe + '">' + poliSafe + '</span>' +
                             (jadwal ? '<span class="badge bg-light text-dark border" style="font-size:0.68rem;">' + escapeAttr(jadwal) + '</span>' : '') +
                         '</div>';
+
+        var colStatusMsg = '<div class="d-flex align-items-center gap-2 mb-1">' +
+                                '<span class="status-badge ' + badgeClass + ' badge-taskid">' + badgeLabel + '</span>' +
+                           '</div>' +
+                           '<div class="text-break" style="font-size:0.78rem; line-height:1.35; color:#334155;" title="' + escapeAttr(msg) + '">' +
+                                (escapeAttr(msg) || '-') +
+                           '</div>';
 
         var colAksi = '<div class="d-flex flex-column gap-1">' +
                         '<div class="d-flex align-items-center justify-content-between gap-1">' +
@@ -458,10 +484,8 @@ $(document).ready(function () {
             tglPeriksaSafe,
             colWaktu,
             '<span class="badge bg-primary px-2 fs-6">' + escapeAttr(r.taskid) + '</span>',
-            escapeAttr(idPend),
             colDokter,
-            '<span class="status-badge ' + badgeClass + ' badge-taskid">' + badgeLabel + '</span>',
-            '<div class="text-truncate" style="max-width: 260px;" title="' + escapeAttr(msg) + '">' + escapeAttr(msg) + '</div>',
+            colStatusMsg,
             colAksi
         ];
     }
@@ -475,8 +499,6 @@ $(document).ready(function () {
         $tr.find('td').eq(2).addClass('text-nowrap text-center');
         $tr.find('td').eq(3).addClass('text-nowrap');
         $tr.find('td').eq(4).addClass('text-center');
-        $tr.find('td').eq(5).addClass('text-nowrap');
-        $tr.find('td').eq(7).addClass('text-center text-nowrap');
     }
 
     function upsertRowInDataTable(r) {
@@ -629,7 +651,7 @@ $(document).ready(function () {
     });
 
     $('#download_excel_' + tableId).on('click', function () {
-        var skip = [9];
+        var skip = [7];
         var headers = [];
         $table.find('thead th').each(function (i) { if (!skip.includes(i)) headers.push($(this).text().trim()); });
         var rows = [headers];

@@ -207,15 +207,24 @@ class PengirimanTaskIDController extends Controller
         ];
         $kbTable = $kbTables[$urlQL] ?? 'data_kodebooking';
         $kbInfo = \Illuminate\Support\Facades\DB::table($kbTable)
-            ->select('norm', 'tanggalperiksa', 'namadokter', 'namaunit as namapoli', 'jammulai', 'jamakhir')
+            ->select('norm', 'nojkn', 'tanggalperiksa', 'namadokter', 'namaunit as namapoli', 'jammulai', 'jamakhir')
             ->where('kodebooking', $record->kodebooking)
             ->orderByDesc('id')
             ->first();
+
+        $namaPasien = null;
+        if (!empty($kbInfo->nojkn) && \Illuminate\Support\Facades\Schema::hasTable('vclaim_kunjungan')) {
+            $namaPasien = \Illuminate\Support\Facades\DB::table('vclaim_kunjungan')
+                ->where('no_kartu', $kbInfo->nojkn)
+                ->where('tgl_kunjungan', $kbInfo->tanggalperiksa ?? $record->tanggal)
+                ->value('nama');
+        }
 
         return [
             'id' => $record->id,
             'kodebooking' => $record->kodebooking,
             'norm' => (!empty($kbInfo->norm) ? $kbInfo->norm : '-'),
+            'namapasien' => $namaPasien ?? '',
             'tanggalperiksa' => $kbInfo->tanggalperiksa ?? ($record->tanggal ?? '-'),
             'taskid' => $record->taskid,
             'waktu' => $record->waktu,

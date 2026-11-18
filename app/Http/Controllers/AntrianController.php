@@ -705,9 +705,14 @@ public function rekapKodeBooking(Request $request)
 
         $TaskID = DB::table('data_taskids as dt')
             ->leftJoin('data_kodebooking as dk', 'dt.kodebooking', '=', 'dk.kodebooking')
+            ->leftJoin('vclaim_kunjungan as vk', function ($join) {
+                $join->on('dk.nojkn', '=', 'vk.no_kartu')
+                     ->whereRaw('vk.tgl_kunjungan = dk.tanggalperiksa');
+            })
             ->select(
                 'dt.id', 'dt.kodebooking', 'dt.taskid', 'dt.waktu', 'dt.idpendaftaran', 'dt.jam', 'dt.code', 'dt.message', 'dt.tanggal', 'dt.request', 'dt.response', 'dt.reupload', 'dt.created_by', 'dt.updated_by',
-                'dk.norm', 'dk.tanggalperiksa',
+                'dk.norm', 'dk.nojkn', 'dk.tanggalperiksa',
+                'vk.nama as namapasien',
                 'dk.namadokter', 'dk.namaunit as namapoli', 'dk.jammulai', 'dk.jamakhir'
             );
 
@@ -883,9 +888,14 @@ public function qlkp_datakodebooking(Request $request)
     // Hanya ambil kolom yang dibutuhkan (hindari request/response TEXT besar)
     $qlkp_TaskID = DB::table('qlkp_data_taskids as dt')
         ->leftJoin('qlkp_data_kodebooking as dk', 'dt.kodebooking', '=', 'dk.kodebooking')
+        ->leftJoin('vclaim_kunjungan as vk', function ($join) {
+            $join->on('dk.nojkn', '=', 'vk.no_kartu')
+                 ->whereRaw('vk.tgl_kunjungan = dk.tanggalperiksa');
+        })
         ->select(
             'dt.id', 'dt.kodebooking', 'dt.taskid', 'dt.waktu', 'dt.idpendaftaran', 'dt.jam', 'dt.code', 'dt.message', 'dt.tanggal', 'dt.request', 'dt.response', 'dt.reupload', 'dt.created_by', 'dt.updated_by',
-            'dk.norm', 'dk.tanggalperiksa',
+            'dk.norm', 'dk.nojkn', 'dk.tanggalperiksa',
+            'vk.nama as namapasien',
             'dk.namadokter', 'dk.namaunit as namapoli', 'dk.jammulai', 'dk.jamakhir'
         );
 
@@ -1514,9 +1524,14 @@ public function qlkp_datakodebooking(Request $request)
 
         $qltmg_TaskID = DB::table('qltmg_data_taskids as dt')
             ->leftJoin('qltmg_data_kodebooking as dk', 'dt.kodebooking', '=', 'dk.kodebooking')
+            ->leftJoin('vclaim_kunjungan as vk', function ($join) {
+                $join->on('dk.nojkn', '=', 'vk.no_kartu')
+                     ->whereRaw('vk.tgl_kunjungan = dk.tanggalperiksa');
+            })
             ->select(
                 'dt.id', 'dt.kodebooking', 'dt.taskid', 'dt.waktu', 'dt.idpendaftaran', 'dt.jam', 'dt.code', 'dt.message', 'dt.tanggal', 'dt.request', 'dt.response', 'dt.reupload', 'dt.created_by', 'dt.updated_by',
-                'dk.norm', 'dk.tanggalperiksa',
+                'dk.norm', 'dk.nojkn', 'dk.tanggalperiksa',
+                'vk.nama as namapasien',
                 'dk.namadokter', 'dk.namaunit as namapoli', 'dk.jammulai', 'dk.jamakhir'
             );
 
