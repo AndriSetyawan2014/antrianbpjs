@@ -11,23 +11,23 @@
     background: var(--color-surface, #fff);
     border: 1px solid var(--color-border, #e3e6f0);
     border-radius: 10px;
-    padding: 10px 12px;
+    padding: 12px 14px;
     box-shadow: var(--shadow-sm);
     overflow-x: auto;
 }
 .taskid-table-wrap table.dataTable {
-    margin-top: 6px !important;
-    margin-bottom: 6px !important;
-    font-size: 0.76rem !important;
+    margin-top: 8px !important;
+    margin-bottom: 8px !important;
+    font-size: 0.81rem !important;
 }
 .taskid-table-wrap table.dataTable th,
 .taskid-table-wrap table.dataTable td {
-    padding: 4px 6px !important;
+    padding: 6px 8px !important;
     vertical-align: middle !important;
 }
 .taskid-table-wrap thead th {
     position: static !important;
-    font-size: 0.74rem !important;
+    font-size: 0.78rem !important;
     text-transform: uppercase;
     letter-spacing: 0.02em;
     white-space: nowrap;
@@ -38,18 +38,18 @@
     transition: background-color 1.2s ease;
 }
 .btn-action-task {
-    padding: 2px 5px !important;
-    font-size: 0.7rem !important;
+    padding: 3px 6px !important;
+    font-size: 0.72rem !important;
     line-height: 1.2 !important;
 }
 .btn-json-compact {
-    padding: 2px 6px !important;
-    font-size: 0.68rem !important;
+    padding: 3px 7px !important;
+    font-size: 0.72rem !important;
     line-height: 1.2 !important;
 }
 .badge-taskid {
-    font-size: 0.7rem !important;
-    padding: 3px 6px !important;
+    font-size: 0.73rem !important;
+    padding: 3px 7px !important;
 }
 </style>
 
@@ -125,25 +125,23 @@
     <table id="{{ $tableId }}" class="table table-hover table-striped table-bordered w-100" style="table-layout: auto;">
         <thead>
             <tr>
-                <th style="width:2.5%;">No</th>
-                <th style="width:7.5%;">Kode Booking</th>
-                <th style="width:5%;">No. RM</th>
-                <th style="width:6%;">Tgl Periksa</th>
-                <th style="width:7%;">Waktu</th>
-                <th style="width:3.5%;">Task</th>
-                <th style="width:6%;">ID Daftar</th>
-                <th style="width:9%;">Dokter</th>
-                <th style="width:6%;">Poli</th>
-                <th style="width:5%;">Jadwal</th>
-                <th style="width:4.5%;">Code</th>
-                <th style="width:11%;">Message</th>
-                <th style="width:6%;">Tgl Task</th>
-                <th style="width:4.5%;">Jam</th>
-                <th style="width:4%;" class="text-center">Req</th>
-                <th style="width:4%;" class="text-center">Resp</th>
+                <th style="width:3%;">No</th>
+                <th style="width:8%;">Kode Booking</th>
+                <th style="width:5.5%;">No. RM</th>
+                <th style="width:6.5%;">Tgl Periksa</th>
+                <th style="width:8%;">Waktu</th>
+                <th style="width:4%;">Task</th>
+                <th style="width:7%;">ID Daftar</th>
+                <th style="width:11%;">Dokter</th>
+                <th style="width:7%;">Poli</th>
+                <th style="width:6%;">Jadwal</th>
+                <th style="width:5%;">Code</th>
+                <th style="width:12%;">Message</th>
+                <th style="width:6.5%;">Tgl Task</th>
+                <th style="width:5%;">Jam</th>
                 <th style="width:3.5%;">Reup</th>
-                <th style="width:6.5%;" class="text-center">Source</th>
-                <th style="width:4.5%;">Aksi</th>
+                <th style="width:4%;">Source</th>
+                <th style="width:5%;" class="text-center">Aksi / JSON</th>
             </tr>
         </thead>
         <tbody>
@@ -173,8 +171,8 @@
                 <td class="text-nowrap font-monospace small">{{ $item->waktu }}</td>
                 <td class="text-center"><span class="badge bg-primary px-2">{{ $item->taskid }}</span></td>
                 <td class="text-nowrap">{{ $idPend }}</td>
-                <td><div class="text-truncate" style="max-width: 140px;" title="{{ $item->namadokter ?? '-' }}">{{ $item->namadokter ?? '-' }}</div></td>
-                <td><span class="badge bg-secondary text-truncate d-inline-block" style="max-width: 90px;" title="{{ $item->namapoli ?? '-' }}">{{ $item->namapoli ?? '-' }}</span></td>
+                <td><div class="text-truncate" style="max-width: 155px;" title="{{ $item->namadokter ?? '-' }}">{{ $item->namadokter ?? '-' }}</div></td>
+                <td><span class="badge bg-secondary text-truncate d-inline-block" style="max-width: 100px;" title="{{ $item->namapoli ?? '-' }}">{{ $item->namapoli ?? '-' }}</span></td>
                 <td class="text-nowrap text-center">
                     <small class="text-nowrap font-weight-bold">
                         {{ (isset($item->jammulai) && $item->jammulai) ? substr($item->jammulai, 0, 5) . '-' . substr($item->jamakhir, 0, 5) : '-' }}
@@ -184,36 +182,22 @@
                     <span class="status-badge {{ $badgeClass }} badge-taskid">{{ $badgeLabel }}</span>
                 </td>
                 <td>
-                    <div class="text-truncate" style="max-width: 160px;" title="{{ $msg }}">{{ $msg }}</div>
+                    <div class="text-truncate" style="max-width: 180px;" title="{{ $msg }}">{{ $msg }}</div>
                 </td>
                 <td class="text-nowrap text-center">{{ $item->tanggal }}</td>
                 <td class="text-nowrap text-center">{{ $item->jam }}</td>
-                <td class="text-center text-nowrap">
-                    <button class="btn-json-view btn-json-compact"
-                            data-json="{{ htmlspecialchars($rawReq, ENT_QUOTES, 'UTF-8') }}"
-                            data-title="Request — {{ $item->taskid }}">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </td>
-                <td class="text-center text-nowrap">
-                    <button class="btn-json-view btn-json-compact"
-                            data-json="{{ htmlspecialchars($rawResp, ENT_QUOTES, 'UTF-8') }}"
-                            data-title="Response — {{ $item->taskid }}">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </td>
                 <td class="text-center">{{ $item->reupload }}</td>
                 <td class="text-center text-nowrap">
                     @if($isAutoGen)
-                        <span class="badge" style="background-color: #7c3aed; color: #fff; font-size: 0.65rem;" title="Dibuat otomatis oleh sistem (Auto Generate)">
+                        <span class="badge" style="background-color: #7c3aed; color: #fff; font-size: 0.68rem;" title="Dibuat otomatis oleh sistem (Auto Generate)">
                             Auto
                         </span>
                     @elseif($isManual)
-                        <span class="badge bg-warning text-dark" style="font-size: 0.65rem;" title="Dibuat manual oleh operator: {{ $createdBy }}">
+                        <span class="badge bg-warning text-dark" style="font-size: 0.68rem;" title="Dibuat manual oleh operator: {{ $createdBy }}">
                             Manual
                         </span>
                     @else
-                        <span class="badge bg-info text-dark" style="font-size: 0.65rem;" title="Hasil sinkronisasi dari SIMRS">
+                        <span class="badge bg-info text-dark" style="font-size: 0.68rem;" title="Hasil sinkronisasi dari SIMRS">
                             SIMRS
                         </span>
                     @endif
@@ -224,28 +208,42 @@
                     @endif
                 </td>
                 <td class="text-center text-nowrap">
-                    <button class="btn btn-sm btn-info btn-duplicate btn-action-task"
-                        data-kodebooking="{{ $item->kodebooking }}"
-                        data-taskid="{{ $item->taskid }}"
-                        data-waktu="{{ $item->waktu }}"
-                        data-idpendaftaran="{{ $idPend }}"
-                        title="Duplikat Task ID ini">
-                        <i class="fas fa-copy"></i>
-                    </button>
-                    <button class="btn btn-sm btn-warning btn-edit ms-1 btn-action-task"
-                        data-id="{{ $item->id }}"
-                        data-kodebooking="{{ $item->kodebooking }}"
-                        data-taskid="{{ $item->taskid }}"
-                        data-waktu="{{ $item->waktu }}"
-                        data-idpendaftaran="{{ $idPend }}"
-                        title="Edit Task ID ini">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-sm btn-success btn-sync-kb ms-1 btn-action-task"
-                        data-kodebooking="{{ $item->kodebooking }}"
-                        title="Sinkronisasi Ulang Semua Task ID untuk Kode Booking Ini">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
+                    <div class="d-inline-flex gap-1 align-items-center">
+                        <button class="btn btn-outline-secondary btn-json-view btn-json-compact"
+                                data-json="{{ htmlspecialchars($rawReq, ENT_QUOTES, 'UTF-8') }}"
+                                data-title="Request — Task {{ $item->taskid }}"
+                                title="Lihat Request">
+                            Req
+                        </button>
+                        <button class="btn btn-outline-info btn-json-view btn-json-compact"
+                                data-json="{{ htmlspecialchars($rawResp, ENT_QUOTES, 'UTF-8') }}"
+                                data-title="Response — Task {{ $item->taskid }}"
+                                title="Lihat Response">
+                            Resp
+                        </button>
+                        <button class="btn btn-sm btn-info btn-duplicate btn-action-task"
+                            data-kodebooking="{{ $item->kodebooking }}"
+                            data-taskid="{{ $item->taskid }}"
+                            data-waktu="{{ $item->waktu }}"
+                            data-idpendaftaran="{{ $idPend }}"
+                            title="Duplikat Task ID ini">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button class="btn btn-sm btn-warning btn-edit btn-action-task"
+                            data-id="{{ $item->id }}"
+                            data-kodebooking="{{ $item->kodebooking }}"
+                            data-taskid="{{ $item->taskid }}"
+                            data-waktu="{{ $item->waktu }}"
+                            data-idpendaftaran="{{ $idPend }}"
+                            title="Edit Task ID ini">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-success btn-sync-kb btn-action-task"
+                            data-kodebooking="{{ $item->kodebooking }}"
+                            title="Sinkronisasi Ulang Semua Task ID untuk Kode Booking Ini">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
                 </td>
             </tr>
             @endforeach
@@ -360,7 +358,7 @@ $(document).ready(function () {
         order: [[1, 'asc'], [5, 'asc']],
         language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json' },
         columnDefs: [
-            { orderable: false, targets: [0, 14, 15, 18] },
+            { orderable: false, targets: [0, 16] },
             { render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, targets: 0 }
         ]
     });
@@ -424,20 +422,22 @@ $(document).ready(function () {
             '<span class="font-monospace small">' + escapeAttr(r.waktu) + '</span>',
             '<span class="badge bg-primary px-2">' + escapeAttr(r.taskid) + '</span>',
             escapeAttr(idPend),
-            '<div class="text-truncate" style="max-width: 140px;" title="' + dokterSafe + '">' + dokterSafe + '</div>',
-            '<span class="badge bg-secondary text-truncate d-inline-block" style="max-width: 90px;" title="' + poliSafe + '">' + poliSafe + '</span>',
+            '<div class="text-truncate" style="max-width: 155px;" title="' + dokterSafe + '">' + dokterSafe + '</div>',
+            '<span class="badge bg-secondary text-truncate d-inline-block" style="max-width: 100px;" title="' + poliSafe + '">' + poliSafe + '</span>',
             '<small class="text-nowrap font-weight-bold">' + escapeAttr(jadwal) + '</small>',
             '<span class="status-badge ' + badgeClass + ' badge-taskid">' + badgeLabel + '</span>',
-            '<div class="text-truncate" style="max-width: 160px;" title="' + escapeAttr(msg) + '">' + escapeAttr(msg) + '</div>',
+            '<div class="text-truncate" style="max-width: 180px;" title="' + escapeAttr(msg) + '">' + escapeAttr(msg) + '</div>',
             escapeAttr(r.tanggal || ''),
             escapeAttr(r.jam || ''),
-            '<button class="btn-json-view btn-json-compact" data-json="' + rawReq + '" data-title="Request — ' + escapeAttr(r.taskid) + '"><i class="fas fa-eye"></i></button>',
-            '<button class="btn-json-view btn-json-compact" data-json="' + rawResp + '" data-title="Response — ' + escapeAttr(r.taskid) + '"><i class="fas fa-eye"></i></button>',
             escapeAttr(r.reupload != null ? r.reupload : 1),
             buildSourceBadge(r),
-            '<button class="btn btn-sm btn-info btn-duplicate btn-action-task" data-kodebooking="' + kbSafe + '" data-taskid="' + escapeAttr(r.taskid) + '" data-waktu="' + escapeAttr(r.waktu) + '" data-idpendaftaran="' + escapeAttr(idPend) + '" title="Duplikat Task ID ini"><i class="fas fa-copy"></i></button>' +
-            '<button class="btn btn-sm btn-warning btn-edit ms-1 btn-action-task" data-id="' + escapeAttr(r.id) + '" data-kodebooking="' + kbSafe + '" data-taskid="' + escapeAttr(r.taskid) + '" data-waktu="' + escapeAttr(r.waktu) + '" data-idpendaftaran="' + escapeAttr(idPend) + '" title="Edit Task ID ini"><i class="fas fa-edit"></i></button>' +
-            '<button class="btn btn-sm btn-success btn-sync-kb ms-1 btn-action-task" data-kodebooking="' + kbSafe + '" title="Sinkronisasi Ulang Semua Task ID untuk Kode Booking Ini"><i class="fas fa-sync-alt"></i></button>'
+            '<div class="d-inline-flex gap-1 align-items-center">' +
+                '<button class="btn btn-outline-secondary btn-json-view btn-json-compact" data-json="' + rawReq + '" data-title="Request — Task ' + escapeAttr(r.taskid) + '" title="Lihat Request">Req</button>' +
+                '<button class="btn btn-outline-info btn-json-view btn-json-compact" data-json="' + rawResp + '" data-title="Response — Task ' + escapeAttr(r.taskid) + '" title="Lihat Response">Resp</button>' +
+                '<button class="btn btn-sm btn-info btn-duplicate btn-action-task" data-kodebooking="' + kbSafe + '" data-taskid="' + escapeAttr(r.taskid) + '" data-waktu="' + escapeAttr(r.waktu) + '" data-idpendaftaran="' + escapeAttr(idPend) + '" title="Duplikat Task ID ini"><i class="fas fa-copy"></i></button>' +
+                '<button class="btn btn-sm btn-warning btn-edit btn-action-task" data-id="' + escapeAttr(r.id) + '" data-kodebooking="' + kbSafe + '" data-taskid="' + escapeAttr(r.taskid) + '" data-waktu="' + escapeAttr(r.waktu) + '" data-idpendaftaran="' + escapeAttr(idPend) + '" title="Edit Task ID ini"><i class="fas fa-edit"></i></button>' +
+                '<button class="btn btn-sm btn-success btn-sync-kb btn-action-task" data-kodebooking="' + kbSafe + '" title="Sinkronisasi Ulang Semua Task ID untuk Kode Booking Ini"><i class="fas fa-sync-alt"></i></button>' +
+            '</div>'
         ];
     }
 
@@ -445,21 +445,20 @@ $(document).ready(function () {
         $tr.attr('data-row-id', r.id)
            .attr('data-kb', r.kodebooking)
            .attr('data-taskid', r.taskid);
+        $tr.find('td').eq(0).addClass('text-center');
         $tr.find('td').eq(1).addClass('text-nowrap');
-        $tr.find('td').eq(2).addClass('text-nowrap');
-        $tr.find('td').eq(3).addClass('text-nowrap');
+        $tr.find('td').eq(2).addClass('text-nowrap text-center');
+        $tr.find('td').eq(3).addClass('text-nowrap text-center');
         $tr.find('td').eq(4).addClass('text-nowrap');
         $tr.find('td').eq(5).addClass('text-center');
         $tr.find('td').eq(6).addClass('text-nowrap');
-        $tr.find('td').eq(9).addClass('text-nowrap');
+        $tr.find('td').eq(9).addClass('text-nowrap text-center');
         $tr.find('td').eq(10).addClass('text-center text-nowrap');
-        $tr.find('td').eq(12).addClass('text-nowrap');
-        $tr.find('td').eq(13).addClass('text-nowrap');
-        $tr.find('td').eq(14).addClass('text-center text-nowrap');
+        $tr.find('td').eq(12).addClass('text-nowrap text-center');
+        $tr.find('td').eq(13).addClass('text-nowrap text-center');
+        $tr.find('td').eq(14).addClass('text-center');
         $tr.find('td').eq(15).addClass('text-center text-nowrap');
-        $tr.find('td').eq(16).addClass('text-center');
-        $tr.find('td').eq(17).addClass('text-center text-nowrap');
-        $tr.find('td').eq(18).addClass('text-center text-nowrap');
+        $tr.find('td').eq(16).addClass('text-center text-nowrap');
     }
 
     function upsertRowInDataTable(r) {
@@ -612,7 +611,7 @@ $(document).ready(function () {
     });
 
     $('#download_excel_' + tableId).on('click', function () {
-        var skip = [14, 15, 18];
+        var skip = [16];
         var headers = [];
         $table.find('thead th').each(function (i) { if (!skip.includes(i)) headers.push($(this).text().trim()); });
         var rows = [headers];
