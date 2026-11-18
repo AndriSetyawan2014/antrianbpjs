@@ -392,16 +392,9 @@ $(document).ready(function() {
         language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json' },
         columnDefs: [
             { orderable: false, targets: [0, 6] },
-            { className: 'text-center', targets: [0, 2, 4, 6] }
+            { className: 'text-center', targets: [0, 2, 4, 6] },
+            { render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, targets: 0 }
         ]
-    });
-
-    // Nomor urut dinamis saat sorting, searching, atau paging
-    dtMain.on('order.dt search.dt page.dt draw.dt', function () {
-        var info = dtMain.page.info();
-        dtMain.column(0, { search: 'applied', order: 'applied' }).nodes().each(function (cell, i) {
-            cell.innerHTML = (info.start + i + 1);
-        });
     });
 
     var hideKey = 'hideDupKb_' + tableId;
