@@ -126,7 +126,7 @@
         <thead>
             <tr>
                 <th style="width:3%;">No</th>
-                <th style="width:14%;">Informasi Pasien &amp; Booking<br><small class="text-muted fw-normal">Kode Booking, RM, ID Daftar &amp; Nama</small></th>
+                <th style="width:14%;">Informasi Pasien &amp; Booking<br><small class="text-muted fw-normal">Kode Booking, RM &amp; ID Daftar</small></th>
                 <th style="width:8%;">Tgl Periksa</th>
                 <th style="width:11%;">Waktu RS<br><small class="text-muted fw-normal">Tanggal, Jam &amp; Epoch</small></th>
                 <th style="width:4.5%;">Task</th>
@@ -145,7 +145,6 @@
                 $rawReq = $item->request ?? '';
                 $idPend = $item->idpendaftaran ?? '';
                 $normVal = !empty($item->norm) ? $item->norm : '-';
-                $namaPasienVal = !empty($item->namapasien) ? $item->namapasien : '';
                 $tglPeriksaVal = !empty($item->tanggalperiksa) ? $item->tanggalperiksa : ($item->tanggal ?? '-');
                 $msg = ($item->message !== null && $item->message !== '')
                     ? $item->message
@@ -163,11 +162,6 @@
                     <div class="d-flex align-items-center gap-1">
                         <span class="font-monospace fw-bold text-dark fs-6">{{ $item->kodebooking }}</span>
                     </div>
-                    @if($namaPasienVal)
-                        <div class="fw-semibold text-primary text-truncate" style="max-width: 220px;" title="{{ $namaPasienVal }}">
-                            <i class="fas fa-user me-1" style="font-size:0.75rem;"></i>{{ $namaPasienVal }}
-                        </div>
-                    @endif
                     <div class="small text-muted mt-1">
                         <span>RM: <strong class="text-dark font-monospace">{{ $normVal }}</strong></span>
                         @if($idPend)
@@ -429,7 +423,6 @@ $(document).ready(function () {
         var rawResp = escapeAttr(r.response || '');
         var kbSafe = escapeAttr(r.kodebooking);
         var normSafe = escapeAttr(r.norm || '-');
-        var namaPasienSafe = escapeAttr(r.namapasien || '');
         var tglPeriksaSafe = escapeAttr(r.tanggalperiksa || r.tanggal || '-');
         var dokterSafe = escapeAttr(r.namadokter || '-');
         var poliSafe = escapeAttr(r.namapoli || '-');
@@ -438,7 +431,6 @@ $(document).ready(function () {
         var colBooking = '<div class="d-flex align-items-center gap-1">' +
                             '<span class="font-monospace fw-bold text-dark fs-6">' + kbSafe + '</span>' +
                          '</div>' +
-                         (namaPasienSafe ? '<div class="fw-semibold text-primary text-truncate" style="max-width: 220px;" title="' + namaPasienSafe + '"><i class="fas fa-user me-1" style="font-size:0.75rem;"></i>' + namaPasienSafe + '</div>' : '') +
                          '<div class="small text-muted mt-1">' +
                             '<span>RM: <strong class="text-dark font-monospace">' + normSafe + '</strong></span>' +
                             (idPend ? '<span class="ms-1">| ID: <strong class="text-dark font-monospace">' + escapeAttr(idPend) + '</strong></span>' : '') +
