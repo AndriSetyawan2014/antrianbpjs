@@ -956,21 +956,31 @@ public function qlkp_datakodebooking(Request $request)
         }
     }
 
-    public function qlkp_sync_jadwal_bpjs(Request $request)
+    public function sync_jadwal_bpjs_by_branch(Request $request, string $urlQL = 'QLKP')
     {
         $startDate = $request->input('start_date', Carbon::now()->toDateString());
         $endDate = $request->input('end_date', Carbon::now()->toDateString());
-        $urlQL = 'QLKP';
+        $urlQL = strtoupper($urlQL);
+
+        $tableKb = 'data_kodebooking';
+        if ($urlQL === 'QLKP') {
+            $tableKb = 'qlkp_data_kodebooking';
+        } elseif ($urlQL === 'QLTMG') {
+            $tableKb = 'qltmg_data_kodebooking';
+        }
 
         $this->ensureBpjsJadwalTableExists();
 
-        $poliList = DB::table('qlkp_data_kodebooking')
-            ->whereBetween('tanggalperiksa', [$startDate, $endDate])
-            ->whereNotNull('kodeunit')
-            ->where('kodeunit', '!=', '')
-            ->distinct()
-            ->pluck('kodeunit')
-            ->toArray();
+        $poliList = [];
+        if (Schema::hasTable($tableKb)) {
+            $poliList = DB::table($tableKb)
+                ->whereBetween('tanggalperiksa', [$startDate, $endDate])
+                ->whereNotNull('kodeunit')
+                ->where('kodeunit', '!=', '')
+                ->distinct()
+                ->pluck('kodeunit')
+                ->toArray();
+        }
 
         if (empty($poliList)) {
             $poliList = ['BED', 'OBG', 'ANA', 'INT', 'MAT', 'JIW', 'SAR', 'GIG', 'THT', 'KUL', 'PAR'];
@@ -1029,14 +1039,30 @@ public function qlkp_datakodebooking(Request $request)
         return response()->json([
             'metadata' => [
                 'code' => 200,
-                'message' => "Berhasil menyinkronkan {$totalSynced} data jadwal dokter dari BPJS Bridging."
+                'message' => "Berhasil menyinkronkan {$totalSynced} data jadwal dokter dari BPJS Bridging ({$urlQL})."
             ],
             'total_synced' => $totalSynced
         ]);
     }
 
-    public function qlkp_kesesuaian_jadwal(Request $request)
+    public function qlkp_sync_jadwal_bpjs(Request $request)
     {
+        return $this->sync_jadwal_bpjs_by_branch($request, 'QLKP');
+    }
+
+    public function sync_jadwal_bpjs(Request $request)
+    {
+        return $this->sync_jadwal_bpjs_by_branch($request, 'QLJ');
+    }
+
+    public function qltmg_sync_jadwal_bpjs(Request $request)
+    {
+        return $this->sync_jadwal_bpjs_by_branch($request, 'QLTMG');
+    }
+
+    public function kesesuaian_jadwal_by_branch(Request $request, string $urlQL = 'QLKP')
+    {
+        $urlQL = strtoupper($urlQL);
         $today = Carbon::now();
         $startDate = $request->input('start_date', $today->copy()->startOfMonth()->toDateString());
         $endDate = $request->input('end_date', $today->toDateString());
@@ -1044,15 +1070,47 @@ public function qlkp_datakodebooking(Request $request)
         $dokterFilter = $request->input('namadokter');
         $poliFilter = $request->input('nmpoli');
 
-        if (!Schema::hasTable('qlkp_data_kodebooking') || !Schema::hasTable('qlkp_data_taskids')) {
-            return redirect()->back()->with('error', 'Tabel qlkp_data_kodebooking atau qlkp_data_taskids tidak ditemukan.');
+        $config = [
+            'table_kb' => 'qlkp_data_kodebooking',
+            'table_task' => 'qlkp_data_taskids',
+            'view' => 'qlkp_kesesuaian_jadwal',
+            'nmkc' => 'SLEMAN',
+            'nmppk' => 'RSU QUEEN LATIFA KULON PROGO',
+            'cache_prefix' => 'qlkp',
+        ];
+
+        if ($urlQL === 'QLJ') {
+            $config = [
+                'table_kb' => 'data_kodebooking',
+                'table_task' => 'data_taskids',
+                'view' => 'kesesuaian_jadwal',
+                'nmkc' => 'SLEMAN / YOGYAKARTA',
+                'nmppk' => 'RS QUEEN LATIFA YOGYAKARTA',
+                'cache_prefix' => 'qlj',
+            ];
+        } elseif ($urlQL === 'QLTMG') {
+            $config = [
+                'table_kb' => 'qltmg_data_kodebooking',
+                'table_task' => 'qltmg_data_taskids',
+                'view' => 'qltmg_kesesuaian_jadwal',
+                'nmkc' => 'MAGELANG / TEMANGGUNG',
+                'nmppk' => 'RSU QUEEN LATIFA TEMANGGUNG',
+                'cache_prefix' => 'qltmg',
+            ];
+        }
+
+        $tableKb = $config['table_kb'];
+        $tableTask = $config['table_task'];
+
+        if (!Schema::hasTable($tableKb) || !Schema::hasTable($tableTask)) {
+            return redirect()->back()->with('error', "Tabel {$tableKb} atau {$tableTask} tidak ditemukan.");
         }
 
         $this->ensureBpjsJadwalTableExists();
 
         // Ambil jadwal resmi HFIS BPJS yang sudah disinkronkan
         $bpjsJadwalRecords = DB::table('bpjs_jadwal_dokter')
-            ->where('kode_ql', 'QLKP')
+            ->where('kode_ql', $urlQL)
             ->whereBetween('tanggal', [$startDate, $endDate])
             ->get();
 
@@ -1068,7 +1126,7 @@ public function qlkp_datakodebooking(Request $request)
         $antrolLogMap = [];
         if (Schema::hasTable('antrean_per_tanggal_logs')) {
             $antrolLogs = DB::table('antrean_per_tanggal_logs')
-                ->where('kode_ql', 'QLKP')
+                ->where('kode_ql', $urlQL)
                 ->whereBetween('tanggal', [$startDate, $endDate])
                 ->whereNotNull('jampraktek')
                 ->where('jampraktek', '!=', '')
@@ -1084,8 +1142,9 @@ public function qlkp_datakodebooking(Request $request)
             }
         }
 
-        $listDokter = Cache::remember('qlkp_list_dokter_v1', 600, function () {
-            return DB::table('qlkp_data_kodebooking')
+        $cacheKeyDokter = "{$config['cache_prefix']}_list_dokter_v1";
+        $listDokter = Cache::remember($cacheKeyDokter, 600, function () use ($tableKb) {
+            return DB::table($tableKb)
                 ->whereNotNull('namadokter')
                 ->where('namadokter', '!=', '')
                 ->distinct()
@@ -1093,8 +1152,9 @@ public function qlkp_datakodebooking(Request $request)
                 ->pluck('namadokter');
         });
 
-        $listPoli = Cache::remember('qlkp_list_poli_v1', 600, function () {
-            return DB::table('qlkp_data_kodebooking')
+        $cacheKeyPoli = "{$config['cache_prefix']}_list_poli_v1";
+        $listPoli = Cache::remember($cacheKeyPoli, 600, function () use ($tableKb) {
+            return DB::table($tableKb)
                 ->whereNotNull('namaunit')
                 ->where('namaunit', '!=', '')
                 ->distinct()
@@ -1102,7 +1162,7 @@ public function qlkp_datakodebooking(Request $request)
                 ->pluck('namaunit');
         });
 
-        $query = DB::table('qlkp_data_kodebooking')
+        $query = DB::table($tableKb)
             ->select(
                 'tanggalperiksa',
                 'bpjs_kodedokter',
@@ -1128,8 +1188,8 @@ public function qlkp_datakodebooking(Request $request)
             ->orderBy('namadokter', 'asc')
             ->get();
 
-        $task4Records = DB::table('qlkp_data_taskids as t')
-            ->join('qlkp_data_kodebooking as kb', 't.kodebooking', '=', 'kb.kodebooking')
+        $task4Records = DB::table("{$tableTask} as t")
+            ->join("{$tableKb} as kb", 't.kodebooking', '=', 'kb.kodebooking')
             ->where('t.taskid', 4)
             ->whereBetween('kb.tanggalperiksa', [$startDate, $endDate])
             ->select(
@@ -1152,14 +1212,13 @@ public function qlkp_datakodebooking(Request $request)
         foreach ($task4Records as $t4) {
             $jm = $t4->jammulai ? substr($t4->jammulai, 0, 5) : '';
             $ja = $t4->jamakhir ? substr($t4->jamakhir, 0, 5) : '';
-            // Kunci spesifik per tanggal + dokter + poli + jadwal yang dipilih pasien
             $key = $t4->tanggalperiksa . '|' . trim($t4->namadokter) . '|' . trim($t4->namaunit) . '|' . $jm . '|' . $ja;
             if (!isset($firstTask4Map[$key])) {
                 $firstTask4Map[$key] = $t4;
             }
         }
 
-        $firstBookingRecords = DB::table('qlkp_data_kodebooking')
+        $firstBookingRecords = DB::table($tableKb)
             ->whereBetween('tanggalperiksa', [$startDate, $endDate])
             ->whereNotNull('namadokter')
             ->where('namadokter', '!=', '')
@@ -1330,8 +1389,8 @@ public function qlkp_datakodebooking(Request $request)
 
             $results[] = (object)[
                 'bulan_upd' => $bulanUpd,
-                'nmkc' => 'SLEMAN',
-                'nmppk' => 'RSU QUEEN LATIFA KULON PROGO',
+                'nmkc' => $config['nmkc'],
+                'nmppk' => $config['nmppk'],
                 'namadokter' => $sch->namadokter,
                 'nmpoli' => $sch->nmpoli,
                 'month_periode' => $monthPeriod,
@@ -1353,7 +1412,7 @@ public function qlkp_datakodebooking(Request $request)
         $totalJadwal = count($schedules);
         $persenSesuai = $totalJadwal > 0 ? round(($totalSesuai / $totalJadwal) * 100, 1) : 0;
 
-        return view('qlkp_kesesuaian_jadwal', compact(
+        return view($config['view'], compact(
             'results',
             'startDate',
             'endDate',
@@ -1367,6 +1426,21 @@ public function qlkp_datakodebooking(Request $request)
             'totalTidakSesuai',
             'persenSesuai'
         ));
+    }
+
+    public function qlkp_kesesuaian_jadwal(Request $request)
+    {
+        return $this->kesesuaian_jadwal_by_branch($request, 'QLKP');
+    }
+
+    public function kesesuaian_jadwal(Request $request)
+    {
+        return $this->kesesuaian_jadwal_by_branch($request, 'QLJ');
+    }
+
+    public function qltmg_kesesuaian_jadwal(Request $request)
+    {
+        return $this->kesesuaian_jadwal_by_branch($request, 'QLTMG');
     }
 
     public function qlkp_rekap_taskid(Request $request)

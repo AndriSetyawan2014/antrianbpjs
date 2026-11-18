@@ -58,12 +58,12 @@
 
         <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddTaskIDJogja"
-           aria-expanded="{{ Request::is('TaskID*') || Request::is('taskid*') || Request::is('rekap_taskid*') || Request::is('monitoring_taskid*') ? 'true' : 'false' }}">
+           aria-expanded="{{ Request::is('TaskID*') || Request::is('taskid*') || Request::is('rekap_taskid*') || Request::is('monitoring_taskid*') || Request::is('kesesuaian_jadwal*') ? 'true' : 'false' }}">
             <i class="fas fa-tasks nav-icon"></i>
             <span>Task ID</span>
-            <i class="fas fa-angle-down arrow-icon {{ Request::is('TaskID*') || Request::is('taskid*') || Request::is('rekap_taskid*') || Request::is('monitoring_taskid*') ? 'rotated' : '' }}"></i>
+            <i class="fas fa-angle-down arrow-icon {{ Request::is('TaskID*') || Request::is('taskid*') || Request::is('rekap_taskid*') || Request::is('monitoring_taskid*') || Request::is('kesesuaian_jadwal*') ? 'rotated' : '' }}"></i>
         </button>
-        <div class="collapse {{ Request::is('TaskID*') || Request::is('taskid*') || Request::is('rekap_taskid*') || Request::is('monitoring_taskid*') ? 'show' : '' }}"
+        <div class="collapse {{ Request::is('TaskID*') || Request::is('taskid*') || Request::is('rekap_taskid*') || Request::is('monitoring_taskid*') || Request::is('kesesuaian_jadwal*') ? 'show' : '' }}"
              id="ddTaskIDJogja">
             <ul class="nav flex-column ms-3">
                 <li class="nav-item">
@@ -82,6 +82,12 @@
                     <a href="{{ url('/rekap_taskid') }}"
                        class="nav-link {{ Request::is('rekap_taskid*') ? 'active' : '' }}">
                         <i class="fas fa-clipboard-list nav-icon"></i> <span>Rekap Task ID</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url('/kesesuaian_jadwal') }}"
+                       class="nav-link {{ Request::is('kesesuaian_jadwal*') ? 'active' : '' }}">
+                        <i class="fas fa-user-clock nav-icon"></i> <span>Kesesuaian Jadwal</span>
                     </a>
                 </li>
             </ul>
@@ -186,12 +192,12 @@
 
         <button type="button" class="nav-link sidebar-collapse-btn" data-bs-toggle="collapse"
            data-bs-target="#ddTaskIDTMG"
-           aria-expanded="{{ Request::is('qltmg_TaskID*') || Request::is('qltmg_taskid*') || Request::is('qltmg-taskid*') || Request::is('qltmg_rekap_taskid*') || Request::is('qltmg_monitoring_taskid*') ? 'true' : 'false' }}">
+           aria-expanded="{{ Request::is('qltmg_TaskID*') || Request::is('qltmg_taskid*') || Request::is('qltmg-taskid*') || Request::is('qltmg_rekap_taskid*') || Request::is('qltmg_monitoring_taskid*') || Request::is('qltmg_kesesuaian_jadwal*') ? 'true' : 'false' }}">
             <i class="fas fa-tasks nav-icon"></i>
             <span>Task ID</span>
-            <i class="fas fa-angle-down arrow-icon {{ Request::is('qltmg_TaskID*') || Request::is('qltmg_taskid*') || Request::is('qltmg-taskid*') || Request::is('qltmg_rekap_taskid*') || Request::is('qltmg_monitoring_taskid*') ? 'rotated' : '' }}"></i>
+            <i class="fas fa-angle-down arrow-icon {{ Request::is('qltmg_TaskID*') || Request::is('qltmg_taskid*') || Request::is('qltmg-taskid*') || Request::is('qltmg_rekap_taskid*') || Request::is('qltmg_monitoring_taskid*') || Request::is('qltmg_kesesuaian_jadwal*') ? 'rotated' : '' }}"></i>
         </button>
-        <div class="collapse {{ Request::is('qltmg_TaskID*') || Request::is('qltmg_taskid*') || Request::is('qltmg-taskid*') || Request::is('qltmg_rekap_taskid*') || Request::is('qltmg_monitoring_taskid*') ? 'show' : '' }}"
+        <div class="collapse {{ Request::is('qltmg_TaskID*') || Request::is('qltmg_taskid*') || Request::is('qltmg-taskid*') || Request::is('qltmg_rekap_taskid*') || Request::is('qltmg_monitoring_taskid*') || Request::is('qltmg_kesesuaian_jadwal*') ? 'show' : '' }}"
              id="ddTaskIDTMG">
             <ul class="nav flex-column ms-3">
                 <li class="nav-item">
@@ -210,6 +216,12 @@
                     <a href="{{ url('/qltmg_rekap_taskid') }}"
                        class="nav-link {{ Request::is('qltmg_rekap_taskid*') ? 'active' : '' }}">
                         <i class="fas fa-clipboard-list nav-icon"></i> <span>Rekap Task ID</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url('/qltmg_kesesuaian_jadwal') }}"
+                       class="nav-link {{ Request::is('qltmg_kesesuaian_jadwal*') ? 'active' : '' }}">
+                        <i class="fas fa-user-clock nav-icon"></i> <span>Kesesuaian Jadwal</span>
                     </a>
                 </li>
             </ul>

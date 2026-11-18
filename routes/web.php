@@ -64,6 +64,8 @@ Route::get('/TaskID', [AntrianController::class, 'TaskID'])->name('TaskID');
 Route::get('/monitoring_taskid', [AntrianController::class, 'monitoringTaskid'])->name('monitoring_taskid');
 Route::get('/monitoring_taskid/{kodebooking}', [AntrianController::class, 'getMonitoringTaskidDetail']);
 Route::get('/rekap_taskid', [AntrianController::class, 'rekapTaskId'])->name('rekap_taskid');
+Route::get('/kesesuaian_jadwal', [AntrianController::class, 'kesesuaian_jadwal'])->name('kesesuaian_jadwal');
+Route::get('/sync_jadwal_bpjs', [AntrianController::class, 'sync_jadwal_bpjs'])->name('sync_jadwal_bpjs');
 Route::get('/get-patient-data', [AntrianController::class, 'getPatientData']);
 Route::get('/get-patient-data-kulonprogo', [AntrianController::class, 'getPatientDataKulonProgo']);
 Route::get('/get-patient-data-temanggung', [AntrianController::class, 'getPatientDataTemanggung']);
@@ -115,6 +117,8 @@ Route::get('/qltmg_TaskID', [AntrianController::class, 'qltmg_TaskID'])->name('q
 Route::get('/qltmg_taskid/filter', [AntrianController::class, 'qltmg_TaskID'])->name('qltmg_taskid.filter');
 Route::get('/qltmg_taskid/reset', [AntrianController::class, 'qltmg_TaskID'])->name('qltmg_taskid.reset');
 Route::get('/qltmg_rekap_taskid', [AntrianController::class, 'qltmg_rekap_taskid'])->name('qltmg_rekap_taskid');
+Route::get('/qltmg_kesesuaian_jadwal', [AntrianController::class, 'qltmg_kesesuaian_jadwal'])->name('qltmg_kesesuaian_jadwal');
+Route::get('/qltmg_sync_jadwal_bpjs', [AntrianController::class, 'qltmg_sync_jadwal_bpjs'])->name('qltmg_sync_jadwal_bpjs');
 
 // Export Excel - QL Temanggung
 Route::get('/export-qltmg-kodebooking', function () {
