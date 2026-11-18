@@ -311,30 +311,34 @@
 
 {{-- Modal Detail Task ID --}}
 <div class="modal fade" id="modalDetailTask" tabindex="-1" aria-labelledby="modalDetailTaskLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header bg-info">
-        <h5 class="modal-title" id="modalDetailTaskLabel">Detail Task ID - <span id="detailKodebookingTitle"></span></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="max-width: 94vw; width: 1320px;">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header py-2 px-3" style="background: var(--color-primary, #0f4c5c); color: #fff;">
+        <h6 class="modal-title fw-bold mb-0" id="modalDetailTaskLabel">
+            <i class="fas fa-list-check me-2"></i>Detail Task ID — <span id="detailKodebookingTitle" class="badge bg-light text-dark ms-1"></span>
+        </h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
-            <table class="table table-bordered table-striped" id="tableDetailTask">
+      <div class="modal-body p-3">
+        <div class="table-responsive" style="max-height: 72vh; overflow-y: auto;">
+            <table class="table table-bordered table-striped table-hover align-middle mb-0" id="tableDetailTask" style="table-layout: fixed; width: 100%;">
                 <thead>
                     <tr>
-                        <th>Task ID</th>
-                        <th>Waktu Eksekusi</th>
-                        <th>Status / Message</th>
-                        <th>Request (Raw)</th>
-                        <th>Response (Raw)</th>
+                        <th class="text-center" style="width: 7%;">Task ID</th>
+                        <th style="width: 17%;">Waktu Eksekusi</th>
+                        <th style="width: 18%;">Status / Message</th>
+                        <th style="width: 29%;">Request (Raw)</th>
+                        <th style="width: 29%;">Response (Raw)</th>
                     </tr>
                 </thead>
                 <tbody id="bodyDetailTask">
                     <!-- Data will be populated via AJAX -->
                 </tbody>
             </table>
+        </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+      <div class="modal-footer py-2 px-3">
+        <button type="button" class="btn btn-sm btn-secondary px-3" data-bs-dismiss="modal">Tutup</button>
       </div>
     </div>
   </div>
@@ -344,9 +348,9 @@
 <script>
 function showDetail(kodebooking) {
     $('#detailKodebookingTitle').text(kodebooking);
-    $('#bodyDetailTask').html('<tr><td colspan="5" class="text-center">Memuat data...</td></tr>');
+    $('#bodyDetailTask').html('<tr><td colspan="5" class="text-center py-4">Memuat data...</td></tr>');
     
-    var modal = new bootstrap.Modal(document.getElementById('modalDetailTask'));
+    var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDetailTask'));
     modal.show();
 
     fetch('{{ $detailBaseUrl ?? $filterAction }}/' + encodeURIComponent(kodebooking))
@@ -365,33 +369,51 @@ function showDetail(kodebooking) {
                         let hr = String(d.getHours()).padStart(2, '0');
                         let min = String(d.getMinutes()).padStart(2, '0');
                         let sec = String(d.getSeconds()).padStart(2, '0');
-                        return `${day}-${month}-${year} ${hr}:${min}:${sec} WIB <br><small class="text-muted">(${waktuMs})</small>`;
+                        return `<div class="fw-semibold">${day}-${month}-${year} ${hr}:${min}:${sec} WIB</div><small class="text-muted font-monospace">${waktuMs}</small>`;
                     }
                     return waktuMs;
                 };
 
+                const escapeHtml = (str) => {
+                    if (!str) return '-';
+                    return String(str)
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;');
+                };
+
                 data.response.forEach(function(task) {
                     let msgText = String(task.message || '');
+                    let codeVal = task.code != null ? String(task.code) : '';
                     let badgeClass = 'bg-danger';
-                    if (msgText.toLowerCase().includes('success') || msgText.toLowerCase().includes('ok')) {
+                    if (msgText.toLowerCase().includes('success') || msgText.toLowerCase().includes('ok') || codeVal === '200' || codeVal === '208') {
                         badgeClass = 'bg-success';
-                    } else if (msgText.toLowerCase().includes('antrean') || msgText === '') {
+                    } else if (msgText.toLowerCase().includes('antrean') || msgText.toLowerCase().includes('menunggu') || msgText === '' || codeVal === '0') {
                         badgeClass = 'bg-warning text-dark';
                     }
                     
                     let waktuWIB = formatWaktuWIB(task.waktu);
+                    let codeTag = codeVal ? `<div class="small text-muted mb-1">Code: <strong>${escapeHtml(codeVal)}</strong></div>` : '';
 
                     html += `<tr>
-                        <td class="text-center"><strong>${task.taskid}</strong></td>
-                        <td>${waktuWIB}</td>
-                        <td><span class="badge ${badgeClass}">${msgText || '-'}</span></td>
-                        <td style="max-width: 200px; overflow-wrap: break-word;"><small>${task.request || '-'}</small></td>
-                        <td style="max-width: 200px; overflow-wrap: break-word;"><small>${task.response || '-'}</small></td>
+                        <td class="text-center"><span class="badge bg-primary fs-6 px-2 py-1">${escapeHtml(task.taskid)}</span></td>
+                        <td class="text-nowrap">${waktuWIB}</td>
+                        <td style="white-space: normal; word-break: break-word;">
+                            ${codeTag}
+                            <span class="badge ${badgeClass} text-wrap text-start" style="line-height: 1.35;">${escapeHtml(msgText || '-')}</span>
+                        </td>
+                        <td>
+                            <div class="p-2 bg-light border rounded font-monospace" style="font-size: 0.74rem; white-space: pre-wrap; word-break: break-all; max-height: 110px; overflow-y: auto;">${escapeHtml(task.request || '-')}</div>
+                        </td>
+                        <td>
+                            <div class="p-2 bg-light border rounded font-monospace" style="font-size: 0.74rem; white-space: pre-wrap; word-break: break-all; max-height: 110px; overflow-y: auto;">${escapeHtml(task.response || '-')}</div>
+                        </td>
                     </tr>`;
                 });
                 $('#bodyDetailTask').html(html);
             } else {
-                $('#bodyDetailTask').html('<tr><td colspan="5" class="text-center">Tidak ada riwayat Task ID.</td></tr>');
+                $('#bodyDetailTask').html('<tr><td colspan="5" class="text-center py-4">Tidak ada riwayat Task ID.</td></tr>');
             }
         })
         .catch(error => {
