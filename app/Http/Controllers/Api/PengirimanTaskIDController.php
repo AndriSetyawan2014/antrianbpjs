@@ -513,7 +513,7 @@ class PengirimanTaskIDController extends Controller
                 }
             }
 
-            // 3. Auto-generate missing Task ID 5 dari Task ID 4 (ditambah 1 - 4 menit / 60 - 240 detik)
+            // 3. Auto-generate missing Task ID 5 for past bookings (not today)
             $missingTask5 = $data_taskID_gen->getTaskid4withNullTaskid5($urlQL, $kodebooking)->toArray();
             if (!empty($missingTask5)) {
                 Log::info('[' . $urlQL . '] Found ' . count($missingTask5) . ' bookings missing Task ID 5. Generating...');
@@ -583,7 +583,9 @@ class PengirimanTaskIDController extends Controller
                     $activeKbs = $activeKbs->merge($found);
                 }
                 $activeKbMap = array_flip($activeKbs->toArray());
-                $cancelIds = $task99Pending->filter(fn($t) => isset($activeKbMap[$t->kodebooking]))->pluck('id');
+                $cancelIds = $task99Pending->filter(function ($t) use ($activeKbMap) {
+                    return isset($activeKbMap[$t->kodebooking]);
+                })->pluck('id');
                 foreach ($cancelIds->chunk(500) as $idChunk) {
                     $data_taskID_model->newQuery()->whereIn('id', $idChunk)->update([
                         'reupload' => 0,
@@ -602,7 +604,7 @@ class PengirimanTaskIDController extends Controller
                 ->update(['reupload' => 0]);
 
             // Ambil semua data yang memenuhi syarat pengiriman (Reupload = 1)
-            $dataArray = $data_taskID_model->newQuery()->from($tableTaskID . ' as taskID')
+            $rawCandidates = $data_taskID_model->newQuery()->from($tableTaskID . ' as taskID')
                 ->leftJoin("$tableKodeBooking as dk", 'taskID.kodebooking', '=', 'dk.kodebooking')
                 ->where("taskID.reupload", 1)
                 ->where(function ($query) use ($tanggal, $isEmptyTanggal, $kodebooking) {
@@ -618,14 +620,12 @@ class PengirimanTaskIDController extends Controller
                                         
                                         $q->whereBetween('dk.tanggalperiksa', [$startDate, $endDate])
                                             ->orWhere(function($subQ) use ($startDate, $endDate) {
-                                                // Fallback ke taskID.tanggal (indexed DATE column) jika dk tidak ada
                                                 $subQ->whereNull('dk.kodebooking')
                                                     ->whereBetween('taskID.tanggal', [$startDate, $endDate]);
                                             });
                                     } else {
                                         $q->where('dk.tanggalperiksa', '=', $tanggal)
                                             ->orWhere(function($subQ) use ($tanggal) {
-                                                // Fallback ke taskID.tanggal (indexed DATE column) jika dk tidak ada
                                                 $subQ->whereNull('dk.kodebooking')
                                                   ->where('taskID.tanggal', '=', $tanggal);
                                             });
@@ -636,8 +636,108 @@ class PengirimanTaskIDController extends Controller
                 ->orderBy("taskID.kodebooking")
                 ->orderBy("taskID.taskid")
                 ->groupBy("taskID.id")
-                ->get(["taskID.*"])
-                ->toArray();
+                ->get(["taskID.*"]);
+
+            // ATURAN UPLOAD BARU:
+            // 1. Jika ditemukan TaskID 3, maka TaskID 3 dapat diupload tetapi pastikan TaskID 1 dan TaskID 2 lengkap dan diupload dengan urut.
+            // 2. Jika ditemukan TaskID 5, maka TaskID 5 dapat diupload tetapi pastikan TaskID 1 sampai TaskID 5 lengkap dan diupload dengan urut.
+            // 3. Jika ditemukan TaskID 7, maka TaskID 7 dapat diupload tetapi pastikan TaskID 1 sampai TaskID 5 lengkap dan diupload dengan urut.
+            $candidateKbs = $rawCandidates->pluck('kodebooking')->filter()->unique()->values();
+            $allowedTasksByKb = [];
+
+            if ($candidateKbs->isNotEmpty()) {
+                $allTasksByKb = [];
+                foreach ($candidateKbs->chunk(500) as $kbChunk) {
+                    $rows = $data_taskID_model->newQuery()
+                        ->whereIn('kodebooking', $kbChunk)
+                        ->orderBy('taskid', 'asc')
+                        ->get();
+                    foreach ($rows as $r) {
+                        $allTasksByKb[$r->kodebooking][(int) $r->taskid] = $r;
+                    }
+                }
+
+                foreach ($allTasksByKb as $kbKey => $tMap) {
+                    // Jika hanya pembatalan (Task 99) tanpa task pelayanan aktif
+                    if (isset($tMap[99]) && !isset($tMap[3]) && !isset($tMap[4]) && !isset($tMap[5])) {
+                        $allowedTasksByKb[$kbKey] = [99];
+                        continue;
+                    }
+
+                    $has1to2 = isset($tMap[1], $tMap[2]);
+                    $has1to3 = $has1to2 && isset($tMap[3]);
+                    $has1to5 = $has1to3 && isset($tMap[4], $tMap[5]);
+
+                    $allowedTaskIds = [];
+
+                    // Aturan 1: Jika ditemukan TaskID 3 -> pastikan TaskID 1 & 2 lengkap, diupload urut (1 -> 2 -> 3)
+                    if (isset($tMap[3])) {
+                        if ($has1to3) {
+                            $allowedTaskIds = [1, 2, 3];
+                            if (isset($tMap[4])) {
+                                $allowedTaskIds[] = 4;
+                            }
+                        } else {
+                            Log::warning("[taskID_otomatis - $urlQL] SKIPPED Task 3 for $kbKey: Task ID 1 dan Task ID 2 belum lengkap.");
+                            continue;
+                        }
+                    } elseif ($has1to2) {
+                        $allowedTaskIds = [1, 2];
+                    } elseif (isset($tMap[1])) {
+                        $allowedTaskIds = [1];
+                    }
+
+                    // Aturan 2: Jika ditemukan TaskID 5 -> pastikan TaskID 1 s/d 5 lengkap, diupload urut (1 -> 2 -> 3 -> 4 -> 5)
+                    if (isset($tMap[5])) {
+                        if ($has1to5) {
+                            $allowedTaskIds = [1, 2, 3, 4, 5];
+                        } else {
+                            Log::warning("[taskID_otomatis - $urlQL] SKIPPED Task 5 for $kbKey: Task ID 1 s/d 5 belum lengkap.");
+                        }
+                    }
+
+                    // Aturan 3: Jika ditemukan TaskID 7 -> pastikan TaskID 1 s/d 5 lengkap, diupload urut
+                    if (isset($tMap[6]) && $has1to5) {
+                        $allowedTaskIds[] = 6;
+                    }
+                    if (isset($tMap[7])) {
+                        if ($has1to5) {
+                            if (isset($tMap[6]) && !in_array(6, $allowedTaskIds, true)) {
+                                $allowedTaskIds[] = 6;
+                            }
+                            $allowedTaskIds[] = 7;
+                        } else {
+                            Log::warning("[taskID_otomatis - $urlQL] SKIPPED Task 7 for $kbKey: Task ID 1 s/d 5 belum lengkap.");
+                        }
+                    }
+
+                    if (!empty($allowedTaskIds)) {
+                        $allowedTasksByKb[$kbKey] = array_unique($allowedTaskIds);
+                    }
+                }
+            }
+
+            // Ambil kembali data yang sudah tervalidasi & diurutkan per kodebooking dan taskid (1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7)
+            $validKbList = array_keys($allowedTasksByKb);
+            $dataArray = [];
+            if (!empty($validKbList)) {
+                foreach (array_chunk($validKbList, 500) as $vChunk) {
+                    $rows = $data_taskID_model->newQuery()
+                        ->whereIn('kodebooking', $vChunk)
+                        ->where('reupload', 1)
+                        ->orderBy('kodebooking', 'asc')
+                        ->orderBy('taskid', 'asc')
+                        ->get()
+                        ->toArray();
+                    foreach ($rows as $r) {
+                        $kbCode = $r['kodebooking'];
+                        $tid = (int) $r['taskid'];
+                        if (isset($allowedTasksByKb[$kbCode]) && in_array($tid, $allowedTasksByKb[$kbCode], true)) {
+                            $dataArray[] = $r;
+                        }
+                    }
+                }
+            }
 
             $totalRecords = count($dataArray);
             if (empty($dataArray)) {
@@ -696,24 +796,62 @@ class PengirimanTaskIDController extends Controller
 
         Log::info("[taskID_single_arr - $urlQL] Processing: {$data['kodebooking']} (Task: {$data['taskid']})");
 
-        // RULE: Task 6 can only be sent if Task 5 is SUCCESS (Code 200/208).
-        // RULE: Task 7 can only be sent if Task 6 is SUCCESS (Code 200/208).
-        if ($data['taskid'] == 6 || $data['taskid'] == 7) {
-            $prevTaskID = ($data['taskid'] == 6) ? 5 : 6;
-            $prevTask = $model->where('kodebooking', $data['kodebooking'])
-                              ->where('taskid', $prevTaskID)
-                              ->first();
-            
-            $isPrevOk = $prevTask && in_array((int)$prevTask->code, [200, 208]);
-            
-            if (!$isPrevOk) {
-                Log::warning("[taskID_single_arr - $urlQL] PENDING: Task {$data['taskid']} for {$data['kodebooking']} is waiting for Task $prevTaskID to be SUCCESS (200/208).");
-                return response()->json([
-                    'metadata' => [
-                        'code' => 202, 
-                        'message' => "Pending: Menunggu Task $prevTaskID sukses (Code 200/208) sebelum mengirim Task {$data['taskid']}."
-                    ]
-                ], 202);
+        $currentTaskNum = (int) $data['taskid'];
+        if ($currentTaskNum >= 1 && $currentTaskNum <= 7) {
+            $bookingTasks = $model->newQuery()
+                ->where('kodebooking', $data['kodebooking'])
+                ->get()
+                ->keyBy('taskid');
+
+            // 1. Jika mengirim Task 3 (atau Task <= 4): pastikan Task 1 s/d currentTaskNum lengkap
+            if ($currentTaskNum <= 4) {
+                for ($reqT = 1; $reqT <= $currentTaskNum; $reqT++) {
+                    if (!$bookingTasks->has($reqT)) {
+                        Log::warning("[taskID_single_arr - $urlQL] PENDING: {$data['kodebooking']} belum memiliki Task $reqT sebelum upload Task $currentTaskNum.");
+                        return response()->json([
+                            'metadata' => [
+                                'code' => 202,
+                                'message' => "Pending: Task ID 1 s/d $currentTaskNum wajib lengkap (Task $reqT belum tersedia)."
+                            ]
+                        ], 202);
+                    }
+                }
+            }
+
+            // 2. Jika mengirim Task 5, 6, atau 7: pastikan Task 1 s/d 5 sudah lengkap di DB
+            if ($currentTaskNum >= 5) {
+                for ($reqT = 1; $reqT <= 5; $reqT++) {
+                    if (!$bookingTasks->has($reqT)) {
+                        Log::warning("[taskID_single_arr - $urlQL] PENDING: {$data['kodebooking']} belum memiliki Task $reqT (Syarat Task 1-5 wajib lengkap sebelum upload Task $currentTaskNum).");
+                        return response()->json([
+                            'metadata' => [
+                                'code' => 202,
+                                'message' => "Pending: Task ID 1 s/d 5 belum lengkap (Task $reqT belum tersedia)."
+                            ]
+                        ], 202);
+                    }
+                }
+            }
+
+            // Pastikan seluruh Task sebelumnya (1 s/d N-1) sudah sukses diupload secara berurutan (Code 200/208 atau reupload=0)
+            if ($currentTaskNum > 1) {
+                for ($prevT = 1; $prevT < $currentTaskNum; $prevT++) {
+                    if ($prevT === 6 && !$bookingTasks->has(6)) {
+                        continue;
+                    }
+                    $prevTaskRow = $bookingTasks->get($prevT);
+                    $isPrevOk = $prevTaskRow && (in_array((int) $prevTaskRow->code, [200, 208], true) || (int) $prevTaskRow->reupload === 0);
+
+                    if (!$isPrevOk) {
+                        Log::warning("[taskID_single_arr - $urlQL] PENDING: Task {$currentTaskNum} for {$data['kodebooking']} is waiting for Task $prevT to be SUCCESS (200/208).");
+                        return response()->json([
+                            'metadata' => [
+                                'code' => 202,
+                                'message' => "Pending: Menunggu Task $prevT sukses diupload (Code 200/208) sebelum mengirim Task {$currentTaskNum}."
+                            ]
+                        ], 202);
+                    }
+                }
             }
         }
 
