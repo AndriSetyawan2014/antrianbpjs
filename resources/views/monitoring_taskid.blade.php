@@ -1,16 +1,11 @@
 @extends('layouts.admin')
 
 @section('page_title')
-    <h1 class="page-title"><i class="fas fa-tasks me-2 text-primary"></i>{{ $pageTitle }}</h1>
-@endsection
-
-@section('page_subtitle')
-    Monitoring status pengiriman Task ID ke BPJS
+    <span><i class="fas fa-tasks me-1 text-primary"></i>{{ $monitoringTitle ?? 'Monitoring Task ID' }}</span>
 @endsection
 
 @section('content')
 @include('partials.monitoring-taskid-page', [
-    'pageTitle' => $pageTitle ?? 'Monitoring Task ID Antrian',
     'filterAction' => $filterAction ?? url('/monitoring_taskid'),
     'detailBaseUrl' => $detailBaseUrl ?? ($filterAction ?? url('/monitoring_taskid')),
     'startDate' => $start_date ?? request('start_date', date('Y-m-d')),

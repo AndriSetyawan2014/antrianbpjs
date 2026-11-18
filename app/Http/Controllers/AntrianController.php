@@ -419,7 +419,7 @@ class AntrianController extends Controller
         $rowMetaMap = $pageRowMetaMap;
         $kodebookings = $paginatedKodebookings;
 
-        $pageTitle = $cfg['title'];
+        $monitoringTitle = $cfg['title'];
         $filterAction = $cfg['filter_action'];
         $detailBaseUrl = $cfg['filter_action'];
         $tableId = $cfg['table_id'];
@@ -433,7 +433,7 @@ class AntrianController extends Controller
             'start_date',
             'end_date',
             'vclaimMap',
-            'pageTitle',
+            'monitoringTitle',
             'filterAction',
             'detailBaseUrl',
             'tableId',
