@@ -540,6 +540,40 @@ class PengirimanTaskIDController extends Controller
             $autoGenerateMissingPrevTask(3, 2, 60, 180);
             $autoGenerateMissingPrevTask(2, 1, 60, 300);
 
+            // E. Jika ditemukan Task ID 6 dan Task ID 1 s/d 5 sudah lengkap, serta dalam >= 2 jam Task ID 7 masih kosong -> auto-generate Task ID 7
+            $missingTask7After2h = $data_taskID_gen->getTaskid6WithComplete1to5AndNullTaskid7After2Hours($urlQL, $kodebooking)->toArray();
+            if (!empty($missingTask7After2h)) {
+                Log::info('[' . $urlQL . '] Found ' . count($missingTask7After2h) . ' bookings with Task ID 6 (>= 2 hours) missing Task ID 7. Auto-generating Task ID 7...');
+                $upsertTask7 = [];
+                foreach ($missingTask7After2h as $dataTaskID6) {
+                    $waktuTask6 = (int) $dataTaskID6->waktu;
+                    $randomSecond = rand(180, 600); // 3 - 10 menit setelah Task ID 6
+                    $newWaktursMilliseconds = $waktuTask6 + ($randomSecond * 1000);
+
+                    $timestamp = (int) round($newWaktursMilliseconds / 1000);
+                    $datetime_jakarta = Carbon::createFromTimestamp($timestamp, 'Asia/Jakarta');
+
+                    $upsertTask7[] = [
+                        'kodebooking'   => $dataTaskID6->kodebooking,
+                        'waktu'         => $newWaktursMilliseconds,
+                        'taskid'        => 7,
+                        'idpendaftaran' => $dataTaskID6->idpendaftaran,
+                        'tanggal'       => $datetime_jakarta->format('Y-m-d'),
+                        'jam'           => $datetime_jakarta->format('H:i:s'),
+                        'code'          => 0,
+                        'message'       => 'Menunggu Sinkronisasi',
+                        'reupload'      => 1,
+                        'updated_at'    => $nowTs,
+                        'created_at'    => $nowTs,
+                    ];
+                }
+                foreach (array_chunk($upsertTask7, 500) as $t7Chunk) {
+                    $data_taskID_gen->newQuery()->upsert($t7Chunk, ['kodebooking', 'taskid'], [
+                        'waktu', 'idpendaftaran', 'tanggal', 'jam', 'code', 'message', 'reupload', 'updated_at'
+                    ]);
+                }
+            }
+
             $this->listTaskCache = []; // Reset cache di awal proses
 
             // Tentukan tabel dan model di luar loop untuk efisiensi

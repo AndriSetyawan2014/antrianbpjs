@@ -119,6 +119,59 @@ class data_taskid extends Model
         return $this->getTaskWithNullPrevTask(2, 1, $urlQL, $kodebooking);
     }
 
+    /**
+     * Ambil daftar antrean yang memiliki Task ID 6 dan Task ID 1 s/d 5 sudah lengkap,
+     * namun setelah >= 2 jam dari waktu Task ID 6, Task ID 7 masih kosong.
+     */
+    public function getTaskid6WithComplete1to5AndNullTaskid7After2Hours($urlQL = 'QLJ', $kodebooking = null)
+    {
+        $twoHoursAgoMs = (now()->setTimezone('Asia/Jakarta')->getTimestamp() - 7200) * 1000;
+
+        $query = DB::table("{$this->table} as dt6")
+            ->select('dt6.kodebooking', 'dt6.waktu', 'dt6.idpendaftaran')
+            ->join("{$this->table} as dt1", function ($join) {
+                $join->on('dt6.kodebooking', '=', 'dt1.kodebooking')->where('dt1.taskid', '=', 1);
+            })
+            ->join("{$this->table} as dt2", function ($join) {
+                $join->on('dt6.kodebooking', '=', 'dt2.kodebooking')->where('dt2.taskid', '=', 2);
+            })
+            ->join("{$this->table} as dt3", function ($join) {
+                $join->on('dt6.kodebooking', '=', 'dt3.kodebooking')->where('dt3.taskid', '=', 3);
+            })
+            ->join("{$this->table} as dt4", function ($join) {
+                $join->on('dt6.kodebooking', '=', 'dt4.kodebooking')->where('dt4.taskid', '=', 4);
+            })
+            ->join("{$this->table} as dt5", function ($join) {
+                $join->on('dt6.kodebooking', '=', 'dt5.kodebooking')->where('dt5.taskid', '=', 5);
+            })
+            ->leftJoin("{$this->table} as dt7", function ($join) {
+                $join->on('dt6.kodebooking', '=', 'dt7.kodebooking')->where('dt7.taskid', '=', 7);
+            })
+            ->leftJoin("{$this->table} as dt99", function ($join) {
+                $join->on('dt6.kodebooking', '=', 'dt99.kodebooking')->where('dt99.taskid', '=', 99);
+            })
+            ->where('dt6.taskid', '=', 6)
+            ->where('dt6.waktu', '>', 0)
+            ->where('dt6.waktu', '<=', $twoHoursAgoMs)
+            ->where(function ($q) {
+                $q->whereNull('dt6.message')
+                  ->orWhere('dt6.message', 'not like', '%TaskId terakhir 99%');
+            })
+            ->whereNull('dt7.id')
+            ->whereNull('dt99.id');
+
+        if (!empty($kodebooking)) {
+            $query->where('dt6.kodebooking', '=', $kodebooking);
+        } else {
+            $query->whereBetween('dt6.tanggal', [
+                now()->setTimezone('Asia/Jakarta')->subDays(31)->toDateString(),
+                now()->setTimezone('Asia/Jakarta')->toDateString()
+            ]);
+        }
+
+        return $query->get();
+    }
+
     public function getTaskid4withNullTaskid5($urlQL = 'QLJ', $kodebooking = null)
     {
         $kbMap = [
