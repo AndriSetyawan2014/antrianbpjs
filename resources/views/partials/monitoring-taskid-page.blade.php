@@ -39,20 +39,179 @@
     </div>
 </div>
 
+@php
+    $getTaskSec = function ($task) {
+        if (!$task) return null;
+        if (!empty($task->waktu) && is_numeric($task->waktu)) {
+            $w = (float) $task->waktu;
+            return $w > 100000000000 ? ($w / 1000.0) : $w;
+        }
+        if (!empty($task->tanggal) && !empty($task->jam)) {
+            $ts = strtotime($task->tanggal . ' ' . $task->jam);
+            return $ts !== false ? (float) $ts : null;
+        }
+        if (!empty($task->waktu) && is_string($task->waktu)) {
+            $ts = strtotime($task->waktu);
+            return $ts !== false ? (float) $ts : null;
+        }
+        return null;
+    };
+
+    $formatDuration = function ($seconds) {
+        if ($seconds === null) return '-';
+        $sec = (int) round($seconds);
+        $neg = $sec < 0;
+        $sec = abs($sec);
+        $hrs = intdiv($sec, 3600);
+        $mins = intdiv($sec % 3600, 60);
+        $remSec = $sec % 60;
+        $prefix = $neg ? '-' : '';
+        if ($hrs > 0) {
+            return sprintf('%s%d jam %d mnt %d dtk', $prefix, $hrs, $mins, $remSec);
+        }
+        return sprintf('%s%d mnt %d dtk', $prefix, $mins, $remSec);
+    };
+
+    $diffs2to4 = [];
+    $diffs3to4 = [];
+    $diffsBoth = [];
+    $rowEvalMap = [];
+
+    foreach ($groupedTasks as $kbCode => $tMap) {
+        $s2 = $getTaskSec($tMap[2] ?? null);
+        $s3 = $getTaskSec($tMap[3] ?? null);
+        $s4 = $getTaskSec($tMap[4] ?? null);
+
+        $d24 = ($s2 !== null && $s4 !== null && $s4 >= $s2) ? ($s4 - $s2) : null;
+        $d34 = ($s3 !== null && $s4 !== null && $s4 >= $s3) ? ($s4 - $s3) : null;
+
+        if ($d24 !== null) {
+            $diffs2to4[] = $d24;
+        }
+        if ($d34 !== null) {
+            $diffs3to4[] = $d34;
+        }
+        if ($d24 !== null && $d34 !== null) {
+            $diffsBoth[] = ($d24 + $d34) / 2.0;
+        }
+
+        $rowEvalMap[$kbCode] = [
+            'd24' => $d24,
+            'd34' => $d34,
+        ];
+    }
+
+    $avg2to4 = count($diffs2to4) > 0 ? (array_sum($diffs2to4) / count($diffs2to4)) : null;
+    $avg3to4 = count($diffs3to4) > 0 ? (array_sum($diffs3to4) / count($diffs3to4)) : null;
+
+    if (count($diffsBoth) > 0) {
+        $avgCombined = array_sum($diffsBoth) / count($diffsBoth);
+    } elseif ($avg2to4 !== null && $avg3to4 !== null) {
+        $avgCombined = ($avg2to4 + $avg3to4) / 2.0;
+    } else {
+        $avgCombined = $avg2to4 ?? $avg3to4;
+    }
+@endphp
+
+{{-- Kartu Info Evaluasi Waktu Tunggu --}}
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #0f766e !important;">
+            <div class="card-body py-3 px-3">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="text-uppercase fw-bold text-muted" style="font-size: 0.72rem; letter-spacing: 0.04em;">
+                            1. Rata-rata Waktu Tunggu Task ID 2 ➔ Task ID 4
+                        </div>
+                        <div class="fw-bold mt-1" style="font-size: 1.35rem; color: #0f766e;">
+                            {{ $avg2to4 !== null ? number_format($avg2to4 / 60, 1) . ' Menit' : '-' }}
+                        </div>
+                        <div class="text-muted mt-1" style="font-size: 0.8rem;">
+                            <i class="far fa-clock me-1"></i>Detail: <strong>{{ $formatDuration($avg2to4) }}</strong>
+                        </div>
+                    </div>
+                    <span class="badge bg-light text-dark border">
+                        {{ count($diffs2to4) }} Antrean
+                    </span>
+                </div>
+                <div class="mt-2 pt-2 border-top text-muted" style="font-size: 0.73rem;">
+                    Rentang dari <strong>T2 (Poli/Admisi)</strong> hingga <strong>T4 (Selesai Layan Poli)</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #0284c7 !important;">
+            <div class="card-body py-3 px-3">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="text-uppercase fw-bold text-muted" style="font-size: 0.72rem; letter-spacing: 0.04em;">
+                            2. Rata-rata Waktu Tunggu Task ID 3 ➔ Task ID 4
+                        </div>
+                        <div class="fw-bold mt-1" style="font-size: 1.35rem; color: #0284c7;">
+                            {{ $avg3to4 !== null ? number_format($avg3to4 / 60, 1) . ' Menit' : '-' }}
+                        </div>
+                        <div class="text-muted mt-1" style="font-size: 0.8rem;">
+                            <i class="far fa-clock me-1"></i>Detail: <strong>{{ $formatDuration($avg3to4) }}</strong>
+                        </div>
+                    </div>
+                    <span class="badge bg-light text-dark border">
+                        {{ count($diffs3to4) }} Antrean
+                    </span>
+                </div>
+                <div class="mt-2 pt-2 border-top text-muted" style="font-size: 0.73rem;">
+                    Rentang dari <strong>T3 (Mulai Layan Poli)</strong> hingga <strong>T4 (Selesai Layan Poli)</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #d97706 !important;">
+            <div class="card-body py-3 px-3">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="text-uppercase fw-bold text-muted" style="font-size: 0.72rem; letter-spacing: 0.04em;">
+                            3. Evaluasi Task ID 2 ➔ 4 &amp; Task ID 3 ➔ 4
+                        </div>
+                        <div class="fw-bold mt-1" style="font-size: 1.35rem; color: #d97706;">
+                            {{ $avgCombined !== null ? number_format($avgCombined / 60, 1) . ' Menit' : '-' }}
+                            <small class="fw-normal text-muted" style="font-size: 0.75rem;">(Rata-rata Gabungan)</small>
+                        </div>
+                        <div class="text-muted mt-1" style="font-size: 0.8rem;">
+                            <i class="fas fa-calculator me-1"></i>Detail: <strong>{{ $formatDuration($avgCombined) }}</strong>
+                        </div>
+                    </div>
+                    <span class="badge bg-light text-dark border">
+                        {{ count($diffsBoth) }} Lengkap
+                    </span>
+                </div>
+                <div class="mt-2 pt-2 border-top d-flex justify-content-between text-muted" style="font-size: 0.73rem;">
+                    <span><strong>T2➔T4:</strong> {{ $avg2to4 !== null ? number_format($avg2to4 / 60, 1) . ' mnt' : '-' }}</span>
+                    <span><strong>T3➔T4:</strong> {{ $avg3to4 !== null ? number_format($avg3to4 / 60, 1) . ' mnt' : '-' }}</span>
+                    <span><strong>T2➔T3:</strong> {{ ($avg2to4 !== null && $avg3to4 !== null && $avg2to4 >= $avg3to4) ? number_format(($avg2to4 - $avg3to4) / 60, 1) . ' mnt' : '-' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- Tabel --}}
 <table id="{{ $tableId }}" class="table table-hover table-striped table-bordered text-center">
         <thead>
             <tr>
                 <th style="width:4%;">No</th>
                 <th style="width:15%; text-align: left;">Informasi Antrian</th>
-                <th style="width:8%;">T1<br><small>Daftar</small></th>
-                <th style="width:8%;">T2<br><small>Poli</small></th>
-                <th style="width:8%;">T3<br><small>Layan</small></th>
-                <th style="width:8%;">T4<br><small>Selesai Layan</small></th>
-                <th style="width:8%;">T5<br><small>Ambil Obat</small></th>
-                <th style="width:8%;">T6<br><small>Selesai Obat</small></th>
-                <th style="width:8%;">T7<br><small>Selesai</small></th>
-                <th style="width:8%;">T99<br><small>Batal</small></th>
+                <th style="width:7%;">T1<br><small>Daftar</small></th>
+                <th style="width:7%;">T2<br><small>Poli</small></th>
+                <th style="width:7%;">T3<br><small>Layan</small></th>
+                <th style="width:7%;">T4<br><small>Selesai Layan</small></th>
+                <th style="width:7%;">T5<br><small>Ambil Obat</small></th>
+                <th style="width:7%;">T6<br><small>Selesai Obat</small></th>
+                <th style="width:7%;">T7<br><small>Selesai</small></th>
+                <th style="width:7%;">T99<br><small>Batal</small></th>
+                <th style="width:12%;">Evaluasi Waktu<br><small>T2➔T4 &amp; T3➔T4</small></th>
                 <th style="width:5%;">Aksi</th>
             </tr>
         </thead>
@@ -111,6 +270,19 @@
                             @endif
                         </td>
                     @endforeach
+                    @php
+                        $evalRow = $rowEvalMap[$kb->kodebooking] ?? ['d24' => null, 'd34' => null];
+                    @endphp
+                    <td style="text-align: left; font-size: 0.75rem; white-space: nowrap;">
+                        <div>
+                            <span class="text-muted">T2➔T4:</span>
+                            <strong>{{ $evalRow['d24'] !== null ? $formatDuration($evalRow['d24']) : '-' }}</strong>
+                        </div>
+                        <div>
+                            <span class="text-muted">T3➔T4:</span>
+                            <strong>{{ $evalRow['d34'] !== null ? $formatDuration($evalRow['d34']) : '-' }}</strong>
+                        </div>
+                    </td>
                     <td>
                         <button class="btn btn-sm btn-info" onclick="showDetail('{{ $kb->kodebooking }}')">
                             <i class="fas fa-search"></i>
