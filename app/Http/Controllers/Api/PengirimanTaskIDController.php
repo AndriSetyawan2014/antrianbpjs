@@ -110,10 +110,15 @@ class PengirimanTaskIDController extends Controller
         Log::info("[$urlQL] Force re-run for kodebooking: $kodebooking. Reset reupload=1.");
 
         $syncRes = $this->taskID_otomatis($urlQL, null, $kodebooking);
-        $updatedRows = (new data_taskid())->setTableByQL($urlQL)
+        $rawRows = (new data_taskid())->setTableByQL($urlQL)
             ->where('kodebooking', $kodebooking)
             ->orderBy('taskid', 'asc')
             ->get();
+
+        $updatedRows = [];
+        foreach ($rawRows as $r) {
+            $updatedRows[] = $this->enrichTaskIdRow($urlQL, $r);
+        }
 
         $payload = $syncRes instanceof \Illuminate\Http\JsonResponse ? $syncRes->getData(true) : [];
         $payload['updated_rows'] = $updatedRows;
@@ -437,19 +442,88 @@ class PengirimanTaskIDController extends Controller
             $roundLimit = 5;
             Log::info('=== [taskID_otomatis - ' . $urlQL . '] === start processing, please wait...');
             
-            // Auto-generate missing Task ID 5 for past bookings (not today)
             $data_taskID_gen = (new data_taskid())->setTableByQL($urlQL);
-            $missingTask5 = $data_taskID_gen->getTaskid4withNullTaskid5($urlQL)->toArray();
+            $nowTs = now();
+
+            // 1. Auto-generate missing Task ID 2 dari Task ID 3 (dikurangi 1 - 3 menit / 60 - 180 detik)
+            $missingTask2 = $data_taskID_gen->getTaskid3withNullTaskid2($urlQL, $kodebooking)->toArray();
+            if (!empty($missingTask2)) {
+                Log::info('[' . $urlQL . '] Found ' . count($missingTask2) . ' bookings missing Task ID 2. Generating from Task ID 3...');
+                $upsertTask2 = [];
+                foreach ($missingTask2 as $dataTaskID3) {
+                    $waktuTask3 = $dataTaskID3->waktu;
+                    $randomSecond = rand(60, 180); // 1 - 3 menit dalam detik
+                    $newWaktursMilliseconds = $waktuTask3 - ($randomSecond * 1000);
+
+                    $timestamp = (int) round($newWaktursMilliseconds / 1000);
+                    $datetime_jakarta = Carbon::createFromTimestamp($timestamp, 'Asia/Jakarta');
+
+                    $upsertTask2[] = [
+                        'kodebooking'   => $dataTaskID3->kodebooking,
+                        'waktu'         => $newWaktursMilliseconds,
+                        'taskid'        => 2,
+                        'idpendaftaran' => $dataTaskID3->idpendaftaran,
+                        'tanggal'       => $datetime_jakarta->format('Y-m-d'),
+                        'jam'           => $datetime_jakarta->format('H:i:s'),
+                        'code'          => 0,
+                        'message'       => 'Menunggu Sinkronisasi',
+                        'reupload'      => 1,
+                        'updated_at'    => $nowTs,
+                        'created_at'    => $nowTs,
+                    ];
+                }
+                foreach (array_chunk($upsertTask2, 500) as $t2Chunk) {
+                    $data_taskID_gen->newQuery()->upsert($t2Chunk, ['kodebooking', 'taskid'], [
+                        'waktu', 'idpendaftaran', 'tanggal', 'jam', 'code', 'message', 'reupload', 'updated_at'
+                    ]);
+                }
+            }
+
+            // 2. Auto-generate missing Task ID 1 dari Task ID 2 (dikurangi 1 - 5 menit / 60 - 300 detik)
+            $missingTask1 = $data_taskID_gen->getTaskid2withNullTaskid1($urlQL, $kodebooking)->toArray();
+            if (!empty($missingTask1)) {
+                Log::info('[' . $urlQL . '] Found ' . count($missingTask1) . ' bookings missing Task ID 1. Generating from Task ID 2...');
+                $upsertTask1 = [];
+                foreach ($missingTask1 as $dataTaskID2) {
+                    $waktuTask2 = $dataTaskID2->waktu;
+                    $randomSecond = rand(60, 300); // 1 - 5 menit dalam detik
+                    $newWaktursMilliseconds = $waktuTask2 - ($randomSecond * 1000);
+
+                    $timestamp = (int) round($newWaktursMilliseconds / 1000);
+                    $datetime_jakarta = Carbon::createFromTimestamp($timestamp, 'Asia/Jakarta');
+
+                    $upsertTask1[] = [
+                        'kodebooking'   => $dataTaskID2->kodebooking,
+                        'waktu'         => $newWaktursMilliseconds,
+                        'taskid'        => 1,
+                        'idpendaftaran' => $dataTaskID2->idpendaftaran,
+                        'tanggal'       => $datetime_jakarta->format('Y-m-d'),
+                        'jam'           => $datetime_jakarta->format('H:i:s'),
+                        'code'          => 0,
+                        'message'       => 'Menunggu Sinkronisasi',
+                        'reupload'      => 1,
+                        'updated_at'    => $nowTs,
+                        'created_at'    => $nowTs,
+                    ];
+                }
+                foreach (array_chunk($upsertTask1, 500) as $t1Chunk) {
+                    $data_taskID_gen->newQuery()->upsert($t1Chunk, ['kodebooking', 'taskid'], [
+                        'waktu', 'idpendaftaran', 'tanggal', 'jam', 'code', 'message', 'reupload', 'updated_at'
+                    ]);
+                }
+            }
+
+            // 3. Auto-generate missing Task ID 5 dari Task ID 4 (ditambah 1 - 4 menit / 60 - 240 detik)
+            $missingTask5 = $data_taskID_gen->getTaskid4withNullTaskid5($urlQL, $kodebooking)->toArray();
             if (!empty($missingTask5)) {
                 Log::info('[' . $urlQL . '] Found ' . count($missingTask5) . ' bookings missing Task ID 5. Generating...');
                 $upsertTask5 = [];
-                $nowTs = now();
                 foreach ($missingTask5 as $dataTaskID4) {
                     $waktuTask4 = $dataTaskID4->waktu;
                     $randomSecond = rand(60, 240);
                     $newWaktursMilliseconds = $waktuTask4 + ($randomSecond * 1000);
                     
-                    $timestamp = $newWaktursMilliseconds / 1000;
+                    $timestamp = (int) round($newWaktursMilliseconds / 1000);
                     $datetime_jakarta = Carbon::createFromTimestamp($timestamp, 'Asia/Jakarta');
                     
                     $upsertTask5[] = [
@@ -459,6 +533,8 @@ class PengirimanTaskIDController extends Controller
                         'idpendaftaran' => $dataTaskID4->idpendaftaran,
                         'tanggal'       => $datetime_jakarta->format('Y-m-d'),
                         'jam'           => $datetime_jakarta->format('H:i:s'),
+                        'code'          => 0,
+                        'message'       => 'Menunggu Sinkronisasi',
                         'reupload'      => 1,
                         'updated_at'    => $nowTs,
                         'created_at'    => $nowTs,
@@ -466,7 +542,7 @@ class PengirimanTaskIDController extends Controller
                 }
                 foreach (array_chunk($upsertTask5, 500) as $t5Chunk) {
                     $data_taskID_gen->newQuery()->upsert($t5Chunk, ['kodebooking', 'taskid'], [
-                        'waktu', 'idpendaftaran', 'tanggal', 'jam', 'reupload', 'updated_at'
+                        'waktu', 'idpendaftaran', 'tanggal', 'jam', 'code', 'message', 'reupload', 'updated_at'
                     ]);
                 }
             }
