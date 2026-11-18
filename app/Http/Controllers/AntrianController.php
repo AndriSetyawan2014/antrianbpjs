@@ -325,7 +325,7 @@ public function rekapKodeBooking(Request $request)
     $TaskID = DB::table('data_taskids as dt')
         ->leftJoin('data_kodebooking as dk', 'dt.kodebooking', '=', 'dk.kodebooking')
         ->select(
-            'dt.id', 'dt.kodebooking', 'dt.taskid', 'dt.waktu', 'dt.jam', 'dt.code', 'dt.message', 'dt.tanggal', 'dt.reupload',
+            'dt.id', 'dt.kodebooking', 'dt.taskid', 'dt.waktu', 'dt.idpendaftaran', 'dt.jam', 'dt.code', 'dt.message', 'dt.tanggal', 'dt.request', 'dt.response', 'dt.reupload',
             'dk.namadokter', 'dk.namaunit as namapoli', 'dk.jammulai', 'dk.jamakhir'
         );
 
@@ -480,7 +480,7 @@ public function qlkp_datakodebooking(Request $request)
     $qlkp_TaskID = DB::table('qlkp_data_taskids as dt')
         ->leftJoin('qlkp_data_kodebooking as dk', 'dt.kodebooking', '=', 'dk.kodebooking')
         ->select(
-            'dt.id', 'dt.kodebooking', 'dt.taskid', 'dt.waktu', 'dt.jam', 'dt.code', 'dt.message', 'dt.tanggal', 'dt.reupload',
+            'dt.id', 'dt.kodebooking', 'dt.taskid', 'dt.waktu', 'dt.idpendaftaran', 'dt.jam', 'dt.code', 'dt.message', 'dt.tanggal', 'dt.request', 'dt.response', 'dt.reupload',
             'dk.namadokter', 'dk.namaunit as namapoli', 'dk.jammulai', 'dk.jamakhir'
         );
 
@@ -1087,7 +1087,7 @@ public function qlkp_datakodebooking(Request $request)
         $qltmg_TaskID = DB::table('qltmg_data_taskids as dt')
             ->leftJoin('qltmg_data_kodebooking as dk', 'dt.kodebooking', '=', 'dk.kodebooking')
             ->select(
-                'dt.id', 'dt.kodebooking', 'dt.taskid', 'dt.waktu', 'dt.jam', 'dt.code', 'dt.message', 'dt.tanggal', 'dt.reupload',
+                'dt.id', 'dt.kodebooking', 'dt.taskid', 'dt.waktu', 'dt.idpendaftaran', 'dt.jam', 'dt.code', 'dt.message', 'dt.tanggal', 'dt.request', 'dt.response', 'dt.reupload',
                 'dk.namadokter', 'dk.namaunit as namapoli', 'dk.jammulai', 'dk.jamakhir'
             );
 

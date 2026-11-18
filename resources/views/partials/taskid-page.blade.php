@@ -70,14 +70,17 @@
                 $code = $item->code;
                 $badgeClass = $code == 200 ? 'badge-success' : ($code == 0 ? 'badge-warning' : 'badge-danger');
                 $badgeLabel = $code == 200 ? '✓ 200 OK' : ($code == 0 ? '⏳ Pending' : '✗ Err '.$code);
-                $msg = json_decode($item->response)->metadata->message ?? '';
+                $rawResp = $item->response ?? '';
+                $rawReq = $item->request ?? '';
+                $idPend = $item->idpendaftaran ?? '';
+                $msg = json_decode($rawResp)->metadata->message ?? ($item->message ?? '');
             @endphp
             <tr>
                 <td></td>
                 <td>{{ $item->kodebooking }}</td>
                 <td>{{ $item->waktu }}</td>
                 <td><strong>{{ $item->taskid }}</strong></td>
-                <td>{{ $item->idpendaftaran }}</td>
+                <td>{{ $idPend }}</td>
                 <td><small class="font-weight-bold">{{ $item->namadokter ?? '-' }}</small></td>
                 <td><span class="badge bg-secondary">{{ $item->namapoli ?? '-' }}</span></td>
                 <td>
@@ -93,14 +96,14 @@
                 <td>{{ $item->jam }}</td>
                 <td class="text-center">
                     <button class="btn-json-view"
-                            data-json="{{ htmlspecialchars($item->request, ENT_QUOTES, 'UTF-8') }}"
+                            data-json="{{ htmlspecialchars($rawReq, ENT_QUOTES, 'UTF-8') }}"
                             data-title="Request — {{ $item->taskid }}">
                         <i class="fas fa-eye"></i> Lihat
                     </button>
                 </td>
                 <td class="text-center">
                     <button class="btn-json-view"
-                            data-json="{{ htmlspecialchars($item->response, ENT_QUOTES, 'UTF-8') }}"
+                            data-json="{{ htmlspecialchars($rawResp, ENT_QUOTES, 'UTF-8') }}"
                             data-title="Response — {{ $item->taskid }}">
                         <i class="fas fa-eye"></i> Lihat
                     </button>
@@ -111,7 +114,7 @@
                         data-kodebooking="{{ $item->kodebooking }}"
                         data-taskid="{{ $item->taskid }}"
                         data-waktu="{{ $item->waktu }}"
-                        data-idpendaftaran="{{ $item->idpendaftaran }}"
+                        data-idpendaftaran="{{ $idPend }}"
                         title="Duplikat Task ID ini">
                         <i class="fas fa-copy"></i>
                     </button>
@@ -120,7 +123,7 @@
                         data-kodebooking="{{ $item->kodebooking }}"
                         data-taskid="{{ $item->taskid }}"
                         data-waktu="{{ $item->waktu }}"
-                        data-idpendaftaran="{{ $item->idpendaftaran }}"
+                        data-idpendaftaran="{{ $idPend }}"
                         title="Edit Task ID ini">
                         <i class="fas fa-edit"></i>
                     </button>
