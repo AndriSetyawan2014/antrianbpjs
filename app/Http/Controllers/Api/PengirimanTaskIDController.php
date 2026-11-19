@@ -799,15 +799,14 @@ class PengirimanTaskIDController extends Controller
                             ->where('reupload', 1)
                             ->update(['reupload' => 0]);
                         continue;
-                    } elseif ($detectedLastTask >= 3) {
+                    } elseif ($detectedLastTask >= 1) {
                         $data_taskID_model->newQuery()
                             ->where('kodebooking', $kbKey)
-                            ->whereIn('taskid', [1, 2, 3])
                             ->where('taskid', '<=', $detectedLastTask)
                             ->where('reupload', 1)
                             ->update(['reupload' => 0]);
-                        foreach ([1, 2, 3] as $doneTid) {
-                            if ($doneTid <= $detectedLastTask && isset($tMap[$doneTid])) {
+                        foreach (range(1, $detectedLastTask) as $doneTid) {
+                            if (isset($tMap[$doneTid])) {
                                 $tMap[$doneTid]->reupload = 0;
                             }
                         }
@@ -958,10 +957,41 @@ class PengirimanTaskIDController extends Controller
                 ->get()
                 ->keyBy('taskid');
 
+            // Deteksi milestone terakhir yang diakui BPJS (dari pesan error 'TaskId terakhir N' atau task yang sukses 200/208)
+            $knownLastTaskInBPJS = 0;
+            foreach ($bookingTasks as $bTask) {
+                $bCode = (int) ($bTask->code ?? 0);
+                $bTid = (int) ($bTask->taskid ?? 0);
+                if (in_array($bCode, [200, 208], true) && $bTid > $knownLastTaskInBPJS && $bTid !== 99) {
+                    $knownLastTaskInBPJS = $bTid;
+                }
+                $bMsg = (string) ($bTask->message ?? '');
+                if (preg_match('/TaskId terakhir\s*(\d+)/i', $bMsg, $mB)) {
+                    $numB = (int) $mB[1];
+                    if ($numB > $knownLastTaskInBPJS && $numB !== 99) {
+                        $knownLastTaskInBPJS = $numB;
+                    }
+                }
+            }
+
+            // Jika BPJS mencatat TaskId terakhir >= N, sinkronkan semua task <= knownLastTaskInBPJS menjadi reupload = 0
+            if ($knownLastTaskInBPJS >= 1) {
+                $model->newQuery()
+                    ->where('kodebooking', $data['kodebooking'])
+                    ->where('taskid', '<=', $knownLastTaskInBPJS)
+                    ->where('reupload', 1)
+                    ->update(['reupload' => 0]);
+                foreach ($bookingTasks as $bTask) {
+                    if ((int) $bTask->taskid <= $knownLastTaskInBPJS) {
+                        $bTask->reupload = 0;
+                    }
+                }
+            }
+
             // 1. Jika mengirim Task 3 (atau Task <= 4): pastikan Task 1 s/d currentTaskNum lengkap
             if ($currentTaskNum <= 4) {
                 for ($reqT = 1; $reqT <= $currentTaskNum; $reqT++) {
-                    if (!$bookingTasks->has($reqT)) {
+                    if (!$bookingTasks->has($reqT) && $reqT > $knownLastTaskInBPJS) {
                         Log::warning("[taskID_single_arr - $urlQL] PENDING: {$data['kodebooking']} belum memiliki Task $reqT sebelum upload Task $currentTaskNum.");
                         return response()->json([
                             'metadata' => [
@@ -978,7 +1008,7 @@ class PengirimanTaskIDController extends Controller
             if ($currentTaskNum >= 5) {
                 $maxRequired = ($currentTaskNum === 7) ? 6 : 5;
                 for ($reqT = 1; $reqT <= $maxRequired; $reqT++) {
-                    if (!$bookingTasks->has($reqT)) {
+                    if (!$bookingTasks->has($reqT) && $reqT > $knownLastTaskInBPJS) {
                         Log::warning("[taskID_single_arr - $urlQL] PENDING: {$data['kodebooking']} belum memiliki Task $reqT sebelum upload Task $currentTaskNum.");
                         return response()->json([
                             'metadata' => [
@@ -990,11 +1020,12 @@ class PengirimanTaskIDController extends Controller
                 }
             }
 
-            // Pastikan seluruh Task sebelumnya (1 s/d N-1) sudah sukses diupload secara berurutan (Code 200/208 atau reupload=0)
+            // Pastikan seluruh Task sebelumnya (1 s/d N-1) sudah sukses diupload secara berurutan (Code 200/208 atau reupload=0 atau sudah terlampaui di BPJS)
             if ($currentTaskNum > 1) {
                 for ($prevT = 1; $prevT < $currentTaskNum; $prevT++) {
                     $prevTaskRow = $bookingTasks->get($prevT);
-                    $isPrevOk = $prevTaskRow && (in_array((int) $prevTaskRow->code, [200, 208], true) || (int) $prevTaskRow->reupload === 0);
+                    $isPrevOk = ($prevT <= $knownLastTaskInBPJS) ||
+                        ($prevTaskRow && (in_array((int) $prevTaskRow->code, [200, 208], true) || (int) $prevTaskRow->reupload === 0));
 
                     if (!$isPrevOk) {
                         Log::warning("[taskID_single_arr - $urlQL] PENDING: Task {$currentTaskNum} for {$data['kodebooking']} is waiting for Task $prevT to be SUCCESS (200/208).");
@@ -1217,8 +1248,8 @@ class PengirimanTaskIDController extends Controller
                     $lastTaskFromResp = (int) $mRespLast[1];
                 }
 
-                // Jika ada info "TaskId terakhir 3" (atau >= 3), maka Task ID 1 dan Task ID 2 (serta <= N) tidak perlu dikirim lagi (reupload = 0)
-                if ($lastTaskFromResp >= 3 && $lastTaskFromResp !== 99) {
+                // Jika ada info "TaskId terakhir N", maka semua task <= N sudah terlampaui di BPJS dan tidak perlu dikirim lagi (reupload = 0)
+                if ($lastTaskFromResp >= 1 && $lastTaskFromResp !== 99) {
                     $model->newQuery()
                         ->where('kodebooking', $kodebooking)
                         ->where('taskid', '<=', $lastTaskFromResp)
