@@ -367,7 +367,7 @@ function filterTableCode(element, type) {
     if (type === '') {
         table.column(5).search('').draw();
     } else if (type === '200') {
-        table.column(5).search('200 OK').draw();
+        table.column(5).search('200 OK|208 OK', true, false).draw();
     } else if (type === '0') {
         table.column(5).search('Pending').draw();
     } else if (type === 'error') {
@@ -392,9 +392,12 @@ $(document).ready(function() {
         language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json' },
         columnDefs: [
             { orderable: false, targets: [0, 6] },
-            { className: 'text-center', targets: [0, 2, 4, 6] },
-            { render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, targets: 0 }
-        ]
+            { className: 'text-center', targets: [0, 2, 4, 6] }
+        ],
+        rowCallback: function(row, data, displayNum, displayIndex) {
+            var info = this.api().page.info();
+            $('td:eq(0)', row).html(info.start + displayIndex + 1);
+        }
     });
 
     var hideKey = 'hideDupKb_' + tableId;

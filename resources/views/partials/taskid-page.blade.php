@@ -391,8 +391,12 @@ $(document).ready(function () {
         language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json' },
         columnDefs: [
             { orderable: false, targets: [0, 7] },
-            { render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1, targets: 0 }
-        ]
+            { className: 'text-center', targets: [0, 2, 4] }
+        ],
+        rowCallback: function(row, data, displayNum, displayIndex) {
+            var info = this.api().page.info();
+            $('td:eq(0)', row).html(info.start + displayIndex + 1);
+        }
     });
 
     function escapeAttr(str) {
