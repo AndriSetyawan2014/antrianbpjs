@@ -782,6 +782,7 @@ class PengirimanTaskIDController extends Controller
                 }
 
                 foreach ($allTasksByKb as $kbKey => $tMap) {
+                    $kbKeyStr = (string) $kbKey;
                     // Cek jika ada info "TaskId terakhir 3" (atau "TaskId terakhir N") pada kodebooking ini -> set Task 1 & 2 (serta <= N) menjadi reupload = 0
                     $detectedLastTask = 0;
                     foreach ($tMap as $tRow) {
@@ -795,13 +796,13 @@ class PengirimanTaskIDController extends Controller
                     }
                     if ($detectedLastTask === 99) {
                         $data_taskID_model->newQuery()
-                            ->where('kodebooking', $kbKey)
+                            ->where('kodebooking', '=', $kbKeyStr)
                             ->where('reupload', 1)
                             ->update(['reupload' => 0]);
                         continue;
                     } elseif ($detectedLastTask >= 1) {
                         $data_taskID_model->newQuery()
-                            ->where('kodebooking', $kbKey)
+                            ->where('kodebooking', '=', $kbKeyStr)
                             ->where('taskid', '<=', $detectedLastTask)
                             ->where('reupload', 1)
                             ->update(['reupload' => 0]);
@@ -977,7 +978,7 @@ class PengirimanTaskIDController extends Controller
             // Jika BPJS mencatat TaskId terakhir >= N, sinkronkan semua task <= knownLastTaskInBPJS menjadi reupload = 0
             if ($knownLastTaskInBPJS >= 1) {
                 $model->newQuery()
-                    ->where('kodebooking', $data['kodebooking'])
+                    ->where('kodebooking', '=', (string) $data['kodebooking'])
                     ->where('taskid', '<=', $knownLastTaskInBPJS)
                     ->where('reupload', 1)
                     ->update(['reupload' => 0]);
@@ -1251,7 +1252,7 @@ class PengirimanTaskIDController extends Controller
                 // Jika ada info "TaskId terakhir N", maka semua task <= N sudah terlampaui di BPJS dan tidak perlu dikirim lagi (reupload = 0)
                 if ($lastTaskFromResp >= 1 && $lastTaskFromResp !== 99) {
                     $model->newQuery()
-                        ->where('kodebooking', $kodebooking)
+                        ->where('kodebooking', '=', (string) $kodebooking)
                         ->where('taskid', '<=', $lastTaskFromResp)
                         ->update(['reupload' => 0]);
                 }
