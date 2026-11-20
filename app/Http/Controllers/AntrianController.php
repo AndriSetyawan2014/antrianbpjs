@@ -204,21 +204,31 @@ class AntrianController extends Controller
         }
 
         // 1. Ambil data kode booking berdasarkan rentang tanggal (dan filter pencarian jika ada)
-        $kbQuery = DB::table($cfg['kb_table'])->select(
-            'id', 'kodebooking', 'norm', 'nojkn', 'namadokter', 'namaunit', 'tanggalperiksa'
-        )->whereBetween('tanggalperiksa', [$start_date, $end_date]);
+        // Gunakan distinct/groupBy pada kodebooking untuk memastikan 1 kode booking hanya muncul 1 kali
+        $kbSubQuery = DB::table($cfg['kb_table'])
+            ->selectRaw('MAX(id) as max_id')
+            ->whereBetween('tanggalperiksa', [$start_date, $end_date])
+            ->groupBy('kodebooking');
+
+        $kbQuery = DB::table($cfg['kb_table'] . ' as kb')
+            ->joinSub($kbSubQuery, 'latest_kb', function ($join) {
+                $join->on('kb.id', '=', 'latest_kb.max_id');
+            })
+            ->select(
+                'kb.id', 'kb.kodebooking', 'kb.norm', 'kb.nojkn', 'kb.namadokter', 'kb.namaunit', 'kb.tanggalperiksa'
+            );
 
         if ($searchQuery !== '') {
             $kbQuery->where(function ($q) use ($searchQuery) {
-                $q->where('kodebooking', 'like', "%{$searchQuery}%")
-                  ->orWhere('norm', 'like', "%{$searchQuery}%")
-                  ->orWhere('nojkn', 'like', "%{$searchQuery}%")
-                  ->orWhere('namadokter', 'like', "%{$searchQuery}%")
-                  ->orWhere('namaunit', 'like', "%{$searchQuery}%");
+                $q->where('kb.kodebooking', 'like', "%{$searchQuery}%")
+                  ->orWhere('kb.norm', 'like', "%{$searchQuery}%")
+                  ->orWhere('kb.nojkn', 'like', "%{$searchQuery}%")
+                  ->orWhere('kb.namadokter', 'like', "%{$searchQuery}%")
+                  ->orWhere('kb.namaunit', 'like', "%{$searchQuery}%");
             });
         }
 
-        $kodebookings = $kbQuery->orderBy('tanggalperiksa', 'asc')->orderBy('id', 'asc')->get();
+        $kodebookings = $kbQuery->orderBy('kb.tanggalperiksa', 'asc')->orderBy('kb.id', 'asc')->get();
 
         // 2. Ambil data_taskid menggunakan subquery (tanpa ribuan binding parameter di whereIn)
         $taskids = $kodebookings->isNotEmpty()
